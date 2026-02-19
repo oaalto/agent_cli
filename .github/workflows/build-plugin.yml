@@ -1,0 +1,72 @@
+name: Build Plugin
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build plugin ZIP and JAR
+        run: ./gradlew --no-daemon clean buildPlugin jar
+
+      - name: Collect installable artifacts
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          mkdir -p build/github
+          cp build/distributions/*.zip build/github/
+
+          plugin_jar=""
+          for jar in build/libs/*.jar; do
+            case "$jar" in
+              *-base.jar|*-instrumented.jar|*-searchableOptions.jar)
+                continue
+                ;;
+              *)
+                plugin_jar="$jar"
+                break
+                ;;
+            esac
+          done
+
+          if [ -z "$plugin_jar" ]; then
+            echo "No distributable plugin JAR found in build/libs."
+            exit 1
+          fi
+
+          cp "$plugin_jar" build/github/
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-cli-plugin-${{ github.sha }}
+          path: build/github/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload release assets on tags
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/github/*.jar
+            build/github/*.zip

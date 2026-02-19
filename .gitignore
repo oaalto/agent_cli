@@ -1,0 +1,26 @@
+### Gradle ###
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Kotlin ###
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.run
+
+### IntelliJ Platform Plugin ###
+.intellijPlatform/
+
+### OS ###
+Thumbs.db
+Desktop.ini

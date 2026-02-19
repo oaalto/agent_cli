@@ -1,0 +1,56 @@
+<!-- Plugin Configuration File: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN, cannot be changed between the plugin versions. -->
+    <id>com.oaalto.agent_cli</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>Agent CLI</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor>OAalto</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        Agent CLI plugin that opens a dedicated tab and runs the local agent CLI inside it.
+    ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.terminal</depends>
+
+    <!-- Extensions defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.oaalto.agent.AgentFileEditorProvider"/>
+        <applicationConfigurable
+                id="com.oaalto.agent.settings"
+                parentId="tools"
+                displayName="Agent CLI"
+                instance="com.oaalto.agent.settings.AgentSettingsConfigurable"/>
+    </extensions>
+
+    <actions>
+        <group
+                id="com.oaalto.agent.SelectAgentConfigurationActionGroup"
+                class="com.oaalto.agent.SelectAgentConfigurationActionGroup"
+                text="Select Agent"
+                description="Choose which configured agent to run"
+                popup="true">
+            <add-to-group group-id="MainToolbarCenter" anchor="before" relative-to-action="com.oaalto.agent.OpenAgentEditorAction"/>
+            <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="com.oaalto.agent.OpenAgentEditorAction"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+        <action
+                id="com.oaalto.agent.OpenAgentEditorAction"
+                class="com.oaalto.agent.OpenAgentEditorAction"
+                text="Run Agent"
+                description="Open an Agent CLI tab that runs the selected agent command">
+            <add-to-group group-id="MainToolbarCenter" anchor="before" relative-to-action="RunConfigurationsComboBoxAction"/>
+            <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="RunConfigurationsComboBoxAction"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
