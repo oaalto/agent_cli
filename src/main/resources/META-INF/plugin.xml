@@ -25,6 +25,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.oaalto.agent.AgentFileEditorProvider"/>
+        <editorTabTitleProvider implementation="com.oaalto.agent.AgentEditorTabTitleProvider" order="first"/>
         <applicationConfigurable
                 id="com.oaalto.agent.settings"
                 parentId="tools"

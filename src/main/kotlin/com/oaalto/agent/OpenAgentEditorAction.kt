@@ -26,14 +26,6 @@ class OpenAgentEditorAction : DumbAwareAction() {
         }
 
         val editorManager = FileEditorManager.getInstance(project)
-        val existing = editorManager.openFiles.firstOrNull {
-            it is AgentVirtualFile && it.configurationId == configuration.id
-        }
-        if (existing != null) {
-            editorManager.openFile(existing, true)
-            return
-        }
-
         editorManager.openFile(AgentVirtualFile(configuration.id, configuration.name), true)
     }
 
