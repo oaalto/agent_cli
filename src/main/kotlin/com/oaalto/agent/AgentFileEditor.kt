@@ -35,6 +35,7 @@ class AgentFileEditor(
     private val propertyChangeSupport = PropertyChangeSupport(this)
     private val userData = UserDataHolderBase()
     private val rootPanel = JPanel(BorderLayout())
+    private var terminalFocusComponent: JComponent? = null
 
     init {
         startTerminalSession()
@@ -42,7 +43,8 @@ class AgentFileEditor(
 
     override fun getComponent(): JComponent = rootPanel
 
-    override fun getPreferredFocusedComponent(): JComponent = rootPanel
+    override fun getPreferredFocusedComponent(): JComponent =
+        terminalFocusComponent ?: rootPanel
 
     override fun getName(): String = "Agent CLI"
 
@@ -111,6 +113,7 @@ class AgentFileEditor(
         try {
             val runner = DefaultTerminalRunnerFactory.getInstance().createLocalRunner(project)
             val terminalWidget = runner.startShellTerminalWidget(this, startupOptions, false)
+            terminalFocusComponent = terminalWidget.preferredFocusableComponent
             rootPanel.add(terminalWidget.component, BorderLayout.CENTER)
             rootPanel.border = JBUI.Borders.empty()
         } catch (t: Throwable) {
