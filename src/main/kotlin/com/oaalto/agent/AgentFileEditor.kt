@@ -1,6 +1,11 @@
 package com.oaalto.agent
 
 import com.oaalto.agent.settings.AgentSettingsState
+import com.intellij.ide.DataManager
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.Disposable
@@ -10,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
+import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
@@ -20,13 +26,18 @@ import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
+import java.awt.Component
+import java.awt.KeyEventDispatcher
+import java.awt.KeyboardFocusManager
 import java.awt.BorderLayout
+import java.awt.event.KeyEvent
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class AgentFileEditor(
     private val project: Project,
@@ -36,8 +47,10 @@ class AgentFileEditor(
     private val userData = UserDataHolderBase()
     private val rootPanel = JPanel(BorderLayout())
     private var terminalFocusComponent: JComponent? = null
+    private val keyEventDispatcher = KeyEventDispatcher { event -> handleEditorNavigationShortcut(event) }
 
     init {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keyEventDispatcher)
         startTerminalSession()
     }
 
@@ -81,7 +94,35 @@ class AgentFileEditor(
     }
 
     override fun dispose() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(keyEventDispatcher)
         // Terminal widget is registered with this editor as parent disposable.
+    }
+
+    private fun handleEditorNavigationShortcut(event: KeyEvent): Boolean {
+        if (event.id != KeyEvent.KEY_PRESSED || event.isConsumed || project.isDisposed) {
+            return false
+        }
+
+        val focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner ?: return false
+        val terminalComponent = terminalFocusComponent
+        if (terminalComponent == null || !SwingUtilities.isDescendingFrom(focusOwner, terminalComponent)) {
+            return false
+        }
+
+        for (actionId in NAVIGATION_ACTION_IDS) {
+            if (KeymapUtil.isEventForAction(event, actionId) && invokeIdeAction(actionId, focusOwner, event)) {
+                event.consume()
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun invokeIdeAction(actionId: String, focusOwner: Component, event: KeyEvent): Boolean {
+        val action = ActionManager.getInstance().getAction(actionId) ?: return false
+        val dataContext = DataManager.getInstance().getDataContext(focusOwner)
+        ActionUtil.invokeAction(action, dataContext, ActionPlaces.KEYBOARD_SHORTCUT, event, null)
+        return true
     }
 
     private fun startTerminalSession() {
@@ -158,5 +199,13 @@ class AgentFileEditor(
 
     companion object {
         private val logger = Logger.getInstance(AgentFileEditor::class.java)
+        private val NAVIGATION_ACTION_IDS = listOf(
+            IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
+            IdeActions.ACTION_NEXT_EDITOR_TAB,
+            IdeActions.ACTION_PREVIOUS_TAB,
+            IdeActions.ACTION_NEXT_TAB,
+            IdeActions.ACTION_GOTO_BACK,
+            IdeActions.ACTION_GOTO_FORWARD,
+        )
     }
 }

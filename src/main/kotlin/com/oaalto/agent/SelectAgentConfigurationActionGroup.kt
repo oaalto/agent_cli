@@ -45,7 +45,7 @@ class SelectAgentConfigurationActionGroup : ActionGroup(), DumbAware {
             object : DumbAwareAction("Manage Agents...") {
                 override fun actionPerformed(event: AnActionEvent) {
                     ShowSettingsUtil.getInstance()
-                        .showSettingsDialog(event.project, AgentSettingsConfigurable.ID)
+                        .showSettingsDialog(event.project, AgentSettingsConfigurable::class.java)
                 }
             },
         )

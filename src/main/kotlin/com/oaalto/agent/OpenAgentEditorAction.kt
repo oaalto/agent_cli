@@ -16,12 +16,12 @@ class OpenAgentEditorAction : DumbAwareAction() {
         val configuration = settings.getSelectedConfiguration()
         if (configuration == null) {
             Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable.ID)
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
             return
         }
         if (configuration.binaryPath.isBlank()) {
             Messages.showErrorDialog(project, "The default agent configuration has an empty binary path.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable.ID)
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
             return
         }
 
