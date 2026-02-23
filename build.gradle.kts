@@ -4,8 +4,18 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.10.2"
 }
 
+val defaultPluginVersion = "1.0"
+val resolvedPluginVersion = providers.gradleProperty("pluginVersion").orElse(defaultPluginVersion)
+val generatedChangeNotes = providers.gradleProperty("pluginChangeNotesFile").map { relativePath ->
+    val changeNotesFile = layout.projectDirectory.file(relativePath).asFile
+    require(changeNotesFile.isFile) {
+        "pluginChangeNotesFile does not point to a readable file: $relativePath"
+    }
+    changeNotesFile.readText(Charsets.UTF_8).trim()
+}
+
 group = "com.oaalto"
-version = "1.0"
+version = resolvedPluginVersion.get()
 
 repositories {
     mavenCentral()
@@ -25,13 +35,15 @@ dependencies {
 
 intellijPlatform {
     pluginConfiguration {
+        version = resolvedPluginVersion
         ideaVersion {
             sinceBuild = "253"
         }
 
-        changeNotes = """
+        val defaultChangeNotes = """
             Initial version
         """.trimIndent()
+        changeNotes = generatedChangeNotes.orElse(defaultChangeNotes)
     }
 }
 

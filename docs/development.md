@@ -62,8 +62,21 @@ GitHub Actions workflow: `.github/workflows/build-plugin.yml`
 - On push/PR/manual trigger:
   - Builds plugin artifacts
   - Uploads `.zip` + `.jar` as workflow artifacts
-- On tag push (for example `v1.0.0`):
-  - Uploads `.zip` + `.jar` to GitHub Releases
+- On tag push (for example `v1.0.0`, `1.0.0`, `v1.0-rc1`, `1.0-rc1`):
+  - Derives plugin version from tag (with optional leading `v`)
+  - Generates release notes from commit subjects since the previous tag
+  - Injects generated notes into plugin `<change-notes>` metadata
+  - Uploads `.zip` + `.jar` to GitHub Releases with generated release notes as the body
+  - Marks GitHub release as prerelease when the parsed version contains a prerelease suffix (for example `-rc1`)
+
+### Release note source
+
+- Release notes are generated from `git log --no-merges --pretty=format:%s` for:
+  - `previousTag..currentTag`, or
+  - full history for the first tag.
+- Commit message subjects should be user-facing because they are shown in:
+  - GitHub Release notes
+  - IDEA plugin update "What's New" (from `<change-notes>` in plugin metadata)
 
 ## Local testing checklist
 

@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -24,10 +26,48 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Parse version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        id: release_meta
+        run: |
+          set -euo pipefail
+          raw_tag="${GITHUB_REF_NAME}"
+
+          if [[ "$raw_tag" =~ ^v?([0-9]+(\.[0-9]+)*(-[0-9A-Za-z][0-9A-Za-z.-]*)?(\+[0-9A-Za-z][0-9A-Za-z.-]*)?)$ ]]; then
+            plugin_version="${BASH_REMATCH[1]}"
+          else
+            echo "Unsupported tag format: ${raw_tag}" >&2
+            echo "Expected forms like v1.2.3, 1.2.3, v1.0-rc1, 1.0-rc1." >&2
+            exit 1
+          fi
+
+          is_prerelease=false
+          if [[ "$plugin_version" == *-* ]]; then
+            is_prerelease=true
+          fi
+
+          echo "plugin_version=${plugin_version}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${is_prerelease}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes from commits
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          bash scripts/generate_release_notes.sh "${GITHUB_REF_NAME}" "build/github"
+
       - name: Build plugin ZIP and JAR
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon clean buildPlugin jar
+
+      - name: Build plugin ZIP and JAR (tag release)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon clean buildPlugin jar \
+            -PpluginVersion="${{ steps.release_meta.outputs.plugin_version }}" \
+            -PpluginChangeNotesFile=build/github/change-notes.html
 
       - name: Collect installable artifacts
         run: |
@@ -57,6 +97,62 @@ jobs:
 
           cp "$plugin_jar" build/github/
 
+      - name: Verify plugin version and change-notes in artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          EXPECTED_PLUGIN_VERSION: ${{ steps.release_meta.outputs.plugin_version }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import glob
+          import io
+          import os
+          import sys
+          import zipfile
+          import xml.etree.ElementTree as ET
+
+          expected_version = os.environ["EXPECTED_PLUGIN_VERSION"]
+          zip_paths = sorted(glob.glob("build/distributions/*.zip"))
+          if not zip_paths:
+              sys.exit("No plugin ZIP found in build/distributions.")
+
+          plugin_xml = None
+          plugin_zip_path = zip_paths[0]
+          with zipfile.ZipFile(plugin_zip_path, "r") as plugin_zip:
+              for member in plugin_zip.namelist():
+                  if "/lib/" not in member or not member.endswith(".jar"):
+                      continue
+                  with plugin_zip.open(member, "r") as jar_stream:
+                      jar_bytes = jar_stream.read()
+                  try:
+                      with zipfile.ZipFile(io.BytesIO(jar_bytes), "r") as jar_zip:
+                          if "META-INF/plugin.xml" in jar_zip.namelist():
+                              plugin_xml = jar_zip.read("META-INF/plugin.xml").decode("utf-8")
+                              break
+                  except zipfile.BadZipFile:
+                      continue
+
+          if plugin_xml is None:
+              sys.exit("Could not locate META-INF/plugin.xml inside release artifact.")
+
+          root = ET.fromstring(plugin_xml)
+          actual_version = (root.findtext("version") or "").strip()
+          if actual_version != expected_version:
+              sys.exit(f"Plugin version mismatch. Expected {expected_version}, found {actual_version}.")
+
+          change_notes_elem = root.find("change-notes")
+          if change_notes_elem is None:
+              sys.exit("Missing <change-notes> element in plugin metadata.")
+
+          change_notes_xml = ET.tostring(change_notes_elem, encoding="unicode")
+          if "Initial version" in change_notes_xml:
+              sys.exit("Static fallback change notes were used instead of generated release notes.")
+          if "<li>" not in change_notes_xml and "&lt;li&gt;" not in change_notes_xml:
+              sys.exit("Generated change notes are missing list items.")
+
+          print(f"Verified plugin metadata for version {actual_version}.")
+          PY
+
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -69,6 +165,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          body_path: build/github/release-notes.md
+          prerelease: ${{ steps.release_meta.outputs.is_prerelease }}
           files: |
             build/github/*.jar
             build/github/*.zip
