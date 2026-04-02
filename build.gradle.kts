@@ -4,10 +4,10 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.10.2"
 }
 
-val defaultPluginVersion = "1.0"
+val defaultPluginVersion = "2.0.0-SNAPSHOT"
 val resolvedPluginVersion = providers.gradleProperty("pluginVersion").orNull ?: defaultPluginVersion
 val defaultChangeNotes = """
-    Initial version
+    2.0.0 development cycle started.
 """.trimIndent()
 val resolvedChangeNotes = providers.gradleProperty("pluginChangeNotesFile").orNull?.let { relativePath ->
     val changeNotesFile = layout.projectDirectory.file(relativePath).asFile

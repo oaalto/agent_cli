@@ -37,7 +37,7 @@ jobs:
             plugin_version="${BASH_REMATCH[1]}"
           else
             echo "Unsupported tag format: ${raw_tag}" >&2
-            echo "Expected forms like v1.2.3, 1.2.3, v1.0-rc1, 1.0-rc1." >&2
+            echo "Expected forms like v2.0.0, 2.0.0, v2.0-rc1, 2.0-rc1." >&2
             exit 1
           fi
 
@@ -145,7 +145,7 @@ jobs:
               sys.exit("Missing <change-notes> element in plugin metadata.")
 
           change_notes_xml = ET.tostring(change_notes_elem, encoding="unicode")
-          if "Initial version" in change_notes_xml:
+          if "2.0.0 development cycle started." in change_notes_xml:
               sys.exit("Static fallback change notes were used instead of generated release notes.")
           if "<li>" not in change_notes_xml and "&lt;li&gt;" not in change_notes_xml:
               sys.exit("Generated change notes are missing list items.")
