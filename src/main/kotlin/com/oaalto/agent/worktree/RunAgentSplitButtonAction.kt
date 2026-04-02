@@ -2,6 +2,7 @@ package com.oaalto.agent.worktree
 
 import com.oaalto.agent.settings.AgentSettingsConfigurable
 import com.oaalto.agent.settings.AgentSettingsState
+import com.intellij.ide.ActivityTracker
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -18,6 +19,8 @@ import com.oaalto.agent.AgentVirtualFile
 import java.nio.file.Path
 
 class RunAgentSplitButtonAction : SplitButtonAction(RunAgentSplitActionGroup()), DumbAware {
+    override fun useDynamicSplitButton(): Boolean = false
+
     override fun getMainAction(e: AnActionEvent): AnAction = DEFAULT_CURRENT_PROJECT_ACTION
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -60,6 +63,7 @@ private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
                 )
                 actions += DeleteWorktreeAction(
                     displayName = displayName,
+                    recordId = managed.id,
                     worktreePath = managed.worktreePath,
                 )
                 actions += Separator.getInstance()
@@ -102,6 +106,7 @@ private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
         configurationId: String,
     ): List<AgentWorktreeStateService.ManagedWorktreeRecord> {
         val state = AgentWorktreeStateService.getInstance()
+        state.pruneMissingWorktreesForConfiguration(configurationId)
         val basePath = project.basePath?.trim().orEmpty()
         if (basePath.isBlank()) {
             return state.getActiveRecordsForConfiguration(configurationId)
@@ -242,6 +247,7 @@ private class OpenOrResumeWorktreeAction(
 
 private class DeleteWorktreeAction(
     displayName: String,
+    private val recordId: String,
     private val worktreePath: String,
 ) : DumbAwareAction(
     "Delete $displayName",
@@ -269,6 +275,10 @@ private class DeleteWorktreeAction(
                 result.exceptionOrNull()?.message ?: "Failed to delete worktree.",
                 "Run Agent",
             )
+        } else {
+            AgentWorktreeStateService.getInstance().markDeletedById(recordId)
+            // Force toolbar/action-group refresh so removed worktrees disappear immediately.
+            ActivityTracker.getInstance().inc()
         }
     }
 }

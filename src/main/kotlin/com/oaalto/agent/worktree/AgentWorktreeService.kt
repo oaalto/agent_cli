@@ -120,7 +120,10 @@ class AgentWorktreeService(
                 return Result.failure(IllegalStateException(throwable.message ?: "Failed to list worktrees."))
             }
         val tree = existingTrees.firstOrNull { normalizePathKey(it.hostPath) == normalizePathKey(worktreePath) }
-            ?: return Result.failure(IllegalStateException("Worktree not found: $worktreePath"))
+            ?: run {
+                AgentWorktreeStateService.getInstance().markDeleted(worktreePath)
+                return Result.success(Unit)
+            }
         if (tree.isMain) {
             return Result.failure(IllegalStateException("Cannot delete the main worktree."))
         }
@@ -176,7 +179,8 @@ class AgentWorktreeService(
             val containerName = "${repositoryRoot.fileName}-agent-worktrees"
             val container = parent.resolve(containerName)
             Files.createDirectories(container)
-            val suffix = buildPathSuffix(configurationName)
+            val repositoryName = repositoryRoot.fileName?.toString().orEmpty().ifBlank { "project" }
+            val suffix = buildPathSuffix(repositoryName, configurationName)
             container.resolve(suffix).toAbsolutePath().normalize().toString()
         }.recoverCatching { throwable ->
             throw IllegalStateException("Failed to resolve worktree path: ${throwable.message ?: throwable.javaClass.simpleName}")
@@ -188,9 +192,9 @@ class AgentWorktreeService(
         return "agent/${slug(configurationName)}/$timestamp"
     }
 
-    private fun buildPathSuffix(configurationName: String): String {
+    private fun buildPathSuffix(repositoryName: String, configurationName: String): String {
         val timestamp = PATH_TIMESTAMP_FORMAT.format(LocalDateTime.now())
-        return "${slug(configurationName)}-$timestamp"
+        return "${slug(repositoryName)}-${slug(configurationName)}-$timestamp"
     }
 
     private fun slug(rawValue: String): String {

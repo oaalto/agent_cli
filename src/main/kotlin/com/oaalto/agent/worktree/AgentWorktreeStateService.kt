@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
 import java.util.UUID
@@ -146,6 +147,32 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         }
     }
 
+    fun markDeletedById(recordId: String): Boolean {
+        val targetId = recordId.trim()
+        if (targetId.isBlank()) return false
+        var changed = false
+        state.records.forEach { record ->
+            if (record.id == targetId && !record.deleted) {
+                record.deleted = true
+                changed = true
+            }
+        }
+        return changed
+    }
+
+    fun pruneMissingWorktreesForConfiguration(configurationId: String): Int {
+        val configId = configurationId.trim()
+        if (configId.isBlank()) return 0
+        var prunedCount = 0
+        state.records.forEach { record ->
+            if (record.configurationId == configId && !record.deleted && !pathExists(record.worktreePath)) {
+                record.deleted = true
+                prunedCount += 1
+            }
+        }
+        return prunedCount
+    }
+
     fun touch(worktreePath: String) {
         val key = normalizedPathKey(worktreePath)
         val now = System.currentTimeMillis()
@@ -266,10 +293,22 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         }.getOrElse { trimmed }
     }
 
+    private fun pathExists(rawPath: String): Boolean {
+        val normalized = normalizePath(rawPath)
+        if (normalized.isBlank()) return false
+        return kotlin.runCatching {
+            Files.isDirectory(Path.of(normalized))
+        }.getOrDefault(false)
+    }
+
     private fun normalizedPathKey(rawPath: String): String {
-        return normalizePath(rawPath)
+        var value = normalizePath(rawPath)
             .replace('\\', '/')
             .lowercase(Locale.ROOT)
+        if (value.startsWith("//wsl$/")) {
+            value = value.replaceFirst("//wsl$/", "//wsl.localhost/")
+        }
+        return value
     }
 
     companion object {
