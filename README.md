@@ -6,12 +6,22 @@ It is useful when you want to keep agent runs inside your project workspace, wit
 
 ## What this plugin does
 
-- Lets you define one or more agent configurations in IDE settings.
-- Lets you select the active configuration from the main toolbar (`Select Agent`).
-- Adds a split `Run Agent` button:
-  - Main click runs the selected agent in the current project.
-  - Dropdown contains worktree actions (new, open/resume, delete).
-- Opens the session in a dedicated `Agent` tab backed by IntelliJ Terminal.
+Ship faster without leaving IntelliJ. `Agent CLI` gives you a focused, in-editor control center for local AI coding workflows, from quick runs to isolated worktree sessions.
+
+### Version 1.0
+
+- Define one or more agent configurations in IDE settings.
+- Pick the active agent from the toolbar using `Select Agent`.
+- Launch the agent in a dedicated `Agent` tab backed by IntelliJ Terminal.
+
+### Version 2.0
+
+- Upgrades `Run Agent` to a split action:
+  - Main click runs immediately in the current project.
+  - Dropdown unlocks worktree actions (new, open/resume, delete).
+- Adds managed Git worktree workflows for cleaner isolation and parallel agent runs.
+- Adds multi-CLI resume support (Cursor, Claude, Gemini, Codex) with per-tool resume semantics.
+- Adds first-class WSL execution targeting for Windows setups.
 
 Each configuration supports:
 
