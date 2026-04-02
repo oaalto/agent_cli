@@ -14,6 +14,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -166,11 +168,16 @@ class AgentFileEditor(
                     showError("Working directory does not exist:\n$workingDirectory")
                     return
                 }
+                val effectiveRunArguments = applyCursorResumeFallbackForLocal(
+                    binaryPath = binaryPath,
+                    arguments = effectiveArguments,
+                    workingDirectory = workingDirectory,
+                )
                 TerminalStartupRequest(
                     workingDirectory = workingDirectory,
                     command = buildList {
                         add(binaryPath)
-                        addAll(effectiveArguments)
+                        addAll(effectiveRunArguments)
                     },
                 )
             }
@@ -191,25 +198,22 @@ class AgentFileEditor(
                 }
                 val effectiveDistribution = configuration.wslDistribution.trim()
                     .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-                val command = if (shouldUseCursorResumeFallback(binaryPath, launchContext.additionalArguments)) {
-                    buildWslCommandWithCursorResumeFallback(
-                        binaryPath = binaryPath,
-                        resumeArguments = effectiveArguments,
-                        fallbackArguments = parsedArguments,
-                        wslDistribution = effectiveDistribution,
-                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    )
-                } else {
-                    buildWslCommand(
-                        binaryPath = binaryPath,
-                        arguments = effectiveArguments,
-                        wslDistribution = effectiveDistribution,
-                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    )
-                }
+                val hostWorkingDirectory = resolveHostWorkingDirectory()
+                val effectiveRunArguments = applyCursorResumeFallbackForWsl(
+                    binaryPath = binaryPath,
+                    arguments = effectiveArguments,
+                    wslDistribution = effectiveDistribution,
+                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                    hostWorkingDirectory = hostWorkingDirectory,
+                )
                 TerminalStartupRequest(
-                    workingDirectory = resolveHostWorkingDirectory(),
-                    command = command,
+                    workingDirectory = hostWorkingDirectory,
+                    command = buildWslCommand(
+                        binaryPath = binaryPath,
+                        arguments = effectiveRunArguments,
+                        wslDistribution = effectiveDistribution,
+                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                    ),
                 )
             }
         }
@@ -335,66 +339,55 @@ class AgentFileEditor(
             add("--cd")
             add(wslWorkingDirectory)
             add("--")
-            add("/bin/bash")
-            add("-lc")
-            add(buildBashCommandLine(binaryPath, arguments))
-        }
-    }
-
-    private fun buildWslCommandWithCursorResumeFallback(
-        binaryPath: String,
-        resumeArguments: List<String>,
-        fallbackArguments: List<String>,
-        wslDistribution: String,
-        wslWorkingDirectory: String,
-    ): List<String> {
-        val resumeCommand = buildBashCommandLine(binaryPath, resumeArguments)
-        val fallbackCommand = buildBashCommandLine(binaryPath, fallbackArguments)
-        val resumeProbeCommand = buildBashCommandLine(binaryPath, listOf("resume"))
-        val script = buildString {
-            append("if ")
-            append(resumeCommand)
-            append("; then exit 0; fi; ")
-            append("__probe_output=$(")
-            append(resumeProbeCommand)
-            append(" 2>&1 || true); ")
-            append("printf '%s\\n' \"\$__probe_output\"; ")
-            append("case \"\$__probe_output\" in ")
-            append("*No\\ previous\\ chats\\ found*")
-            append(") ")
-            append("echo ")
-            append(quoteForBash("No previous chats found. Starting a new session..."))
-            append("; exec ")
-            append(fallbackCommand)
-            append(" ;; ")
-            append("*) exit 1 ;; ")
-            append("esac")
-        }
-        return buildList {
-            add("wsl.exe")
-            val distribution = wslDistribution.trim()
-            if (distribution.isNotBlank()) {
-                add("--distribution")
-                add(distribution)
-            }
-            add("--cd")
-            add(wslWorkingDirectory)
-            add("--")
-            add("/bin/bash")
-            add("-lc")
-            add(script)
-        }
-    }
-
-    private fun buildBashCommandLine(binaryPath: String, arguments: List<String>): String {
-        return buildList {
             add(binaryPath)
             addAll(arguments)
-        }.joinToString(" ") { quoteForBash(it) }
+        }
     }
 
-    private fun shouldUseCursorResumeFallback(binaryPath: String, launchAdditionalArguments: List<String>): Boolean {
-        if (!launchAdditionalArguments.contains("--continue")) return false
+    private fun applyCursorResumeFallbackForLocal(
+        binaryPath: String,
+        arguments: List<String>,
+        workingDirectory: String,
+    ): List<String> {
+        if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
+        val output = runProcess(
+            command = listOf(binaryPath, "resume"),
+            workingDirectory = workingDirectory,
+        ) ?: return arguments
+        if (containsNoPreviousChats(output)) {
+            logger.info("No previous Cursor chats found; starting a normal session.")
+            return arguments.filterNot { it == "--continue" }
+        }
+        return arguments
+    }
+
+    private fun applyCursorResumeFallbackForWsl(
+        binaryPath: String,
+        arguments: List<String>,
+        wslDistribution: String,
+        wslWorkingDirectory: String,
+        hostWorkingDirectory: String,
+    ): List<String> {
+        if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
+        val probeCommand = buildWslCommand(
+            binaryPath = binaryPath,
+            arguments = listOf("resume"),
+            wslDistribution = wslDistribution,
+            wslWorkingDirectory = wslWorkingDirectory,
+        )
+        val output = runProcess(
+            command = probeCommand,
+            workingDirectory = hostWorkingDirectory,
+        ) ?: return arguments
+        if (containsNoPreviousChats(output)) {
+            logger.info("No previous Cursor chats found in WSL; starting a normal session.")
+            return arguments.filterNot { it == "--continue" }
+        }
+        return arguments
+    }
+
+    private fun shouldUseCursorResumeFallback(binaryPath: String, runArguments: List<String>): Boolean {
+        if (!runArguments.contains("--continue")) return false
         return when (executableName(binaryPath)) {
             "agent", "cursor-agent" -> true
             else -> false
@@ -406,7 +399,25 @@ class AgentFileEditor(
         return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
     }
 
-    private fun quoteForBash(value: String): String = "'${value.replace("'", "'\"'\"'")}'"
+    private fun runProcess(command: List<String>, workingDirectory: String): String? {
+        val output = kotlin.runCatching {
+            val commandLine = GeneralCommandLine(command)
+                .withWorkingDirectory(Path.of(workingDirectory))
+            CapturingProcessHandler(commandLine).runProcess(RESUME_PROBE_TIMEOUT_MS)
+        }.getOrElse { throwable ->
+            logger.warn("Resume probe failed for command: ${command.joinToString(" ")}", throwable)
+            return null
+        }
+        return buildString {
+            append(output.stdout)
+            if (output.stdout.isNotBlank() && output.stderr.isNotBlank()) append('\n')
+            append(output.stderr)
+        }
+    }
+
+    private fun containsNoPreviousChats(output: String): Boolean {
+        return output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
+    }
 
     private fun resolveHostWorkingDirectory(): String {
         val candidates = listOf(
@@ -454,6 +465,8 @@ class AgentFileEditor(
         private val logger = Logger.getInstance(AgentFileEditor::class.java)
         private val UNC_WSL_PREFIXES = listOf("\\\\wsl.localhost\\", "\\\\wsl$\\")
         private val WINDOWS_DRIVE_PATH_REGEX = Regex("""^([A-Za-z]):\\(.*)$""")
+        private const val NO_PREVIOUS_CHATS_MESSAGE = "No previous chats found"
+        private const val RESUME_PROBE_TIMEOUT_MS = 4000
         private val NAVIGATION_ACTION_IDS = listOf(
             IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
             IdeActions.ACTION_NEXT_EDITOR_TAB,
