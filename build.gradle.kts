@@ -44,6 +44,11 @@ intellijPlatform {
         }
         changeNotes = resolvedChangeNotes
     }
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
 }
 
 tasks {

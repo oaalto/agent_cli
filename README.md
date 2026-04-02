@@ -14,6 +14,8 @@ It is useful when you want to keep agent runs inside your project workspace, wit
 Each configuration supports:
 
 - `Name` - label shown in the toolbar/tab
+- `Execution Target` - where to run the command (`LOCAL` or `WSL`)
+- `WSL Distribution` - optional distro name when target is `WSL` (for example `Ubuntu`)
 - `Binary Path` - command path (required)
 - `Arguments` - optional CLI args
 - `Working Directory` - optional directory (defaults to current project directory)
@@ -35,6 +37,22 @@ Each configuration supports:
 5. Click `Run Agent`.
 6. Use the opened `Agent` tab to interact with the running command.
 
+### Running in WSL2 on Windows
+
+To run a Linux-installed agent from a Windows IDE:
+
+1. Set `Execution Target` to `WSL`.
+2. Set `Binary Path` to the Linux binary path (for example `/usr/local/bin/codex`).
+3. Optionally set `WSL Distribution` (for example `Ubuntu-24.04`) to target a non-default distro.
+4. Set `Working Directory` to one of:
+   - Linux path (for example `/home/you/project`)
+   - WSL UNC path (for example `\\wsl.localhost\Ubuntu\home\you\project`)
+   - Windows path (for example `D:\project`, mapped to `/mnt/d/project`)
+
+When `Execution Target` is `WSL`, the plugin launches:
+
+- `wsl.exe [--distribution <distro>] --cd <linuxDir> -- <linuxBinaryPath> <args...>`
+
 ## Screenshots
 
 Settings page:
@@ -50,6 +68,7 @@ Running agent tab:
 - Compatible with IntelliJ builds from `253` and newer.
 - The configured binary must exist and be executable.
 - If `Working Directory` is empty, the plugin uses the current project root.
+- For `WSL` target, Linux binary/path validation happens at runtime inside WSL.
 
 ## Developer documentation
 

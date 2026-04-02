@@ -2,11 +2,13 @@ package com.oaalto.agent.settings
 
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.util.UUID
+import javax.swing.DefaultCellEditor
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
@@ -28,6 +30,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
                 fillsViewportHeight = true
             }
+            table.columnModel.getColumn(2).cellEditor = DefaultCellEditor(
+                ComboBox(
+                    AgentSettingsState.ExecutionTarget.entries.map { it.name }.toTypedArray(),
+                ),
+            )
 
             val toolbar = ToolbarDecorator.createDecorator(table)
                 .setAddAction { _ ->
@@ -35,6 +42,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                         AgentConfigRow(
                             id = UUID.randomUUID().toString(),
                             name = "Agent ${model.rowCount + 1}",
+                            executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
+                            wslDistribution = "",
                             binaryPath = "",
                             arguments = "",
                             workingDirectory = "",
@@ -80,6 +89,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             AgentSettingsState.AgentCliConfiguration().apply {
                 id = row.id
                 name = row.name.trim()
+                executionTarget = normalizeExecutionTarget(row.executionTarget)
+                wslDistribution = row.wslDistribution.trim()
                 binaryPath = row.binaryPath.trim()
                 arguments = row.arguments.trim()
                 workingDirectory = row.workingDirectory.trim()
@@ -112,10 +123,23 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             if (row.binaryPath.trim().isEmpty()) {
                 throw ConfigurationException("Configuration '${row.name}' must have a binary path.")
             }
+            val normalizedTarget = row.executionTarget.trim().uppercase()
+            if (AgentSettingsState.ExecutionTarget.entries.none { it.name == normalizedTarget }) {
+                throw ConfigurationException(
+                    "Configuration '${row.name}' has invalid execution target '${row.executionTarget}'. " +
+                        "Allowed values: ${AgentSettingsState.ExecutionTarget.entries.joinToString { it.name }}.",
+                )
+            }
         }
         if (rows.isNotEmpty() && rows.none { it.isDefault }) {
             throw ConfigurationException("Mark one configuration as default.")
         }
+    }
+
+    private fun normalizeExecutionTarget(value: String): String {
+        val normalized = value.trim().uppercase()
+        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }?.name
+            ?: AgentSettingsState.ExecutionTarget.LOCAL.name
     }
 
     private fun rowsFromState(
@@ -126,6 +150,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             AgentConfigRow(
                 id = it.id,
                 name = it.name,
+                executionTarget = normalizeExecutionTarget(it.executionTarget),
+                wslDistribution = it.wslDistribution,
                 binaryPath = it.binaryPath,
                 arguments = it.arguments,
                 workingDirectory = it.workingDirectory,
@@ -140,6 +166,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     private data class AgentConfigRow(
         var id: String,
         var name: String,
+        var executionTarget: String,
+        var wslDistribution: String,
         var binaryPath: String,
         var arguments: String,
         var workingDirectory: String,
@@ -148,7 +176,15 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
     private class AgentConfigsTableModel : AbstractTableModel() {
         private val rows = mutableListOf<AgentConfigRow>()
-        private val columns = listOf("Default", "Name", "Binary Path", "Arguments", "Working Directory")
+        private val columns = listOf(
+            "Default",
+            "Name",
+            "Execution Target",
+            "WSL Distribution",
+            "Binary Path",
+            "Arguments",
+            "Working Directory",
+        )
 
         override fun getRowCount(): Int = rows.size
 
@@ -167,9 +203,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             return when (columnIndex) {
                 0 -> row.isDefault
                 1 -> row.name
-                2 -> row.binaryPath
-                3 -> row.arguments
-                4 -> row.workingDirectory
+                2 -> row.executionTarget
+                3 -> row.wslDistribution
+                4 -> row.binaryPath
+                5 -> row.arguments
+                6 -> row.workingDirectory
                 else -> ""
             }
         }
@@ -193,9 +231,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     }
                 }
                 1 -> row.name = (value as? String).orEmpty()
-                2 -> row.binaryPath = (value as? String).orEmpty()
-                3 -> row.arguments = (value as? String).orEmpty()
-                4 -> row.workingDirectory = (value as? String).orEmpty()
+                2 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
+                3 -> row.wslDistribution = (value as? String).orEmpty()
+                4 -> row.binaryPath = (value as? String).orEmpty()
+                5 -> row.arguments = (value as? String).orEmpty()
+                6 -> row.workingDirectory = (value as? String).orEmpty()
             }
             if (columnIndex != 0) {
                 fireTableCellUpdated(rowIndex, columnIndex)

@@ -10,6 +10,11 @@ import java.util.UUID
 @Service(Service.Level.APP)
 @State(name = "AgentSettingsState", storages = [Storage("agentSettings.xml")])
 class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
+    enum class ExecutionTarget {
+        LOCAL,
+        WSL,
+    }
+
     class State {
         var configurations: MutableList<AgentCliConfiguration> = mutableListOf()
         var selectedConfigurationId: String? = null
@@ -21,6 +26,8 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         var binaryPath: String = ""
         var arguments: String = ""
         var workingDirectory: String = ""
+        var executionTarget: String = ExecutionTarget.LOCAL.name
+        var wslDistribution: String = ""
     }
 
     private var state = State()
@@ -91,7 +98,15 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         sanitized.binaryPath = sanitized.binaryPath.trim()
         sanitized.arguments = sanitized.arguments.trim()
         sanitized.workingDirectory = sanitized.workingDirectory.trim()
+        sanitized.executionTarget = executionTargetOrDefault(sanitized.executionTarget)
+        sanitized.wslDistribution = sanitized.wslDistribution.trim()
         return sanitized
+    }
+
+    private fun executionTargetOrDefault(value: String): String {
+        return value.trim().uppercase().takeIf { raw ->
+            ExecutionTarget.entries.any { it.name == raw }
+        } ?: ExecutionTarget.LOCAL.name
     }
 
     private fun AgentCliConfiguration.copyOf(): AgentCliConfiguration = AgentCliConfiguration().also {
@@ -100,6 +115,8 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         it.binaryPath = binaryPath
         it.arguments = arguments
         it.workingDirectory = workingDirectory
+        it.executionTarget = executionTarget
+        it.wslDistribution = wslDistribution
     }
 
     companion object {
