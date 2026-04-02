@@ -167,10 +167,10 @@ class AgentFileEditor(
                 )
             }
             AgentSettingsState.ExecutionTarget.WSL -> {
-                val linuxWorkingDirectory = resolveWslWorkingDirectory(
+                val resolvedWslWorkingDirectory = resolveWslWorkingDirectory(
                     configuredWorkingDirectory = configuration.workingDirectory,
                 )
-                if (linuxWorkingDirectory == null) {
+                if (resolvedWslWorkingDirectory == null) {
                     showError(
                         "Working directory could not be mapped to a WSL path:\n${configuration.workingDirectory}\n\n" +
                             "Use one of:\n" +
@@ -180,13 +180,15 @@ class AgentFileEditor(
                     )
                     return
                 }
+                val effectiveDistribution = configuration.wslDistribution.trim()
+                    .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
                 TerminalStartupRequest(
                     workingDirectory = resolveHostWorkingDirectory(),
                     command = buildWslCommand(
                         binaryPath = binaryPath,
                         arguments = parsedArguments,
-                        wslDistribution = configuration.wslDistribution,
-                        wslWorkingDirectory = linuxWorkingDirectory,
+                        wslDistribution = effectiveDistribution,
+                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
                     ),
                 )
             }
@@ -234,7 +236,7 @@ class AgentFileEditor(
 
     private fun resolveWslWorkingDirectory(
         configuredWorkingDirectory: String,
-    ): String? {
+    ): WslWorkingDirectory? {
         val configured = configuredWorkingDirectory.trim()
         if (configured.isNotBlank()) {
             return mapToWslPath(configured)
@@ -244,16 +246,12 @@ class AgentFileEditor(
         if (basePath.isNotBlank()) {
             return mapToWslPath(basePath)
         }
-        return "/home"
+        return WslWorkingDirectory(linuxPath = "/home", inferredDistribution = null)
     }
 
-    private fun mapToWslPath(rawPath: String): String? {
+    private fun mapToWslPath(rawPath: String): WslWorkingDirectory? {
         val trimmed = rawPath.trim()
         if (trimmed.isBlank()) return null
-        if (trimmed.startsWith("/") || trimmed.startsWith("~")) {
-            return trimmed
-        }
-
         val windowsStylePath = trimmed.replace('/', '\\')
         UNC_WSL_PREFIXES.firstOrNull { prefix ->
             windowsStylePath.startsWith(prefix, ignoreCase = true)
@@ -261,18 +259,30 @@ class AgentFileEditor(
             val withoutPrefix = windowsStylePath.substring(prefix.length)
             val segments = withoutPrefix.split('\\').filter { it.isNotBlank() }
             if (segments.isEmpty()) return null
+            val inferredDistribution = segments.first()
             val linuxSegments = segments.drop(1)
-            return if (linuxSegments.isEmpty()) "/" else "/" + linuxSegments.joinToString("/")
+            val linuxPath = if (linuxSegments.isEmpty()) "/" else "/" + linuxSegments.joinToString("/")
+            return WslWorkingDirectory(
+                linuxPath = linuxPath,
+                inferredDistribution = inferredDistribution,
+            )
+        }
+
+        if (trimmed.startsWith("/") || trimmed.startsWith("~")) {
+            return WslWorkingDirectory(linuxPath = trimmed, inferredDistribution = null)
         }
 
         WINDOWS_DRIVE_PATH_REGEX.matchEntire(windowsStylePath)?.let { match ->
             val drive = match.groupValues[1].lowercase(Locale.ROOT)
             val rest = match.groupValues[2].replace('\\', '/').trim('/')
-            return if (rest.isBlank()) "/mnt/$drive" else "/mnt/$drive/$rest"
+            return WslWorkingDirectory(
+                linuxPath = if (rest.isBlank()) "/mnt/$drive" else "/mnt/$drive/$rest",
+                inferredDistribution = null,
+            )
         }
 
         if (!windowsStylePath.contains('\\')) {
-            return trimmed
+            return WslWorkingDirectory(linuxPath = trimmed, inferredDistribution = null)
         }
         return null
     }
@@ -367,5 +377,10 @@ class AgentFileEditor(
     private data class TerminalStartupRequest(
         val workingDirectory: String,
         val command: List<String>,
+    )
+
+    private data class WslWorkingDirectory(
+        val linuxPath: String,
+        val inferredDistribution: String?,
     )
 }

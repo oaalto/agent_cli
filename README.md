@@ -44,6 +44,7 @@ To run a Linux-installed agent from a Windows IDE:
 1. Set `Execution Target` to `WSL`.
 2. Set `Binary Path` to the Linux binary path (for example `/usr/local/bin/codex`).
 3. Optionally set `WSL Distribution` (for example `Ubuntu-24.04`) to target a non-default distro.
+   - If this is empty and your project/working directory is a UNC WSL path (`\\wsl.localhost\\...`), the distro is inferred automatically.
 4. Set `Working Directory` to one of:
    - Linux path (for example `/home/you/project`)
    - WSL UNC path (for example `\\wsl.localhost\Ubuntu\home\you\project`)
