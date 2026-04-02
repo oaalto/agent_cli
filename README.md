@@ -98,6 +98,10 @@ Running agent tab:
 
 ![Agent CLI Running](docs/Screenshot%20Agent.png)
 
+Running agent in WSL tab:
+
+![Agent CLI Running in WSL](docs/Screenshot%20Agent%20WSL.png)
+
 ## Requirements and notes
 
 - Compatible with IntelliJ builds from `253` and newer.
