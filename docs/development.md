@@ -13,7 +13,9 @@ Main implementation files:
 
 - `src/main/kotlin/com/oaalto/agent/AgentFileEditor.kt`
 - `src/main/kotlin/com/oaalto/agent/AgentFileEditorProvider.kt`
-- `src/main/kotlin/com/oaalto/agent/OpenAgentEditorAction.kt`
+- `src/main/kotlin/com/oaalto/agent/worktree/RunAgentSplitButtonAction.kt`
+- `src/main/kotlin/com/oaalto/agent/worktree/AgentWorktreeService.kt`
+- `src/main/kotlin/com/oaalto/agent/worktree/AgentWorktreeStateService.kt`
 - `src/main/kotlin/com/oaalto/agent/SelectAgentConfigurationActionGroup.kt`
 - `src/main/kotlin/com/oaalto/agent/settings/AgentSettingsConfigurable.kt`
 - `src/main/kotlin/com/oaalto/agent/settings/AgentSettingsState.kt`
@@ -82,11 +84,17 @@ GitHub Actions workflow: `.github/workflows/build-plugin.yml`
 
 - Add at least one configuration in `Settings -> Tools -> Agent CLI`
 - Confirm `Select Agent` shows configured entries
-- Confirm `Run Agent` opens one tab per selected configuration
+- Confirm main click on `Run Agent` creates a new worktree and opens it
+- Confirm new worktree branch name matches `agent/<config-slug>/<timestamp>`
+- Confirm `Run Agent` dropdown lists previous plugin-managed worktrees
+- Confirm selecting `Resume ...` opens that worktree and runs Cursor with `--continue`
+- Confirm selecting `Delete ...` removes the selected non-current worktree
 - Validate error states:
   - missing binary path
   - non-executable binary path
   - invalid working directory
+  - detached HEAD when creating worktree
+  - multiple repositories in one project (worktree creation blocked)
 
 ## IntelliJ Platform references
 

@@ -146,6 +146,11 @@ class AgentFileEditor(
         }
 
         val parsedArguments = ParametersListUtil.parse(configuration.arguments)
+        val launchContext = file.launchContext
+        val effectiveArguments = buildList {
+            addAll(parsedArguments)
+            addAll(launchContext.additionalArguments)
+        }
         val target = resolveExecutionTarget(configuration.executionTarget)
         val startupRequest = when (target) {
             AgentSettingsState.ExecutionTarget.LOCAL -> {
@@ -153,7 +158,10 @@ class AgentFileEditor(
                     showError("Agent binary is not executable:\n$binaryPath")
                     return
                 }
-                val workingDirectory = resolveWorkingDirectory(configuration.workingDirectory)
+                val workingDirectory = resolveWorkingDirectory(
+                    configuredWorkingDirectory = configuration.workingDirectory,
+                    overrideWorkingDirectory = launchContext.workingDirectoryOverride,
+                )
                 if (!Files.isDirectory(Path.of(workingDirectory))) {
                     showError("Working directory does not exist:\n$workingDirectory")
                     return
@@ -162,13 +170,14 @@ class AgentFileEditor(
                     workingDirectory = workingDirectory,
                     command = buildList {
                         add(binaryPath)
-                        addAll(parsedArguments)
+                        addAll(effectiveArguments)
                     },
                 )
             }
             AgentSettingsState.ExecutionTarget.WSL -> {
                 val resolvedWslWorkingDirectory = resolveWslWorkingDirectory(
                     configuredWorkingDirectory = configuration.workingDirectory,
+                    overrideWorkingDirectory = launchContext.workingDirectoryOverride,
                 )
                 if (resolvedWslWorkingDirectory == null) {
                     showError(
@@ -182,14 +191,25 @@ class AgentFileEditor(
                 }
                 val effectiveDistribution = configuration.wslDistribution.trim()
                     .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-                TerminalStartupRequest(
-                    workingDirectory = resolveHostWorkingDirectory(),
-                    command = buildWslCommand(
+                val command = if (shouldUseCursorResumeFallback(binaryPath, launchContext.additionalArguments)) {
+                    buildWslCommandWithCursorResumeFallback(
                         binaryPath = binaryPath,
-                        arguments = parsedArguments,
+                        resumeArguments = effectiveArguments,
+                        fallbackArguments = parsedArguments,
                         wslDistribution = effectiveDistribution,
                         wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    ),
+                    )
+                } else {
+                    buildWslCommand(
+                        binaryPath = binaryPath,
+                        arguments = effectiveArguments,
+                        wslDistribution = effectiveDistribution,
+                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                    )
+                }
+                TerminalStartupRequest(
+                    workingDirectory = resolveHostWorkingDirectory(),
+                    command = command,
                 )
             }
         }
@@ -219,7 +239,14 @@ class AgentFileEditor(
         return configuration
     }
 
-    private fun resolveWorkingDirectory(configuredWorkingDirectory: String): String {
+    private fun resolveWorkingDirectory(
+        configuredWorkingDirectory: String,
+        overrideWorkingDirectory: String?,
+    ): String {
+        val overrideValue = overrideWorkingDirectory?.trim().orEmpty()
+        if (overrideValue.isNotBlank()) {
+            return overrideValue
+        }
         val configured = configuredWorkingDirectory.trim()
         return when {
             configured.isNotBlank() -> configured
@@ -236,7 +263,12 @@ class AgentFileEditor(
 
     private fun resolveWslWorkingDirectory(
         configuredWorkingDirectory: String,
+        overrideWorkingDirectory: String?,
     ): WslWorkingDirectory? {
+        val overrideValue = overrideWorkingDirectory?.trim().orEmpty()
+        if (overrideValue.isNotBlank()) {
+            return mapToWslPath(overrideValue)
+        }
         val configured = configuredWorkingDirectory.trim()
         if (configured.isNotBlank()) {
             return mapToWslPath(configured)
@@ -309,11 +341,69 @@ class AgentFileEditor(
         }
     }
 
+    private fun buildWslCommandWithCursorResumeFallback(
+        binaryPath: String,
+        resumeArguments: List<String>,
+        fallbackArguments: List<String>,
+        wslDistribution: String,
+        wslWorkingDirectory: String,
+    ): List<String> {
+        val resumeCommand = buildBashCommandLine(binaryPath, resumeArguments)
+        val fallbackCommand = buildBashCommandLine(binaryPath, fallbackArguments)
+        val resumeProbeCommand = buildBashCommandLine(binaryPath, listOf("resume"))
+        val script = buildString {
+            append("if ")
+            append(resumeCommand)
+            append("; then exit 0; fi; ")
+            append("__probe_output=$(")
+            append(resumeProbeCommand)
+            append(" 2>&1 || true); ")
+            append("printf '%s\\n' \"\$__probe_output\"; ")
+            append("case \"\$__probe_output\" in ")
+            append("*No\\ previous\\ chats\\ found*")
+            append(") ")
+            append("echo ")
+            append(quoteForBash("No previous chats found. Starting a new session..."))
+            append("; exec ")
+            append(fallbackCommand)
+            append(" ;; ")
+            append("*) exit 1 ;; ")
+            append("esac")
+        }
+        return buildList {
+            add("wsl.exe")
+            val distribution = wslDistribution.trim()
+            if (distribution.isNotBlank()) {
+                add("--distribution")
+                add(distribution)
+            }
+            add("--cd")
+            add(wslWorkingDirectory)
+            add("--")
+            add("/bin/bash")
+            add("-lc")
+            add(script)
+        }
+    }
+
     private fun buildBashCommandLine(binaryPath: String, arguments: List<String>): String {
         return buildList {
             add(binaryPath)
             addAll(arguments)
         }.joinToString(" ") { quoteForBash(it) }
+    }
+
+    private fun shouldUseCursorResumeFallback(binaryPath: String, launchAdditionalArguments: List<String>): Boolean {
+        if (!launchAdditionalArguments.contains("--continue")) return false
+        return when (executableName(binaryPath)) {
+            "agent", "cursor-agent" -> true
+            else -> false
+        }
+    }
+
+    private fun executableName(binaryPath: String): String {
+        val fileName = binaryPath.trim().substringAfterLast('/').substringAfterLast('\\')
+        return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
     }
 
     private fun quoteForBash(value: String): String = "'${value.replace("'", "'\"'\"'")}'"

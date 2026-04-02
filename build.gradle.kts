@@ -33,6 +33,7 @@ dependencies {
         intellijIdea("2025.3.2")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
         bundledPlugin("org.jetbrains.plugins.terminal")
+        bundledPlugin("Git4Idea")
     }
 }
 

@@ -7,6 +7,7 @@ import java.util.UUID
 class AgentVirtualFile(
     val configurationId: String,
     configurationName: String,
+    val launchContext: AgentLaunchContext = AgentLaunchContext(),
 ) : LightVirtualFile(tabName(configurationName), PlainTextFileType.INSTANCE, "") {
     private val sessionId: String = UUID.randomUUID().toString()
 

@@ -20,12 +20,14 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.terminal</depends>
+    <depends>Git4Idea</depends>
 
     <!-- Extensions defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.oaalto.agent.AgentFileEditorProvider"/>
         <editorTabTitleProvider implementation="com.oaalto.agent.AgentEditorTabTitleProvider" order="first"/>
+        <postStartupActivity implementation="com.oaalto.agent.worktree.AgentPendingLaunchStartupActivity"/>
         <applicationConfigurable
                 id="com.oaalto.agent.settings"
                 parentId="tools"
@@ -40,15 +42,15 @@
                 text="Select Agent"
                 description="Choose which configured agent to run"
                 popup="true">
-            <add-to-group group-id="MainToolbarCenter" anchor="before" relative-to-action="com.oaalto.agent.OpenAgentEditorAction"/>
-            <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="com.oaalto.agent.OpenAgentEditorAction"/>
+            <add-to-group group-id="MainToolbarCenter" anchor="before" relative-to-action="com.oaalto.agent.RunAgentSplitButtonAction"/>
+            <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="com.oaalto.agent.RunAgentSplitButtonAction"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </group>
         <action
-                id="com.oaalto.agent.OpenAgentEditorAction"
-                class="com.oaalto.agent.OpenAgentEditorAction"
+                id="com.oaalto.agent.RunAgentSplitButtonAction"
+                class="com.oaalto.agent.worktree.RunAgentSplitButtonAction"
                 text="Run Agent"
-                description="Open an Agent CLI tab that runs the selected agent command">
+                description="Run in current project or use worktree actions">
             <add-to-group group-id="MainToolbarCenter" anchor="before" relative-to-action="RunConfigurationsComboBoxAction"/>
             <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="RunConfigurationsComboBoxAction"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>

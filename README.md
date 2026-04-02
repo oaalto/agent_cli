@@ -8,7 +8,9 @@ It is useful when you want to keep agent runs inside your project workspace, wit
 
 - Lets you define one or more agent configurations in IDE settings.
 - Lets you select the active configuration from the main toolbar (`Select Agent`).
-- Runs the selected command from `Run Agent`.
+- Adds a split `Run Agent` button:
+  - Main click runs the selected agent in the current project.
+  - Dropdown contains worktree actions (new, open/resume, delete).
 - Opens the session in a dedicated `Agent` tab backed by IntelliJ Terminal.
 
 Each configuration supports:
@@ -34,8 +36,30 @@ Each configuration supports:
 2. Add a configuration with at least a valid `Name` and `Binary Path`.
 3. Mark one configuration as `Default` (if you have multiple).
 4. In the toolbar, choose the configuration from `Select Agent`.
-5. Click `Run Agent`.
-6. Use the opened `Agent` tab to interact with the running command.
+5. Click `Run Agent` (main click) to run in the current project.
+6. Use the `Run Agent` dropdown for new worktree runs and reopening/resuming previous worktree runs.
+7. Use the opened `Agent` tab to interact with the running command.
+
+### Worktree behavior
+
+- The plugin currently supports worktree runs for single-repository projects only.
+- New worktrees are created as sibling directories of the repository root under:
+  - `<repoRootParent>/<repoName>-agent-worktrees/`
+- New branch naming follows:
+  - `agent/<config-slug>/<timestamp>`
+- The plugin keeps created worktrees until you delete them from the `Run Agent` dropdown.
+- Nested worktrees inside the project are intentionally avoided.
+
+### Session resume support
+
+- Worktree creation/open works for any configured agent CLI.
+- Session resume is currently supported for:
+  - Cursor CLI binaries: `cursor-agent`, `agent` (`--continue`)
+  - Claude Code binary: `claude` (`--continue`)
+  - Gemini CLI binary: `gemini` (`--resume`)
+  - OpenAI Codex binary: `codex` (`resume --last`)
+- If the selected configuration is unsupported for resume, the dropdown shows `Open ...` entries instead of `Resume ...`.
+- For Cursor CLI resume, if no previous chats are found, the plugin automatically falls back to a normal non-resume start.
 
 ### Running in WSL2 on Windows
 
