@@ -153,7 +153,7 @@ private val DEFAULT_CURRENT_PROJECT_ACTION: AnAction = RunAgentInCurrentProjectA
 private class RunAgentInNewWorktreeAction : DumbAwareAction(
     "Run in New Worktree",
     "Create a new worktree, open it, and run the selected agent there",
-    AllIcons.Nodes.Folder,
+    AllIcons.RunConfigurations.Compound,
 ) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
