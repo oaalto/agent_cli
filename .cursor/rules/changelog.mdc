@@ -1,0 +1,29 @@
+---
+description: Keep CHANGELOG.md updated with what changed and why
+alwaysApply: true
+---
+
+# Changelog
+
+When you change any of the files in the repository, update [`CHANGELOG.md`](CHANGELOG.md) in the **same change**.
+
+## What to record
+
+- **What**: files/areas touched and user-visible behavior.
+- **Why**: the problem solved, product intent, or constraint; one short sentence per bullet is enough.
+- **Who**: include user attribution as `made by: <actual user name>`, but replace the placeholder with the real name before writing the changelog (for example: `made by: Olli Aalto`).
+- **AI metadata (if available)**: include the assisting agent/tool and model, e.g. `made with: Cursor`, `model: gpt-5.3-codex-high`. If unknown, do not guess.
+
+## How to update
+
+- Add a new **dated section** (or extend **Unreleased** if the project prefers that) at the **top** of the changelog.
+- Keep entries in a merge-friendly structure so parallel branch updates are easy to combine (for example: one dated section per change, stable headings, and clear bullet lists).
+- Group bullets under **Added** / **Changed** / **Fixed** / **Removed** / **Security** when it helps; skip empty groups.
+- Call out **breaking changes** explicitly.
+- Do **not** log secret values, API keys, or internal credentials.
+- Do **not** add changelog entries for changes that only affect ignored files or directories (for example paths matched by `.gitignore`).
+- Do **not** leave literal placeholders in entries (for example `<actual user name>`). If the real user name is unknown, ask the user.
+
+## Definition of Done
+
+Work is incomplete if `CHANGELOG.md` was not updated accordingly.

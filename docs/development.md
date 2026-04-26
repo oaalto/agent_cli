@@ -40,6 +40,19 @@ Main implementation files:
   ./gradlew test
   ```
 
+- Format and lint Kotlin sources:
+
+  ```bash
+  ./gradlew ktlintFormat
+  ./gradlew ktlintCheck
+  ```
+
+- Run ordered local quality gates (format -> compile -> lint -> tests):
+
+  ```bash
+  ./gradlew qualityGate
+  ```
+
 - Verify plugin:
 
   ```bash
@@ -84,7 +97,8 @@ GitHub Actions workflow: `.github/workflows/build-plugin.yml`
 
 - Add at least one configuration in `Settings -> Tools -> Agent CLI`
 - Confirm `Select Agent` shows configured entries
-- Confirm main click on `Run Agent` creates a new worktree and opens it
+- Confirm main click on `Run Agent` runs in the current project
+- Confirm `Run in New Worktree` creates a new worktree and opens it
 - Confirm new worktree branch name matches `agent/<config-slug>/<timestamp>`
 - Confirm `Run Agent` dropdown lists previous plugin-managed worktrees
 - Confirm selecting `Resume ...` opens that worktree and runs Cursor with `--continue`

@@ -2,20 +2,23 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("org.jetbrains.intellij.platform") version "2.10.2"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
 val defaultPluginVersion = "2.0.0-SNAPSHOT"
 val resolvedPluginVersion = providers.gradleProperty("pluginVersion").orNull ?: defaultPluginVersion
-val defaultChangeNotes = """
+val defaultChangeNotes =
+    """
     2.0.0 development cycle started.
-""".trimIndent()
-val resolvedChangeNotes = providers.gradleProperty("pluginChangeNotesFile").orNull?.let { relativePath ->
-    val changeNotesFile = layout.projectDirectory.file(relativePath).asFile
-    require(changeNotesFile.isFile) {
-        "pluginChangeNotesFile does not point to a readable file: $relativePath"
-    }
-    changeNotesFile.readText(Charsets.UTF_8).trim()
-} ?: defaultChangeNotes
+    """.trimIndent()
+val resolvedChangeNotes =
+    providers.gradleProperty("pluginChangeNotesFile").orNull?.let { relativePath ->
+        val changeNotesFile = layout.projectDirectory.file(relativePath).asFile
+        require(changeNotesFile.isFile) {
+            "pluginChangeNotesFile does not point to a readable file: $relativePath"
+        }
+        changeNotesFile.readText(Charsets.UTF_8).trim()
+    } ?: defaultChangeNotes
 
 group = "com.oaalto"
 version = resolvedPluginVersion
@@ -35,6 +38,7 @@ dependencies {
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
     }
+    testImplementation(kotlin("test"))
 }
 
 intellijPlatform {
@@ -58,10 +62,34 @@ tasks {
         sourceCompatibility = "21"
         targetCompatibility = "21"
     }
+
+    named("compileKotlin") {
+        dependsOn("ktlintFormat")
+    }
+    named("ktlintCheck") {
+        dependsOn("compileKotlin")
+    }
+    named("test") {
+        dependsOn("ktlintCheck")
+    }
+
+    register("qualityGate") {
+        group = "verification"
+        description = "Runs format, compile, lint, and tests in order."
+        dependsOn("test")
+    }
+
+    named("check") {
+        dependsOn("ktlintCheck")
+    }
 }
 
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
+}
+
+ktlint {
+    ignoreFailures.set(false)
 }

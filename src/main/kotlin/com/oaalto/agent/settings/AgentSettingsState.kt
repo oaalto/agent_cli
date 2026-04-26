@@ -51,8 +51,7 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         return (byId ?: state.configurations.firstOrNull())?.copyOf()
     }
 
-    fun getConfigurationById(id: String): AgentCliConfiguration? =
-        state.configurations.firstOrNull { it.id == id }?.copyOf()
+    fun getConfigurationById(id: String): AgentCliConfiguration? = state.configurations.firstOrNull { it.id == id }?.copyOf()
 
     fun setSelectedConfiguration(id: String): Boolean {
         if (id.isBlank()) return false
@@ -71,10 +70,11 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
     }
 
     private fun ensureValidState() {
-        state.configurations = state.configurations
-            .map { sanitize(it) }
-            .distinctBy { it.id }
-            .toMutableList()
+        state.configurations =
+            state.configurations
+                .map { sanitize(it) }
+                .distinctBy { it.id }
+                .toMutableList()
 
         if (state.configurations.isEmpty()) {
             state.selectedConfigurationId = null
@@ -103,21 +103,21 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         return sanitized
     }
 
-    private fun executionTargetOrDefault(value: String): String {
-        return value.trim().uppercase().takeIf { raw ->
+    private fun executionTargetOrDefault(value: String): String =
+        value.trim().uppercase().takeIf { raw ->
             ExecutionTarget.entries.any { it.name == raw }
         } ?: ExecutionTarget.LOCAL.name
-    }
 
-    private fun AgentCliConfiguration.copyOf(): AgentCliConfiguration = AgentCliConfiguration().also {
-        it.id = id
-        it.name = name
-        it.binaryPath = binaryPath
-        it.arguments = arguments
-        it.workingDirectory = workingDirectory
-        it.executionTarget = executionTarget
-        it.wslDistribution = wslDistribution
-    }
+    private fun AgentCliConfiguration.copyOf(): AgentCliConfiguration =
+        AgentCliConfiguration().also {
+            it.id = id
+            it.name = name
+            it.binaryPath = binaryPath
+            it.arguments = arguments
+            it.workingDirectory = workingDirectory
+            it.executionTarget = executionTarget
+            it.wslDistribution = wslDistribution
+        }
 
     companion object {
         fun getInstance(): AgentSettingsState = service()

@@ -81,14 +81,16 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         val now = System.currentTimeMillis()
         val normalizedWorktreePath = normalizePath(worktreePath)
         val normalizedRepoRootPath = normalizePath(repositoryRootPath)
-        val existingIndex = state.records.indexOfFirst {
-            normalizedPathKey(it.worktreePath) == normalizedPathKey(normalizedWorktreePath)
-        }
-        val storedRecord = if (existingIndex >= 0) {
-            state.records[existingIndex]
-        } else {
-            StoredRecord().also { state.records.add(it) }
-        }
+        val existingIndex =
+            state.records.indexOfFirst {
+                normalizedPathKey(it.worktreePath) == normalizedPathKey(normalizedWorktreePath)
+            }
+        val storedRecord =
+            if (existingIndex >= 0) {
+                state.records[existingIndex]
+            } else {
+                StoredRecord().also { state.records.add(it) }
+            }
         if (storedRecord.id.isBlank()) {
             storedRecord.id = UUID.randomUUID().toString()
         }
@@ -113,7 +115,8 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         val configId = configurationId.trim()
         if (configId.isBlank()) return emptyList()
         val repoRootKey = normalizedPathKey(repositoryRootPath)
-        return state.records.asSequence()
+        return state.records
+            .asSequence()
             .filter { !it.deleted }
             .filter { it.configurationId == configId }
             .filter { normalizedPathKey(it.repositoryRootPath) == repoRootKey }
@@ -125,7 +128,8 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
     fun getActiveRecordsForConfiguration(configurationId: String): List<ManagedWorktreeRecord> {
         val configId = configurationId.trim()
         if (configId.isBlank()) return emptyList()
-        return state.records.asSequence()
+        return state.records
+            .asSequence()
             .filter { !it.deleted }
             .filter { it.configurationId == configId }
             .sortedByDescending { it.lastUsedAtEpochMs }
@@ -191,11 +195,11 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
     ) {
         val normalizedWorktreePath = normalizePath(worktreePath)
         val key = normalizedPathKey(normalizedWorktreePath)
-        state.pendingLaunches = state.pendingLaunches
-            .filterNot { pending ->
-                normalizedPathKey(pending.worktreePath) == key
-            }
-            .toMutableList()
+        state.pendingLaunches =
+            state.pendingLaunches
+                .filterNot { pending ->
+                    normalizedPathKey(pending.worktreePath) == key
+                }.toMutableList()
         state.pendingLaunches.add(
             StoredPendingLaunch().also { pending ->
                 pending.worktreePath = normalizedWorktreePath
@@ -210,23 +214,26 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
 
     fun consumePendingLaunch(worktreePath: String): PendingLaunch? {
         val key = normalizedPathKey(worktreePath)
-        val index = state.pendingLaunches.indexOfFirst { pending ->
-            normalizedPathKey(pending.worktreePath) == key
-        }
+        val index =
+            state.pendingLaunches.indexOfFirst { pending ->
+                normalizedPathKey(pending.worktreePath) == key
+            }
         if (index < 0) return null
         val pending = state.pendingLaunches.removeAt(index)
         return pending.toPublicPendingLaunch()
     }
 
     private fun sanitizeState() {
-        state.records = state.records
-            .mapNotNull { sanitizeRecord(it) }
-            .distinctBy { normalizedPathKey(it.worktreePath) }
-            .toMutableList()
-        state.pendingLaunches = state.pendingLaunches
-            .mapNotNull { sanitizePendingLaunch(it) }
-            .distinctBy { normalizedPathKey(it.worktreePath) }
-            .toMutableList()
+        state.records =
+            state.records
+                .mapNotNull { sanitizeRecord(it) }
+                .distinctBy { normalizedPathKey(it.worktreePath) }
+                .toMutableList()
+        state.pendingLaunches =
+            state.pendingLaunches
+                .mapNotNull { sanitizePendingLaunch(it) }
+                .distinctBy { normalizedPathKey(it.worktreePath) }
+                .toMutableList()
     }
 
     private fun sanitizeRecord(record: StoredRecord): StoredRecord? {
@@ -265,46 +272,55 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         return sanitized
     }
 
-    private fun StoredRecord.toPublicRecord(): ManagedWorktreeRecord = ManagedWorktreeRecord(
-        id = id,
-        configurationId = configurationId,
-        configurationName = configurationName,
-        repositoryRootPath = repositoryRootPath,
-        worktreePath = worktreePath,
-        branchName = branchName,
-        createdAtEpochMs = createdAtEpochMs,
-        lastUsedAtEpochMs = lastUsedAtEpochMs,
-        deleted = deleted,
-    )
+    private fun StoredRecord.toPublicRecord(): ManagedWorktreeRecord =
+        ManagedWorktreeRecord(
+            id = id,
+            configurationId = configurationId,
+            configurationName = configurationName,
+            repositoryRootPath = repositoryRootPath,
+            worktreePath = worktreePath,
+            branchName = branchName,
+            createdAtEpochMs = createdAtEpochMs,
+            lastUsedAtEpochMs = lastUsedAtEpochMs,
+            deleted = deleted,
+        )
 
-    private fun StoredPendingLaunch.toPublicPendingLaunch(): PendingLaunch = PendingLaunch(
-        worktreePath = worktreePath,
-        configurationId = configurationId,
-        configurationName = configurationName,
-        resume = resume,
-        createdAtEpochMs = createdAtEpochMs,
-    )
+    private fun StoredPendingLaunch.toPublicPendingLaunch(): PendingLaunch =
+        PendingLaunch(
+            worktreePath = worktreePath,
+            configurationId = configurationId,
+            configurationName = configurationName,
+            resume = resume,
+            createdAtEpochMs = createdAtEpochMs,
+        )
 
     private fun normalizePath(rawPath: String): String {
         val trimmed = rawPath.trim()
         if (trimmed.isBlank()) return ""
-        return kotlin.runCatching {
-            Path.of(trimmed).toAbsolutePath().normalize().toString()
-        }.getOrElse { trimmed }
+        return kotlin
+            .runCatching {
+                Path
+                    .of(trimmed)
+                    .toAbsolutePath()
+                    .normalize()
+                    .toString()
+            }.getOrElse { trimmed }
     }
 
     private fun pathExists(rawPath: String): Boolean {
         val normalized = normalizePath(rawPath)
         if (normalized.isBlank()) return false
-        return kotlin.runCatching {
-            Files.isDirectory(Path.of(normalized))
-        }.getOrDefault(false)
+        return kotlin
+            .runCatching {
+                Files.isDirectory(Path.of(normalized))
+            }.getOrDefault(false)
     }
 
     private fun normalizedPathKey(rawPath: String): String {
-        var value = normalizePath(rawPath)
-            .replace('\\', '/')
-            .lowercase(Locale.ROOT)
+        var value =
+            normalizePath(rawPath)
+                .replace('\\', '/')
+                .lowercase(Locale.ROOT)
         if (value.startsWith("//wsl$/")) {
             value = value.replaceFirst("//wsl$/", "//wsl.localhost/")
         }

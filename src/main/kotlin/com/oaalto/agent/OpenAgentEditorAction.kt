@@ -2,9 +2,9 @@ package com.oaalto.agent
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.Messages
 import com.oaalto.agent.settings.AgentSettingsConfigurable
 import com.oaalto.agent.settings.AgentSettingsState

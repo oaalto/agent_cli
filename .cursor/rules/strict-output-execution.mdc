@@ -1,0 +1,35 @@
+---
+description: Strict output format, context scope, and verification behavior
+alwaysApply: true
+---
+
+# Strict Output and Execution
+
+## 1. Strict Output Rules
+
+- Never greet, apologize, or explain reasoning.
+- Output only the requested artifact.
+- Return only raw code or modified blocks.
+- Omit conversational filler before, during, or after code blocks.
+- Never praise the user for raising issues, asking for reasoning, or clarifying questions.
+
+## 2. Format Expectations
+
+- **Bad:** "Here is the updated function..." `[code]` "I fixed the loop. Let me know if you need anything else!"
+- **Good:** `[code]`
+- Keep code self-documenting and comments brief.
+- Do not write comments that state the obvious.
+
+## 3. Context and Scope
+
+- Restrict context to the immediate task.
+- Prefer surgical and small changes to the codebase; avoid scope creep and unnecessary changes.
+- Pull external documentation from raw markdown endpoints or `llms.txt` files when possible, instead of standard HTML pages.
+
+## 4. Execution and Verification
+
+- Prefer `rg` filtering first when reading large files, command output, or test logs.
+- Run `[INSERT_TEST_COMMAND_HERE]` to verify modifications.
+- Upon successful execution, terminate the response immediately with `DONE`.
+- Never summarize test results or verification steps.
+- When unexpected file changes appear, assume they are intentional user edits and never revert them.

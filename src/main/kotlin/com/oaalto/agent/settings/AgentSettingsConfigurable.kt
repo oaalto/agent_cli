@@ -26,46 +26,52 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     override fun createComponent(): JComponent {
         if (rootPanel == null) {
             val model = AgentConfigsTableModel()
-            val table = JBTable(model).apply {
-                selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-                fillsViewportHeight = true
-            }
-            table.columnModel.getColumn(2).cellEditor = DefaultCellEditor(
-                ComboBox(
-                    AgentSettingsState.ExecutionTarget.entries.map { it.name }.toTypedArray(),
-                ),
-            )
+            val table =
+                JBTable(model).apply {
+                    selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
+                    fillsViewportHeight = true
+                }
+            table.columnModel.getColumn(2).cellEditor =
+                DefaultCellEditor(
+                    ComboBox(
+                        AgentSettingsState.ExecutionTarget.entries
+                            .map { it.name }
+                            .toTypedArray(),
+                    ),
+                )
 
-            val toolbar = ToolbarDecorator.createDecorator(table)
-                .setAddAction { _ ->
-                    model.addRow(
-                        AgentConfigRow(
-                            id = UUID.randomUUID().toString(),
-                            name = "Agent ${model.rowCount + 1}",
-                            executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
-                            wslDistribution = "",
-                            binaryPath = "",
-                            arguments = "",
-                            workingDirectory = "",
-                            isDefault = model.rowCount == 0,
+            val toolbar =
+                ToolbarDecorator
+                    .createDecorator(table)
+                    .setAddAction { _ ->
+                        model.addRow(
+                            AgentConfigRow(
+                                id = UUID.randomUUID().toString(),
+                                name = "Agent ${model.rowCount + 1}",
+                                executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
+                                wslDistribution = "",
+                                binaryPath = "",
+                                arguments = "",
+                                workingDirectory = "",
+                                isDefault = model.rowCount == 0,
+                            ),
                         )
-                    )
-                    val index = model.rowCount - 1
-                    if (index >= 0) {
-                        table.selectionModel.setSelectionInterval(index, index)
+                        val index = model.rowCount - 1
+                        if (index >= 0) {
+                            table.selectionModel.setSelectionInterval(index, index)
+                        }
+                    }.setRemoveAction { _ ->
+                        val selected = table.selectedRow
+                        if (selected >= 0) {
+                            model.removeRow(selected)
+                        }
                     }
-                }
-                .setRemoveAction { _ ->
-                    val selected = table.selectedRow
-                    if (selected >= 0) {
-                        model.removeRow(selected)
-                    }
-                }
 
-            rootPanel = JPanel(BorderLayout()).apply {
-                border = JBUI.Borders.empty(8)
-                add(toolbar.createPanel(), BorderLayout.CENTER)
-            }
+            rootPanel =
+                JPanel(BorderLayout()).apply {
+                    border = JBUI.Borders.empty(8)
+                    add(toolbar.createPanel(), BorderLayout.CENTER)
+                }
             tableModel = model
             this.table = table
         }
@@ -74,7 +80,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
     override fun isModified(): Boolean {
         val model = tableModel ?: return false
-        val persisted = rowsFromState(AgentSettingsState.getInstance().getConfigurations(), AgentSettingsState.getInstance().getSelectedConfiguration()?.id)
+        val persisted =
+            rowsFromState(
+                AgentSettingsState.getInstance().getConfigurations(),
+                AgentSettingsState.getInstance().getSelectedConfiguration()?.id,
+            )
         return model.rowsSnapshot() != persisted
     }
 
@@ -85,17 +95,18 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         validateRows(rows)
 
         val defaultId = rows.firstOrNull { it.isDefault }?.id
-        val configurations = rows.map { row ->
-            AgentSettingsState.AgentCliConfiguration().apply {
-                id = row.id
-                name = row.name.trim()
-                executionTarget = normalizeExecutionTarget(row.executionTarget)
-                wslDistribution = row.wslDistribution.trim()
-                binaryPath = row.binaryPath.trim()
-                arguments = row.arguments.trim()
-                workingDirectory = row.workingDirectory.trim()
+        val configurations =
+            rows.map { row ->
+                AgentSettingsState.AgentCliConfiguration().apply {
+                    id = row.id
+                    name = row.name.trim()
+                    executionTarget = normalizeExecutionTarget(row.executionTarget)
+                    wslDistribution = row.wslDistribution.trim()
+                    binaryPath = row.binaryPath.trim()
+                    arguments = row.arguments.trim()
+                    workingDirectory = row.workingDirectory.trim()
+                }
             }
-        }
         AgentSettingsState.getInstance().updateConfigurations(configurations, defaultId)
     }
 
@@ -138,15 +149,17 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
     private fun normalizeExecutionTarget(value: String): String {
         val normalized = value.trim().uppercase()
-        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }?.name
+        return AgentSettingsState.ExecutionTarget.entries
+            .firstOrNull { it.name == normalized }
+            ?.name
             ?: AgentSettingsState.ExecutionTarget.LOCAL.name
     }
 
     private fun rowsFromState(
         configurations: List<AgentSettingsState.AgentCliConfiguration>,
         selectedId: String?,
-    ): List<AgentConfigRow> {
-        return configurations.mapIndexed { index, it ->
+    ): List<AgentConfigRow> =
+        configurations.mapIndexed { index, it ->
             AgentConfigRow(
                 id = it.id,
                 name = it.name,
@@ -155,13 +168,13 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 binaryPath = it.binaryPath,
                 arguments = it.arguments,
                 workingDirectory = it.workingDirectory,
-                isDefault = when {
-                    !selectedId.isNullOrBlank() -> it.id == selectedId
-                    else -> index == 0
-                },
+                isDefault =
+                    when {
+                        !selectedId.isNullOrBlank() -> it.id == selectedId
+                        else -> index == 0
+                    },
             )
         }
-    }
 
     private data class AgentConfigRow(
         var id: String,
@@ -176,15 +189,16 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
     private class AgentConfigsTableModel : AbstractTableModel() {
         private val rows = mutableListOf<AgentConfigRow>()
-        private val columns = listOf(
-            "Default",
-            "Name",
-            "Execution Target",
-            "WSL Distribution",
-            "Binary Path",
-            "Arguments",
-            "Working Directory",
-        )
+        private val columns =
+            listOf(
+                "Default",
+                "Name",
+                "Execution Target",
+                "WSL Distribution",
+                "Binary Path",
+                "Arguments",
+                "Working Directory",
+            )
 
         override fun getRowCount(): Int = rows.size
 
@@ -192,13 +206,18 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
         override fun getColumnName(column: Int): String = columns[column]
 
-        override fun getColumnClass(columnIndex: Int): Class<*> {
-            return if (columnIndex == 0) java.lang.Boolean::class.java else String::class.java
-        }
+        override fun getColumnClass(columnIndex: Int): Class<*> =
+            if (columnIndex == 0) java.lang.Boolean::class.java else String::class.java
 
-        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = true
+        override fun isCellEditable(
+            rowIndex: Int,
+            columnIndex: Int,
+        ): Boolean = true
 
-        override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
+        override fun getValueAt(
+            rowIndex: Int,
+            columnIndex: Int,
+        ): Any {
             val row = rows[rowIndex]
             return when (columnIndex) {
                 0 -> row.isDefault
@@ -212,7 +231,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             }
         }
 
-        override fun setValueAt(value: Any?, rowIndex: Int, columnIndex: Int) {
+        override fun setValueAt(
+            value: Any?,
+            rowIndex: Int,
+            columnIndex: Int,
+        ) {
             val row = rows[rowIndex]
             when (columnIndex) {
                 0 -> {

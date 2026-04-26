@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "entries": {
+    "cursor:rule:api-design-basics": {
+      "package_id": "rule:api-design-basics",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/api-design-basics.mdc",
+      "managed_block_id": "rule:api-design-basics",
+      "template_source_hash": "004125a94c6c279fdc321d21bc5e2cfcc26904fb9a69ac5488f1fb34b4b1d8e3",
+      "template_installed_hash": "004125a94c6c279fdc321d21bc5e2cfcc26904fb9a69ac5488f1fb34b4b1d8e3",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:changelog": {
+      "package_id": "rule:changelog",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/changelog.mdc",
+      "managed_block_id": "rule:changelog",
+      "template_source_hash": "5049eb920f3c71b4f4b02eadbe1dcdca64eb2a42a463ac2faa2b602327ae5075",
+      "template_installed_hash": "5049eb920f3c71b4f4b02eadbe1dcdca64eb2a42a463ac2faa2b602327ae5075",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:code-format": {
+      "package_id": "rule:code-format",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/code-format.mdc",
+      "managed_block_id": "rule:code-format",
+      "template_source_hash": "8f799f9487e77bc6c20eef308d383a33ea5f40bbb4932a2211999fcbbd41f883",
+      "template_installed_hash": "8f799f9487e77bc6c20eef308d383a33ea5f40bbb4932a2211999fcbbd41f883",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {
+        "rule__code__format__globs": "**/*.kt"
+      },
+      "render_vars_hash": "565155960fd9d0c8e521090f4b2d911a5fc6606fcf36a69bc70ca1462a2f1491",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:commit": {
+      "package_id": "rule:commit",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/commit.mdc",
+      "managed_block_id": "rule:commit",
+      "template_source_hash": "2abb988c9f59e4d69a9a11e42d8732d2aaa132f63080505bc7ad80af3c59ef1d",
+      "template_installed_hash": "2abb988c9f59e4d69a9a11e42d8732d2aaa132f63080505bc7ad80af3c59ef1d",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:decision-making": {
+      "package_id": "rule:decision-making",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/decision-making.mdc",
+      "managed_block_id": "rule:decision-making",
+      "template_source_hash": "b23c71466ba3e049829b011224c86046687f0ad2d1c4729d2a663e0cc477cbaa",
+      "template_installed_hash": "b23c71466ba3e049829b011224c86046687f0ad2d1c4729d2a663e0cc477cbaa",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:dependency-boundaries": {
+      "package_id": "rule:dependency-boundaries",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/dependency-boundaries.mdc",
+      "managed_block_id": "rule:dependency-boundaries",
+      "template_source_hash": "9a86713d7e2156ffc8f55833c6e42421cf4396d29d9dfb688d6ebada9b827ad6",
+      "template_installed_hash": "9a86713d7e2156ffc8f55833c6e42421cf4396d29d9dfb688d6ebada9b827ad6",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:documentation-maintenance": {
+      "package_id": "rule:documentation-maintenance",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/documentation-maintenance.mdc",
+      "managed_block_id": "rule:documentation-maintenance",
+      "template_source_hash": "038a87ad40a2a91513715fd67126831fa74d0e5f4bee2f498ffb9479399160db",
+      "template_installed_hash": "038a87ad40a2a91513715fd67126831fa74d0e5f4bee2f498ffb9479399160db",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:functional-programming": {
+      "package_id": "rule:functional-programming",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/functional-programming.mdc",
+      "managed_block_id": "rule:functional-programming",
+      "template_source_hash": "7de2ee3591e427b47bf01ec991696a8db6c8907ce8fd301cdede005c218109c3",
+      "template_installed_hash": "7de2ee3591e427b47bf01ec991696a8db6c8907ce8fd301cdede005c218109c3",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:logging-practices": {
+      "package_id": "rule:logging-practices",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/logging-practices.mdc",
+      "managed_block_id": "rule:logging-practices",
+      "template_source_hash": "5e832c096fa26c790dd69ea5724a764cd119192a66fb83dbeb43b735c8323fd4",
+      "template_installed_hash": "5e832c096fa26c790dd69ea5724a764cd119192a66fb83dbeb43b735c8323fd4",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:result-handling": {
+      "package_id": "rule:result-handling",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/result-handling.mdc",
+      "managed_block_id": "rule:result-handling",
+      "template_source_hash": "bab622a2d47fc70b06ba142a1d88432eebda39a4dd2a8efca7fe62710eb778c4",
+      "template_installed_hash": "bab622a2d47fc70b06ba142a1d88432eebda39a4dd2a8efca7fe62710eb778c4",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:role": {
+      "package_id": "rule:role",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/role.mdc",
+      "managed_block_id": "rule:role",
+      "template_source_hash": "44b1d72d3066529f0c6c34f5584f4b0b6e6ec3487feee00949b642b9dde35120",
+      "template_installed_hash": "44b1d72d3066529f0c6c34f5584f4b0b6e6ec3487feee00949b642b9dde35120",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {
+        "rule__role__always__apply": "true"
+      },
+      "render_vars_hash": "3fe65d6045059a63214320ba7333ff1b8e10bc5ec78611122bfa21e989a38d8b",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:runtime-handoff": {
+      "package_id": "rule:runtime-handoff",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/runtime-handoff.mdc",
+      "managed_block_id": "rule:runtime-handoff",
+      "template_source_hash": "31e54d11543688160669f895855053693792147086bd7d1a3053733be9f2a10c",
+      "template_installed_hash": "31e54d11543688160669f895855053693792147086bd7d1a3053733be9f2a10c",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:signature": {
+      "package_id": "rule:signature",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/signature.mdc",
+      "managed_block_id": "rule:signature",
+      "template_source_hash": "10860264464a4d35766a09cbebbdecf2593e92eceec78b142011aaacbf64901a",
+      "template_installed_hash": "10860264464a4d35766a09cbebbdecf2593e92eceec78b142011aaacbf64901a",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:strict-output-execution": {
+      "package_id": "rule:strict-output-execution",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/strict-output-execution.mdc",
+      "managed_block_id": "rule:strict-output-execution",
+      "template_source_hash": "2157acabdaaa3c80ac73ea0da8cf889c50418a174f71632b1e68c214dbfa970b",
+      "template_installed_hash": "2157acabdaaa3c80ac73ea0da8cf889c50418a174f71632b1e68c214dbfa970b",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {
+        "rule__strict__output__execution__always__apply": "true"
+      },
+      "render_vars_hash": "2e38976a6e0bbc2b74d790c951ec2d53543163e61bde9cb6bc802c70e66a069b",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:testing": {
+      "package_id": "rule:testing",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/testing.mdc",
+      "managed_block_id": "rule:testing",
+      "template_source_hash": "3026661b9dac5ceb2565dcfb64410614b8a78d4fdb702f131e6966906e70300c",
+      "template_installed_hash": "3026661b9dac5ceb2565dcfb64410614b8a78d4fdb702f131e6966906e70300c",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {
+        "rule__testing__globs": "**/test/**"
+      },
+      "render_vars_hash": "eb7576b991f728ee5e22913e77fc31c07a54071e38311a10506b63c8d6924d9a",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:warning-hygiene": {
+      "package_id": "rule:warning-hygiene",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/warning-hygiene.mdc",
+      "managed_block_id": "rule:warning-hygiene",
+      "template_source_hash": "8fffdc5472c7907feac44ebfac4bdc88a1f4361613d089ab617eab49da300ee7",
+      "template_installed_hash": "8fffdc5472c7907feac44ebfac4bdc88a1f4361613d089ab617eab49da300ee7",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    },
+    "cursor:rule:workflow-gates": {
+      "package_id": "rule:workflow-gates",
+      "provider_kind": "cursor",
+      "target_template_path": "/mnt/d/dev/agent_cli/.cursor/rules/workflow-gates.mdc",
+      "managed_block_id": "rule:workflow-gates",
+      "template_source_hash": "ce09d52a777db4e4f474bae23b3544b958660a2e30fd0c06de90b57b3c3179ee",
+      "template_installed_hash": "ce09d52a777db4e4f474bae23b3544b958660a2e30fd0c06de90b57b3c3179ee",
+      "support_source_hashes": {},
+      "support_installed_hashes": {},
+      "render_vars": {},
+      "render_vars_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_at_unix": 1777185659
+    }
+  }
+}

@@ -1,33 +1,42 @@
 package com.oaalto.agent
 
-import com.oaalto.agent.settings.AgentSettingsConfigurable
-import com.oaalto.agent.settings.AgentSettingsState
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.DumbAwareToggleAction
+import com.oaalto.agent.settings.AgentSettingsConfigurable
+import com.oaalto.agent.settings.AgentSettingsState
 
-class SelectAgentConfigurationActionGroup : ActionGroup(), DumbAware {
+class SelectAgentConfigurationActionGroup :
+    ActionGroup(),
+    DumbAware {
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val settings = AgentSettingsState.getInstance()
         val configurations = settings.getConfigurations()
-        val actions = configurations.map { configuration ->
-            object : DumbAwareToggleAction(configuration.name) {
-                override fun isSelected(event: AnActionEvent): Boolean {
-                    return settings.getSelectedConfiguration()?.id == configuration.id
-                }
+        val actions =
+            configurations
+                .map { configuration ->
+                    object : DumbAwareToggleAction(configuration.name) {
+                        override fun isSelected(event: AnActionEvent): Boolean = settings.getSelectedConfiguration()?.id == configuration.id
 
-                override fun setSelected(event: AnActionEvent, state: Boolean) {
-                    if (state) {
-                        settings.setSelectedConfiguration(configuration.id)
+                        override fun setSelected(
+                            event: AnActionEvent,
+                            state: Boolean,
+                        ) {
+                            if (state) {
+                                val selected = settings.setSelectedConfiguration(configuration.id)
+                                if (!selected) {
+                                    logger.warn("Failed to select agent configuration '${configuration.id}' from toolbar action.")
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }.toMutableList<AnAction>()
+                }.toMutableList<AnAction>()
 
         if (actions.isEmpty()) {
             actions.add(
@@ -44,7 +53,8 @@ class SelectAgentConfigurationActionGroup : ActionGroup(), DumbAware {
         actions.add(
             object : DumbAwareAction("Manage Agents...") {
                 override fun actionPerformed(event: AnActionEvent) {
-                    ShowSettingsUtil.getInstance()
+                    ShowSettingsUtil
+                        .getInstance()
                         .showSettingsDialog(event.project, AgentSettingsConfigurable::class.java)
                 }
             },
@@ -65,4 +75,8 @@ class SelectAgentConfigurationActionGroup : ActionGroup(), DumbAware {
     override fun displayTextInToolbar(): Boolean = true
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+    companion object {
+        private val logger = Logger.getInstance(SelectAgentConfigurationActionGroup::class.java)
+    }
 }

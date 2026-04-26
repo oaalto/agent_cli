@@ -1,21 +1,20 @@
 package com.oaalto.agent
 
-import com.oaalto.agent.settings.AgentSettingsState
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionUiKind
-import com.intellij.openapi.actionSystem.IdeActions
-import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.CapturingProcessHandler
+import com.intellij.ide.DataManager
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUiKind
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -29,12 +28,13 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.settings.AgentSettingsState
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
+import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.KeyEventDispatcher
 import java.awt.KeyboardFocusManager
-import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
@@ -48,7 +48,8 @@ import javax.swing.SwingUtilities
 class AgentFileEditor(
     private val project: Project,
     private val file: AgentVirtualFile,
-) : FileEditor, Disposable {
+) : FileEditor,
+    Disposable {
     private val propertyChangeSupport = PropertyChangeSupport(this)
     private val userData = UserDataHolderBase()
     private val rootPanel = JPanel(BorderLayout())
@@ -62,8 +63,7 @@ class AgentFileEditor(
 
     override fun getComponent(): JComponent = rootPanel
 
-    override fun getPreferredFocusedComponent(): JComponent =
-        terminalFocusComponent ?: rootPanel
+    override fun getPreferredFocusedComponent(): JComponent = terminalFocusComponent ?: rootPanel
 
     override fun getName(): String = "Agent CLI"
 
@@ -95,7 +95,10 @@ class AgentFileEditor(
 
     override fun <T : Any?> getUserData(key: Key<T>): T? = userData.getUserData(key)
 
-    override fun <T : Any?> putUserData(key: Key<T>, value: T?) {
+    override fun <T : Any?> putUserData(
+        key: Key<T>,
+        value: T?,
+    ) {
         userData.putUserData(key, value)
     }
 
@@ -124,17 +127,22 @@ class AgentFileEditor(
         return false
     }
 
-    private fun invokeIdeAction(actionId: String, focusOwner: Component, event: KeyEvent): Boolean {
+    private fun invokeIdeAction(
+        actionId: String,
+        focusOwner: Component,
+        event: KeyEvent,
+    ): Boolean {
         val action = ActionManager.getInstance().getAction(actionId) ?: return false
         val dataContext = DataManager.getInstance().getDataContext(focusOwner)
-        val actionEvent = AnActionEvent.createEvent(
-            action,
-            dataContext,
-            action.templatePresentation.clone(),
-            ActionPlaces.KEYBOARD_SHORTCUT,
-            ActionUiKind.NONE,
-            event,
-        )
+        val actionEvent =
+            AnActionEvent.createEvent(
+                action,
+                dataContext,
+                action.templatePresentation.clone(),
+                ActionPlaces.KEYBOARD_SHORTCUT,
+                ActionUiKind.NONE,
+                event,
+            )
         ActionUtil.performAction(action, actionEvent)
         return true
     }
@@ -149,79 +157,91 @@ class AgentFileEditor(
 
         val parsedArguments = ParametersListUtil.parse(configuration.arguments)
         val launchContext = file.launchContext
-        val effectiveArguments = buildList {
-            addAll(parsedArguments)
-            addAll(launchContext.additionalArguments)
-        }
+        val effectiveArguments =
+            buildList {
+                addAll(parsedArguments)
+                addAll(launchContext.additionalArguments)
+            }
         val target = resolveExecutionTarget(configuration.executionTarget)
-        val startupRequest = when (target) {
-            AgentSettingsState.ExecutionTarget.LOCAL -> {
-                if (binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath))) {
-                    showError("Agent binary is not executable:\n$binaryPath")
-                    return
-                }
-                val workingDirectory = resolveWorkingDirectory(
-                    configuredWorkingDirectory = configuration.workingDirectory,
-                    overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                )
-                if (!Files.isDirectory(Path.of(workingDirectory))) {
-                    showError("Working directory does not exist:\n$workingDirectory")
-                    return
-                }
-                val effectiveRunArguments = applyCursorResumeFallbackForLocal(
-                    binaryPath = binaryPath,
-                    arguments = effectiveArguments,
-                    workingDirectory = workingDirectory,
-                )
-                TerminalStartupRequest(
-                    workingDirectory = workingDirectory,
-                    command = buildList {
-                        add(binaryPath)
-                        addAll(effectiveRunArguments)
-                    },
-                )
-            }
-            AgentSettingsState.ExecutionTarget.WSL -> {
-                val resolvedWslWorkingDirectory = resolveWslWorkingDirectory(
-                    configuredWorkingDirectory = configuration.workingDirectory,
-                    overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                )
-                if (resolvedWslWorkingDirectory == null) {
-                    showError(
-                        "Working directory could not be mapped to a WSL path:\n${configuration.workingDirectory}\n\n" +
-                            "Use one of:\n" +
-                            "- Linux path (for example /home/user/project)\n" +
-                            "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
-                            "- Windows drive path (for example D:\\project)",
+        val startupRequest =
+            when (target) {
+                AgentSettingsState.ExecutionTarget.LOCAL -> {
+                    if (binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath))) {
+                        showError("Agent binary is not executable:\n$binaryPath")
+                        return
+                    }
+                    val workingDirectory =
+                        resolveWorkingDirectory(
+                            configuredWorkingDirectory = configuration.workingDirectory,
+                            overrideWorkingDirectory = launchContext.workingDirectoryOverride,
+                        )
+                    if (!Files.isDirectory(Path.of(workingDirectory))) {
+                        showError("Working directory does not exist:\n$workingDirectory")
+                        return
+                    }
+                    val effectiveRunArguments =
+                        applyCursorResumeFallbackForLocal(
+                            binaryPath = binaryPath,
+                            arguments = effectiveArguments,
+                            workingDirectory = workingDirectory,
+                        )
+                    TerminalStartupRequest(
+                        workingDirectory = workingDirectory,
+                        command =
+                            buildList {
+                                add(binaryPath)
+                                addAll(effectiveRunArguments)
+                            },
                     )
-                    return
                 }
-                val effectiveDistribution = configuration.wslDistribution.trim()
-                    .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-                val hostWorkingDirectory = resolveHostWorkingDirectory()
-                val effectiveRunArguments = applyCursorResumeFallbackForWsl(
-                    binaryPath = binaryPath,
-                    arguments = effectiveArguments,
-                    wslDistribution = effectiveDistribution,
-                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    hostWorkingDirectory = hostWorkingDirectory,
-                )
-                TerminalStartupRequest(
-                    workingDirectory = hostWorkingDirectory,
-                    command = buildWslCommand(
-                        binaryPath = binaryPath,
-                        arguments = effectiveRunArguments,
-                        wslDistribution = effectiveDistribution,
-                        wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    ),
-                )
+                AgentSettingsState.ExecutionTarget.WSL -> {
+                    val resolvedWslWorkingDirectory =
+                        resolveWslWorkingDirectory(
+                            configuredWorkingDirectory = configuration.workingDirectory,
+                            overrideWorkingDirectory = launchContext.workingDirectoryOverride,
+                        )
+                    if (resolvedWslWorkingDirectory == null) {
+                        showError(
+                            "Working directory could not be mapped to a WSL path:\n${configuration.workingDirectory}\n\n" +
+                                "Use one of:\n" +
+                                "- Linux path (for example /home/user/project)\n" +
+                                "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
+                                "- Windows drive path (for example D:\\project)",
+                        )
+                        return
+                    }
+                    val effectiveDistribution =
+                        configuration.wslDistribution
+                            .trim()
+                            .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
+                    val hostWorkingDirectory = resolveHostWorkingDirectory()
+                    val effectiveRunArguments =
+                        applyCursorResumeFallbackForWsl(
+                            binaryPath = binaryPath,
+                            arguments = effectiveArguments,
+                            wslDistribution = effectiveDistribution,
+                            wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                            hostWorkingDirectory = hostWorkingDirectory,
+                        )
+                    TerminalStartupRequest(
+                        workingDirectory = hostWorkingDirectory,
+                        command =
+                            buildWslCommand(
+                                binaryPath = binaryPath,
+                                arguments = effectiveRunArguments,
+                                wslDistribution = effectiveDistribution,
+                                wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                            ),
+                    )
+                }
             }
-        }
 
-        val startupOptions = ShellStartupOptions.Builder()
-            .workingDirectory(startupRequest.workingDirectory)
-            .shellCommand(startupRequest.command)
-            .build()
+        val startupOptions =
+            ShellStartupOptions
+                .Builder()
+                .workingDirectory(startupRequest.workingDirectory)
+                .shellCommand(startupRequest.command)
+                .build()
         try {
             val runner = DefaultTerminalRunnerFactory.getInstance().createLocalRunner(project)
             val terminalWidget = runner.startShellTerminalWidget(this, startupOptions, false)
@@ -289,20 +309,21 @@ class AgentFileEditor(
         val trimmed = rawPath.trim()
         if (trimmed.isBlank()) return null
         val windowsStylePath = trimmed.replace('/', '\\')
-        UNC_WSL_PREFIXES.firstOrNull { prefix ->
-            windowsStylePath.startsWith(prefix, ignoreCase = true)
-        }?.let { prefix ->
-            val withoutPrefix = windowsStylePath.substring(prefix.length)
-            val segments = withoutPrefix.split('\\').filter { it.isNotBlank() }
-            if (segments.isEmpty()) return null
-            val inferredDistribution = segments.first()
-            val linuxSegments = segments.drop(1)
-            val linuxPath = if (linuxSegments.isEmpty()) "/" else "/" + linuxSegments.joinToString("/")
-            return WslWorkingDirectory(
-                linuxPath = linuxPath,
-                inferredDistribution = inferredDistribution,
-            )
-        }
+        UNC_WSL_PREFIXES
+            .firstOrNull { prefix ->
+                windowsStylePath.startsWith(prefix, ignoreCase = true)
+            }?.let { prefix ->
+                val withoutPrefix = windowsStylePath.substring(prefix.length)
+                val segments = withoutPrefix.split('\\').filter { it.isNotBlank() }
+                if (segments.isEmpty()) return null
+                val inferredDistribution = segments.first()
+                val linuxSegments = segments.drop(1)
+                val linuxPath = if (linuxSegments.isEmpty()) "/" else "/" + linuxSegments.joinToString("/")
+                return WslWorkingDirectory(
+                    linuxPath = linuxPath,
+                    inferredDistribution = inferredDistribution,
+                )
+            }
 
         if (trimmed.startsWith("/") || trimmed.startsWith("~")) {
             return WslWorkingDirectory(linuxPath = trimmed, inferredDistribution = null)
@@ -328,8 +349,8 @@ class AgentFileEditor(
         arguments: List<String>,
         wslDistribution: String,
         wslWorkingDirectory: String,
-    ): List<String> {
-        return buildList {
+    ): List<String> =
+        buildList {
             add("wsl.exe")
             val distribution = wslDistribution.trim()
             if (distribution.isNotBlank()) {
@@ -342,7 +363,6 @@ class AgentFileEditor(
             add(binaryPath)
             addAll(arguments)
         }
-    }
 
     private fun applyCursorResumeFallbackForLocal(
         binaryPath: String,
@@ -350,10 +370,11 @@ class AgentFileEditor(
         workingDirectory: String,
     ): List<String> {
         if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
-        val output = runProcess(
-            command = listOf(binaryPath, "resume"),
-            workingDirectory = workingDirectory,
-        ) ?: return arguments
+        val output =
+            runProcess(
+                command = listOf(binaryPath, "resume"),
+                workingDirectory = workingDirectory,
+            ) ?: return arguments
         if (containsNoPreviousChats(output)) {
             logger.info("No previous Cursor chats found; starting a normal session.")
             return arguments.filterNot { it == "--continue" }
@@ -369,16 +390,18 @@ class AgentFileEditor(
         hostWorkingDirectory: String,
     ): List<String> {
         if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
-        val probeCommand = buildWslCommand(
-            binaryPath = binaryPath,
-            arguments = listOf("resume"),
-            wslDistribution = wslDistribution,
-            wslWorkingDirectory = wslWorkingDirectory,
-        )
-        val output = runProcess(
-            command = probeCommand,
-            workingDirectory = hostWorkingDirectory,
-        ) ?: return arguments
+        val probeCommand =
+            buildWslCommand(
+                binaryPath = binaryPath,
+                arguments = listOf("resume"),
+                wslDistribution = wslDistribution,
+                wslWorkingDirectory = wslWorkingDirectory,
+            )
+        val output =
+            runProcess(
+                command = probeCommand,
+                workingDirectory = hostWorkingDirectory,
+            ) ?: return arguments
         if (containsNoPreviousChats(output)) {
             logger.info("No previous Cursor chats found in WSL; starting a normal session.")
             return arguments.filterNot { it == "--continue" }
@@ -386,7 +409,10 @@ class AgentFileEditor(
         return arguments
     }
 
-    private fun shouldUseCursorResumeFallback(binaryPath: String, runArguments: List<String>): Boolean {
+    private fun shouldUseCursorResumeFallback(
+        binaryPath: String,
+        runArguments: List<String>,
+    ): Boolean {
         if (!runArguments.contains("--continue")) return false
         return when (executableName(binaryPath)) {
             "agent", "cursor-agent" -> true
@@ -399,15 +425,21 @@ class AgentFileEditor(
         return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
     }
 
-    private fun runProcess(command: List<String>, workingDirectory: String): String? {
-        val output = kotlin.runCatching {
-            val commandLine = GeneralCommandLine(command)
-                .withWorkingDirectory(Path.of(workingDirectory))
-            CapturingProcessHandler(commandLine).runProcess(RESUME_PROBE_TIMEOUT_MS)
-        }.getOrElse { throwable ->
-            logger.warn("Resume probe failed for command: ${command.joinToString(" ")}", throwable)
-            return null
-        }
+    private fun runProcess(
+        command: List<String>,
+        workingDirectory: String,
+    ): String? {
+        val output =
+            kotlin
+                .runCatching {
+                    val commandLine =
+                        GeneralCommandLine(command)
+                            .withWorkingDirectory(Path.of(workingDirectory))
+                    CapturingProcessHandler(commandLine).runProcess(RESUME_PROBE_TIMEOUT_MS)
+                }.getOrElse { throwable ->
+                    logger.warn("Resume probe failed for command: ${command.joinToString(" ")}", throwable)
+                    return null
+                }
         return buildString {
             append(output.stdout)
             if (output.stdout.isNotBlank() && output.stderr.isNotBlank()) append('\n')
@@ -415,17 +447,17 @@ class AgentFileEditor(
         }
     }
 
-    private fun containsNoPreviousChats(output: String): Boolean {
-        return output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
-    }
+    private fun containsNoPreviousChats(output: String): Boolean = output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
 
     private fun resolveHostWorkingDirectory(): String {
-        val candidates = listOf(
-            project.basePath,
-            System.getProperty("user.home"),
-            System.getProperty("java.io.tmpdir"),
-        )
-        return candidates.asSequence()
+        val candidates =
+            listOf(
+                project.basePath,
+                System.getProperty("user.home"),
+                System.getProperty("java.io.tmpdir"),
+            )
+        return candidates
+            .asSequence()
             .mapNotNull { it?.trim()?.takeIf(String::isNotBlank) }
             .firstOrNull { path ->
                 kotlin.runCatching { Files.isDirectory(Path.of(path)) }.getOrDefault(false)
@@ -434,21 +466,23 @@ class AgentFileEditor(
     }
 
     private fun showError(message: String) {
-        val area = JBTextArea(message).apply {
-            isEditable = false
-            isOpaque = false
-            lineWrap = true
-            wrapStyleWord = true
-            border = JBUI.Borders.empty(12)
-            foreground = JBColor.foreground()
-        }
-        val scrollPane = JBScrollPane(area).apply {
-            border = JBUI.Borders.empty()
-            isOpaque = false
-            viewport.isOpaque = false
-            background = JBColor.PanelBackground
-            viewport.background = JBColor.PanelBackground
-        }
+        val area =
+            JBTextArea(message).apply {
+                isEditable = false
+                isOpaque = false
+                lineWrap = true
+                wrapStyleWord = true
+                border = JBUI.Borders.empty(12)
+                foreground = JBColor.foreground()
+            }
+        val scrollPane =
+            JBScrollPane(area).apply {
+                border = JBUI.Borders.empty()
+                isOpaque = false
+                viewport.isOpaque = false
+                background = JBColor.PanelBackground
+                viewport.background = JBColor.PanelBackground
+            }
         rootPanel.removeAll()
         rootPanel.background = JBColor.PanelBackground
         rootPanel.add(scrollPane, BorderLayout.CENTER)
@@ -467,14 +501,15 @@ class AgentFileEditor(
         private val WINDOWS_DRIVE_PATH_REGEX = Regex("""^([A-Za-z]):\\(.*)$""")
         private const val NO_PREVIOUS_CHATS_MESSAGE = "No previous chats found"
         private const val RESUME_PROBE_TIMEOUT_MS = 4000
-        private val NAVIGATION_ACTION_IDS = listOf(
-            IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
-            IdeActions.ACTION_NEXT_EDITOR_TAB,
-            IdeActions.ACTION_PREVIOUS_TAB,
-            IdeActions.ACTION_NEXT_TAB,
-            IdeActions.ACTION_GOTO_BACK,
-            IdeActions.ACTION_GOTO_FORWARD,
-        )
+        private val NAVIGATION_ACTION_IDS =
+            listOf(
+                IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
+                IdeActions.ACTION_NEXT_EDITOR_TAB,
+                IdeActions.ACTION_PREVIOUS_TAB,
+                IdeActions.ACTION_NEXT_TAB,
+                IdeActions.ACTION_GOTO_BACK,
+                IdeActions.ACTION_GOTO_FORWARD,
+            )
     }
 
     private data class TerminalStartupRequest(

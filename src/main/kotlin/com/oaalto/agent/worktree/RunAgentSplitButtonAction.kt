@@ -1,32 +1,39 @@
 package com.oaalto.agent.worktree
 
-import com.oaalto.agent.settings.AgentSettingsConfigurable
-import com.oaalto.agent.settings.AgentSettingsState
-import com.intellij.ide.ActivityTracker
 import com.intellij.icons.AllIcons
+import com.intellij.ide.ActivityTracker
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Separator
 import com.intellij.openapi.actionSystem.SplitButtonAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.Messages
 import com.oaalto.agent.AgentVirtualFile
+import com.oaalto.agent.settings.AgentSettingsConfigurable
+import com.oaalto.agent.settings.AgentSettingsState
 import java.nio.file.Path
 
-class RunAgentSplitButtonAction : SplitButtonAction(RunAgentSplitActionGroup()), DumbAware {
+class RunAgentSplitButtonAction :
+    SplitButtonAction(RunAgentSplitActionGroup()),
+    DumbAware {
     override fun useDynamicSplitButton(): Boolean = false
 
     override fun getMainAction(e: AnActionEvent): AnAction = DEFAULT_CURRENT_PROJECT_ACTION
 
+    internal fun defaultMainActionForTests(): AnAction = DEFAULT_CURRENT_PROJECT_ACTION
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
 
-private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
+private class RunAgentSplitActionGroup :
+    ActionGroup(),
+    DumbAware {
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val project = event?.project
         if (project == null) {
@@ -54,18 +61,20 @@ private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
         } else {
             managedWorktrees.forEach { managed ->
                 val displayName = worktreeDisplayName(managed.worktreePath, managed.branchName)
-                actions += OpenOrResumeWorktreeAction(
-                    displayName = displayName,
-                    worktreePath = managed.worktreePath,
-                    configurationId = managed.configurationId,
-                    configurationName = managed.configurationName,
-                    resume = canResumeSessions,
-                )
-                actions += DeleteWorktreeAction(
-                    displayName = displayName,
-                    recordId = managed.id,
-                    worktreePath = managed.worktreePath,
-                )
+                actions +=
+                    OpenOrResumeWorktreeAction(
+                        displayName = displayName,
+                        worktreePath = managed.worktreePath,
+                        configurationId = managed.configurationId,
+                        configurationName = managed.configurationName,
+                        resume = canResumeSessions,
+                    )
+                actions +=
+                    DeleteWorktreeAction(
+                        displayName = displayName,
+                        recordId = managed.id,
+                        worktreePath = managed.worktreePath,
+                    )
                 actions += Separator.getInstance()
             }
             if (actions.lastOrNull() is Separator) {
@@ -91,15 +100,14 @@ private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    private fun disabledAction(label: String): AnAction {
-        return object : DumbAwareAction(label) {
+    private fun disabledAction(label: String): AnAction =
+        object : DumbAwareAction(label) {
             override fun actionPerformed(event: AnActionEvent) = Unit
 
             override fun update(event: AnActionEvent) {
                 event.presentation.isEnabled = false
             }
         }
-    }
 
     private fun loadManagedWorktreeRecords(
         project: com.intellij.openapi.project.Project,
@@ -115,19 +123,27 @@ private class RunAgentSplitActionGroup : ActionGroup(), DumbAware {
         return if (scoped.isNotEmpty()) scoped else state.getActiveRecordsForConfiguration(configurationId)
     }
 
-    private fun worktreeDisplayName(worktreePath: String, branchName: String): String {
-        val folderName = kotlin.runCatching {
-            Path.of(worktreePath).fileName?.toString()
-        }.getOrNull().orEmpty().ifBlank { worktreePath }
+    private fun worktreeDisplayName(
+        worktreePath: String,
+        branchName: String,
+    ): String {
+        val folderName =
+            kotlin
+                .runCatching {
+                    Path.of(worktreePath).fileName?.toString()
+                }.getOrNull()
+                .orEmpty()
+                .ifBlank { worktreePath }
         return if (branchName.isBlank()) folderName else "$folderName ($branchName)"
     }
 }
 
-private class RunAgentInCurrentProjectAction : DumbAwareAction(
-    "Run in Current Project",
-    "Run the selected agent in the current project working directory",
-    AllIcons.Actions.Execute,
-) {
+private class RunAgentInCurrentProjectAction :
+    DumbAwareAction(
+        RUN_IN_CURRENT_PROJECT_TEXT,
+        "Run the selected agent in the current project working directory",
+        AllIcons.Actions.Execute,
+    ) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val settings = AgentSettingsState.getInstance()
@@ -148,13 +164,16 @@ private class RunAgentInCurrentProjectAction : DumbAwareAction(
         )
     }
 }
-private val DEFAULT_CURRENT_PROJECT_ACTION: AnAction = RunAgentInCurrentProjectAction()
 
-private class RunAgentInNewWorktreeAction : DumbAwareAction(
-    "Run in New Worktree",
-    "Create a new worktree, open it, and run the selected agent there",
-    AllIcons.RunConfigurations.Compound,
-) {
+private val DEFAULT_CURRENT_PROJECT_ACTION: AnAction = RunAgentInCurrentProjectAction()
+internal const val RUN_IN_CURRENT_PROJECT_TEXT: String = "Run in Current Project"
+
+private class RunAgentInNewWorktreeAction :
+    DumbAwareAction(
+        "Run in New Worktree",
+        "Create a new worktree, open it, and run the selected agent there",
+        AllIcons.RunConfigurations.Compound,
+    ) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val settings = AgentSettingsState.getInstance()
@@ -178,13 +197,14 @@ private class RunAgentInNewWorktreeAction : DumbAwareAction(
         val createdWorktree = created.getOrNull() ?: return
 
         val state = AgentWorktreeStateService.getInstance()
-        val record = state.saveRecord(
-            configurationId = configuration.id,
-            configurationName = configuration.name,
-            repositoryRootPath = createdWorktree.repositoryRootPath,
-            worktreePath = createdWorktree.worktreePath,
-            branchName = createdWorktree.branchName,
-        )
+        val record =
+            state.saveRecord(
+                configurationId = configuration.id,
+                configurationName = configuration.name,
+                repositoryRootPath = createdWorktree.repositoryRootPath,
+                worktreePath = createdWorktree.worktreePath,
+                branchName = createdWorktree.branchName,
+            )
         state.enqueuePendingLaunch(
             worktreePath = record.worktreePath,
             configurationId = record.configurationId,
@@ -211,14 +231,15 @@ private class OpenOrResumeWorktreeAction(
     private val configurationName: String,
     private val resume: Boolean,
 ) : DumbAwareAction(
-    if (resume) "Resume $displayName" else "Open $displayName",
-) {
+        if (resume) "Resume $displayName" else "Open $displayName",
+    ) {
     init {
-        templatePresentation.description = if (resume) {
-            "Open this worktree and continue the previous CLI session"
-        } else {
-            "Open this worktree and run the selected agent"
-        }
+        templatePresentation.description =
+            if (resume) {
+                "Open this worktree and continue the previous CLI session"
+            } else {
+                "Open this worktree and run the selected agent"
+            }
         templatePresentation.icon = if (resume) AllIcons.Actions.Resume else AllIcons.Actions.Execute
     }
 
@@ -250,8 +271,8 @@ private class DeleteWorktreeAction(
     private val recordId: String,
     private val worktreePath: String,
 ) : DumbAwareAction(
-    "Delete $displayName",
-) {
+        "Delete $displayName",
+    ) {
     init {
         templatePresentation.description = "Delete this agent worktree"
         templatePresentation.icon = AllIcons.General.Remove
@@ -259,12 +280,13 @@ private class DeleteWorktreeAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val confirm = Messages.showYesNoDialog(
-            project,
-            "Delete agent worktree?\n$worktreePath",
-            "Run Agent",
-            Messages.getQuestionIcon(),
-        )
+        val confirm =
+            Messages.showYesNoDialog(
+                project,
+                "Delete agent worktree?\n$worktreePath",
+                "Run Agent",
+                Messages.getQuestionIcon(),
+            )
         if (confirm != Messages.YES) return
 
         val service = AgentWorktreeService(project)
@@ -276,16 +298,28 @@ private class DeleteWorktreeAction(
                 "Run Agent",
             )
         } else {
-            AgentWorktreeStateService.getInstance().markDeletedById(recordId)
+            val state = AgentWorktreeStateService.getInstance()
+            val markedById = state.markDeletedById(recordId)
+            if (!markedById) {
+                logger.warn(
+                    "Worktree '$worktreePath' deleted successfully, but managed record '$recordId' was missing; marking by path.",
+                )
+                state.markDeleted(worktreePath)
+            }
             // Force toolbar/action-group refresh so removed worktrees disappear immediately.
             ActivityTracker.getInstance().inc()
         }
     }
+
+    companion object {
+        private val logger = Logger.getInstance(DeleteWorktreeAction::class.java)
+    }
 }
 
-private class ManageAgentSettingsAction : DumbAwareAction(
-    "Manage Agents...",
-) {
+private class ManageAgentSettingsAction :
+    DumbAwareAction(
+        "Manage Agents...",
+    ) {
     init {
         templatePresentation.description = "Open Agent CLI settings"
         templatePresentation.icon = AllIcons.General.Settings
