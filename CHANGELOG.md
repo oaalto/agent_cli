@@ -6,10 +6,12 @@
 - Added Gradle-based `ktlint` integration plus a `qualityGate` task to enforce ordered format/compile/lint/test checks, so contributor validation is consistent and reproducible.
 - Added focused unit tests for WSL/host path mapping and normalization logic to prevent regressions in worktree path handling across Windows and WSL inputs.
 - Added a regression test asserting the split-button default action remains `Run in Current Project`, guarding intended run behavior.
+- Added OpenCode CLI resume support in managed worktree reopen flows (`opencode --continue`) so OpenCode sessions can be resumed from `Run Agent` like other supported agent CLIs.
 
 ### Changed
 - Refactored worktree path conversion logic into a pure helper (`AgentWorktreePathMapper`) to isolate deterministic transformations from IDE-bound service code and make them directly testable.
 - Updated contributor documentation to match current Run Agent behavior and to document `ktlint`/`qualityGate` commands so docs stay aligned with actual workflow gates.
+- Updated resume mapping coverage and contributor checklist to include OpenCode resume behavior, reducing ambiguity when validating multi-CLI worktree session support.
 
 ### Fixed
 - Fixed unresolved Gradle Kotlin stdlib conflict warning by disabling the default stdlib dependency in `gradle.properties`, reducing runtime/version mismatch risk in IntelliJ platform builds.

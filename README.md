@@ -20,7 +20,7 @@ Ship faster without leaving IntelliJ. `Agent CLI` gives you a focused, in-editor
   - Main click runs immediately in the current project.
   - Dropdown unlocks worktree actions (new, open/resume, delete).
 - Adds managed Git worktree workflows for cleaner isolation and parallel agent runs.
-- Adds multi-CLI resume support (Cursor, Claude, Gemini, Codex) with per-tool resume semantics.
+- Adds multi-CLI resume support (Cursor, Claude, Gemini, Codex, OpenCode) with per-tool resume semantics.
 - Adds first-class WSL execution targeting for Windows setups.
 
 Each configuration supports:
@@ -68,6 +68,7 @@ Each configuration supports:
   - Claude Code binary: `claude` (`--continue`)
   - Gemini CLI binary: `gemini` (`--resume`)
   - OpenAI Codex binary: `codex` (`resume --last`)
+  - OpenCode CLI binary: `opencode` (`--continue`)
 - If the selected configuration is unsupported for resume, the dropdown shows `Open ...` entries instead of `Resume ...`.
 - For Cursor CLI resume, if no previous chats are found, the plugin automatically falls back to a normal non-resume start.
 

@@ -102,6 +102,7 @@ GitHub Actions workflow: `.github/workflows/build-plugin.yml`
 - Confirm new worktree branch name matches `agent/<config-slug>/<timestamp>`
 - Confirm `Run Agent` dropdown lists previous plugin-managed worktrees
 - Confirm selecting `Resume ...` opens that worktree and runs Cursor with `--continue`
+- Confirm selecting `Resume ...` opens that worktree and runs OpenCode with `--continue` when `opencode` is the selected binary
 - Confirm selecting `Delete ...` removes the selected non-current worktree
 - Validate error states:
   - missing binary path

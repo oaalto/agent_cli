@@ -339,6 +339,7 @@ class AgentWorktreeService(
         fun resumeArgumentsForConfiguration(configuration: AgentSettingsState.AgentCliConfiguration): List<String>? =
             when (executableName(configuration.binaryPath)) {
                 "cursor-agent", "agent", "claude" -> listOf("--continue")
+                "opencode" -> listOf("--continue")
                 "gemini" -> listOf("--resume")
                 "codex" -> listOf("resume", "--last")
                 else -> null
