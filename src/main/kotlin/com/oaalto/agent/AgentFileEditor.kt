@@ -188,10 +188,13 @@ class AgentFileEditor(
                     TerminalStartupRequest(
                         workingDirectory = workingDirectory,
                         command =
-                            buildList {
-                                add(binaryPath)
-                                addAll(effectiveRunArguments)
-                            },
+                            buildTerminalCommand {
+                                AgentCommandBuilder.buildLocalCommand(
+                                    binaryPath = binaryPath,
+                                    arguments = effectiveRunArguments,
+                                    useNodeShellWrapper = configuration.useNodeShellWrapper,
+                                )
+                            } ?: return,
                     )
                 }
                 AgentSettingsState.ExecutionTarget.WSL -> {
@@ -226,12 +229,15 @@ class AgentFileEditor(
                     TerminalStartupRequest(
                         workingDirectory = hostWorkingDirectory,
                         command =
-                            buildWslCommand(
-                                binaryPath = binaryPath,
-                                arguments = effectiveRunArguments,
-                                wslDistribution = effectiveDistribution,
-                                wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                            ),
+                            buildTerminalCommand {
+                                AgentCommandBuilder.buildWslCommand(
+                                    binaryPath = binaryPath,
+                                    arguments = effectiveRunArguments,
+                                    wslDistribution = effectiveDistribution,
+                                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                                    useNodeShellWrapper = configuration.useNodeShellWrapper,
+                                )
+                            } ?: return,
                     )
                 }
             }
@@ -344,26 +350,6 @@ class AgentFileEditor(
         return null
     }
 
-    private fun buildWslCommand(
-        binaryPath: String,
-        arguments: List<String>,
-        wslDistribution: String,
-        wslWorkingDirectory: String,
-    ): List<String> =
-        buildList {
-            add("wsl.exe")
-            val distribution = wslDistribution.trim()
-            if (distribution.isNotBlank()) {
-                add("--distribution")
-                add(distribution)
-            }
-            add("--cd")
-            add(wslWorkingDirectory)
-            add("--")
-            add(binaryPath)
-            addAll(arguments)
-        }
-
     private fun applyCursorResumeFallbackForLocal(
         binaryPath: String,
         arguments: List<String>,
@@ -391,7 +377,7 @@ class AgentFileEditor(
     ): List<String> {
         if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
         val probeCommand =
-            buildWslCommand(
+            AgentCommandBuilder.buildWslCommand(
                 binaryPath = binaryPath,
                 arguments = listOf("resume"),
                 wslDistribution = wslDistribution,
@@ -408,6 +394,15 @@ class AgentFileEditor(
         }
         return arguments
     }
+
+    private fun buildTerminalCommand(builder: () -> List<String>): List<String>? =
+        kotlin
+            .runCatching(builder)
+            .getOrElse { throwable ->
+                logger.warn("Failed to build agent launch command.", throwable)
+                showError("Failed to build agent launch command:\n${throwable.message ?: throwable.javaClass.simpleName}")
+                null
+            }
 
     private fun shouldUseCursorResumeFallback(
         binaryPath: String,

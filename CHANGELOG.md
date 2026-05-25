@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-25
+
+### Changed
+- Replaced the free-text `Node Wrapper` setting with a checkbox that runs npm/node-installed agents through `bash -ilc`, so nvm users no longer need to know the wrapper command.
+- Migrated legacy text wrapper values to the checkbox on load.
+
+### Added
+- Added a per-agent `Node Wrapper` checkbox for npm/node-installed agent CLIs, allowing WSL launches such as Pi to run through `bash -ilc` so shell-managed paths are available.
+- Added focused command-builder coverage for direct and wrapped local/WSL launches, including POSIX shell quoting for wrapper payloads.
+
+### Changed
+- Refactored agent launch command construction into a testable helper so wrapper behavior can be validated without starting an IDE terminal.
+- Updated README setup guidance with a Pi/npm WSL example and wrapper command shape.
+
+- made by: Olli Aalto
+- made with: Cursor
+- model: GPT-5.5
+
 ## 2026-04-26
 
 ### Added

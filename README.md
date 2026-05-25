@@ -29,6 +29,7 @@ Each configuration supports:
 - `Execution Target` - where to run the command (`LOCAL` or `WSL`)
 - `WSL Distribution` - optional distro name when target is `WSL` (for example `Ubuntu`)
 - `Binary Path` - command path (required)
+- `Node Wrapper` - checkbox for npm/node-installed agents that need a login shell (`bash -ilc`) to resolve PATH (nvm, npm globals)
 - `Arguments` - optional CLI args
 - `Working Directory` - optional directory (defaults to current project directory)
 
@@ -80,14 +81,21 @@ To run a Linux-installed agent from a Windows IDE:
 2. Set `Binary Path` to the Linux binary path (for example `/usr/local/bin/codex`).
 3. Optionally set `WSL Distribution` (for example `Ubuntu-24.04`) to target a non-default distro.
    - If this is empty and your project/working directory is a UNC WSL path (`\\wsl.localhost\\...`), the distro is inferred automatically.
-4. Set `Working Directory` to one of:
+4. For npm/node-installed agents such as Pi, set `Binary Path` to the command name or full path (for example `pi`) and enable `Node Wrapper`.
+   - Use the full Linux binary path when Windows PATH entries shadow your WSL install.
+   - The checkbox runs the agent through `bash -ilc` so nvm/npm globals are available.
+5. Set `Working Directory` to one of:
    - Linux path (for example `/home/you/project`)
    - WSL UNC path (for example `\\wsl.localhost\Ubuntu\home\you\project`)
    - Windows path (for example `D:\project`, mapped to `/mnt/d/project`)
 
-When `Execution Target` is `WSL`, the plugin launches:
+When `Execution Target` is `WSL` without a node wrapper, the plugin launches:
 
 - `wsl.exe [--distribution <distro>] --cd <linuxDir> -- <linuxBinaryPath> <args...>`
+
+When `Node Wrapper` is enabled, the Linux-side command is wrapped:
+
+- `wsl.exe [--distribution <distro>] --cd <linuxDir> -- bash -ilc 'exec <binaryPath> <args...>'`
 
 ## Screenshots
 

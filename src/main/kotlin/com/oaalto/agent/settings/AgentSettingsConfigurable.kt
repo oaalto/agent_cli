@@ -51,6 +51,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                                 executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
                                 wslDistribution = "",
                                 binaryPath = "",
+                                useNodeShellWrapper = false,
                                 arguments = "",
                                 workingDirectory = "",
                                 isDefault = model.rowCount == 0,
@@ -103,6 +104,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     executionTarget = normalizeExecutionTarget(row.executionTarget)
                     wslDistribution = row.wslDistribution.trim()
                     binaryPath = row.binaryPath.trim()
+                    useNodeShellWrapper = row.useNodeShellWrapper
                     arguments = row.arguments.trim()
                     workingDirectory = row.workingDirectory.trim()
                 }
@@ -166,6 +168,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 executionTarget = normalizeExecutionTarget(it.executionTarget),
                 wslDistribution = it.wslDistribution,
                 binaryPath = it.binaryPath,
+                useNodeShellWrapper = it.useNodeShellWrapper,
                 arguments = it.arguments,
                 workingDirectory = it.workingDirectory,
                 isDefault =
@@ -182,6 +185,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         var executionTarget: String,
         var wslDistribution: String,
         var binaryPath: String,
+        var useNodeShellWrapper: Boolean,
         var arguments: String,
         var workingDirectory: String,
         var isDefault: Boolean,
@@ -196,6 +200,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 "Execution Target",
                 "WSL Distribution",
                 "Binary Path",
+                "Node Wrapper",
                 "Arguments",
                 "Working Directory",
             )
@@ -207,7 +212,10 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         override fun getColumnName(column: Int): String = columns[column]
 
         override fun getColumnClass(columnIndex: Int): Class<*> =
-            if (columnIndex == 0) java.lang.Boolean::class.java else String::class.java
+            when (columnIndex) {
+                0, 5 -> java.lang.Boolean::class.java
+                else -> String::class.java
+            }
 
         override fun isCellEditable(
             rowIndex: Int,
@@ -225,8 +233,9 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 2 -> row.executionTarget
                 3 -> row.wslDistribution
                 4 -> row.binaryPath
-                5 -> row.arguments
-                6 -> row.workingDirectory
+                5 -> row.useNodeShellWrapper
+                6 -> row.arguments
+                7 -> row.workingDirectory
                 else -> ""
             }
         }
@@ -257,8 +266,9 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 2 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
                 3 -> row.wslDistribution = (value as? String).orEmpty()
                 4 -> row.binaryPath = (value as? String).orEmpty()
-                5 -> row.arguments = (value as? String).orEmpty()
-                6 -> row.workingDirectory = (value as? String).orEmpty()
+                5 -> row.useNodeShellWrapper = (value as? Boolean) == true
+                6 -> row.arguments = (value as? String).orEmpty()
+                7 -> row.workingDirectory = (value as? String).orEmpty()
             }
             if (columnIndex != 0) {
                 fireTableCellUpdated(rowIndex, columnIndex)

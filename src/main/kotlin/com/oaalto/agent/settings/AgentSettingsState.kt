@@ -24,6 +24,8 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         var id: String = UUID.randomUUID().toString()
         var name: String = "Agent"
         var binaryPath: String = ""
+        var useNodeShellWrapper: Boolean = false
+        var nodeWrapper: String = ""
         var arguments: String = ""
         var workingDirectory: String = ""
         var executionTarget: String = ExecutionTarget.LOCAL.name
@@ -96,6 +98,10 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
             sanitized.name = "Agent"
         }
         sanitized.binaryPath = sanitized.binaryPath.trim()
+        if (!sanitized.useNodeShellWrapper && sanitized.nodeWrapper.isNotBlank()) {
+            sanitized.useNodeShellWrapper = true
+        }
+        sanitized.nodeWrapper = ""
         sanitized.arguments = sanitized.arguments.trim()
         sanitized.workingDirectory = sanitized.workingDirectory.trim()
         sanitized.executionTarget = executionTargetOrDefault(sanitized.executionTarget)
@@ -113,6 +119,8 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
             it.id = id
             it.name = name
             it.binaryPath = binaryPath
+            it.useNodeShellWrapper = useNodeShellWrapper
+            it.nodeWrapper = nodeWrapper
             it.arguments = arguments
             it.workingDirectory = workingDirectory
             it.executionTarget = executionTarget
