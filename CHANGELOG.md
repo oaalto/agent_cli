@@ -5,6 +5,7 @@
 ### Changed
 - Replaced the free-text `Node Wrapper` setting with a checkbox that runs npm/node-installed agents through `bash -ilc`, so nvm users no longer need to know the wrapper command.
 - Migrated legacy text wrapper values to the checkbox on load.
+- Upgraded the Gradle wrapper from 9.0.0 to 9.5.1.
 
 ### Added
 - Added a per-agent `Node Wrapper` checkbox for npm/node-installed agent CLIs, allowing WSL launches such as Pi to run through `bash -ilc` so shell-managed paths are available.
