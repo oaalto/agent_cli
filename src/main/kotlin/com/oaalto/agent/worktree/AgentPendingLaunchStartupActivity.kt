@@ -6,9 +6,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.ui.Messages
-import com.oaalto.agent.AgentLaunchContext
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.worktree.WorktreeLaunchCoordinator
 
 class AgentPendingLaunchStartupActivity : StartupActivity.DumbAware {
     override fun runActivity(project: Project) {
@@ -29,15 +29,11 @@ class AgentPendingLaunchStartupActivity : StartupActivity.DumbAware {
             }
 
             val launchContext =
-                AgentLaunchContext(
-                    workingDirectoryOverride = pendingLaunch.worktreePath,
-                    additionalArguments =
-                        if (pendingLaunch.resume) {
-                            AgentWorktreeService.resumeArgumentsForConfiguration(configuration).orEmpty()
-                        } else {
-                            emptyList()
-                        },
-                    worktreeId = state.getRecordByPath(pendingLaunch.worktreePath)?.id,
+                WorktreeLaunchCoordinator.buildLaunchContext(
+                    project = project,
+                    configuration = configuration,
+                    worktreePath = pendingLaunch.worktreePath,
+                    resume = pendingLaunch.resume,
                 )
             FileEditorManager.getInstance(project).openFile(
                 AgentVirtualFile(configuration.id, configuration.name, launchContext),

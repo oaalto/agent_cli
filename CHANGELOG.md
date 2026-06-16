@@ -10,11 +10,15 @@
 
 - **3.0 launch slices and Launch Mode** (`settings/`, `pty/`, `acp/`, `AgentEditorFactory`): Per-configuration Launch Mode (Terminal / ACP) in settings with legacy migration to PTY Passthrough; PTY editor extracted to `pty` slice; ACP stub editor and factory routing by launch mode. Implements PRD 3.0-01 issues 01-01 through 01-03. made by: Olli Aalto. made with: Cursor. model: Composer
 
+- **Worktree ACP session resume** (`worktree/`, `acp/`): Optional `acpSessionId` on managed worktree records; `ResumeStrategy` / `LaunchResumePlan` split PTY CLI resume from ACP `session/load` and `listSessions`; worktree launch coordinator; session picker fallback; bound-session UI indicator and pending-launch routing. Implements PRD 3.0-04 issues 04-01 through 04-06. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ### Fixed
 
 - **ACP launch arguments** (`acp/AcpLaunchArguments.kt`): ACP launch mode auto-injects agent entry args (for example `acp` for `cursor-agent` / `agent`) and strips PTY resume flags from configured and worktree arguments. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **ACP editor layout and session race** (`acp/`): Stack Transcript, Prompt, and Shell panes vertically; keep Prompt disabled until `session/new` completes so early submits no longer hit "ACP session is not open". made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **detekt findings** (`acp/AcpAgentEditor.kt`, `acp/ui/SessionPickerDialog.kt`): Remove unused session-picker parameter and use `const val` for start-fresh label. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ### Changed
 

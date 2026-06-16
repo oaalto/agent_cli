@@ -20,6 +20,7 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         val repositoryRootPath: String,
         val worktreePath: String,
         val branchName: String,
+        val acpSessionId: String?,
         val createdAtEpochMs: Long,
         val lastUsedAtEpochMs: Long,
         val deleted: Boolean,
@@ -48,6 +49,7 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         var createdAtEpochMs: Long = 0
         var lastUsedAtEpochMs: Long = 0
         var deleted: Boolean = false
+        var acpSessionId: String = ""
     }
 
     class StoredPendingLaunch {
@@ -87,7 +89,11 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
             }
         val storedRecord =
             if (existingIndex >= 0) {
-                state.records[existingIndex]
+                val existing = state.records[existingIndex]
+                if (existing.configurationId != configurationId.trim() && existing.acpSessionId.isNotBlank()) {
+                    existing.acpSessionId = ""
+                }
+                existing
             } else {
                 StoredRecord().also { state.records.add(it) }
             }
@@ -147,6 +153,7 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         state.records.forEach { record ->
             if (normalizedPathKey(record.worktreePath) == key) {
                 record.deleted = true
+                record.acpSessionId = ""
             }
         }
     }
@@ -158,10 +165,42 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         state.records.forEach { record ->
             if (record.id == targetId && !record.deleted) {
                 record.deleted = true
+                record.acpSessionId = ""
                 changed = true
             }
         }
         return changed
+    }
+
+    fun setAcpSessionId(
+        recordId: String,
+        sessionId: String,
+    ): Boolean {
+        val targetId = recordId.trim()
+        val normalizedSessionId = sessionId.trim()
+        if (targetId.isBlank() || normalizedSessionId.isBlank()) return false
+        var updated = false
+        state.records.forEach { record ->
+            if (record.id == targetId && !record.deleted) {
+                record.acpSessionId = normalizedSessionId
+                record.lastUsedAtEpochMs = System.currentTimeMillis()
+                updated = true
+            }
+        }
+        return updated
+    }
+
+    fun clearAcpSessionId(recordId: String): Boolean {
+        val targetId = recordId.trim()
+        if (targetId.isBlank()) return false
+        var updated = false
+        state.records.forEach { record ->
+            if (record.id == targetId && record.acpSessionId.isNotBlank()) {
+                record.acpSessionId = ""
+                updated = true
+            }
+        }
+        return updated
     }
 
     fun pruneMissingWorktreesForConfiguration(configurationId: String): Int {
@@ -254,6 +293,7 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
         sanitized.createdAtEpochMs = createdAt
         sanitized.lastUsedAtEpochMs = record.lastUsedAtEpochMs.takeIf { it > 0 } ?: createdAt
         sanitized.deleted = record.deleted
+        sanitized.acpSessionId = record.acpSessionId.trim()
         return sanitized
     }
 
@@ -280,6 +320,7 @@ class AgentWorktreeStateService : PersistentStateComponent<AgentWorktreeStateSer
             repositoryRootPath = repositoryRootPath,
             worktreePath = worktreePath,
             branchName = branchName,
+            acpSessionId = acpSessionId.trim().ifBlank { null },
             createdAtEpochMs = createdAtEpochMs,
             lastUsedAtEpochMs = lastUsedAtEpochMs,
             deleted = deleted,

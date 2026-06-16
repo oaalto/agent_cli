@@ -9,11 +9,13 @@ import com.agentclientprotocol.common.Event
 import com.agentclientprotocol.common.SessionCreationParameters
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.Implementation
+import com.agentclientprotocol.model.SessionId
 import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.protocol.Protocol
 import com.agentclientprotocol.transport.StdioTransport
 import com.intellij.openapi.diagnostic.Logger
 import com.oaalto.agent.acp.auth.AuthFlowCoordinator
+import com.oaalto.agent.worktree.resume.SessionSummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -129,6 +132,51 @@ class AcpSessionControllerImpl(
     }
 
     override suspend fun newSession() {
+        openSession { activeClient, context, cwd, operationsFactory ->
+            activeClient.newSession(
+                SessionCreationParameters(cwd = cwd, mcpServers = emptyList()),
+                operationsFactory,
+            )
+        }
+    }
+
+    override suspend fun loadSession(sessionId: String) {
+        val normalizedId = sessionId.trim()
+        if (normalizedId.isBlank()) error("ACP session id is blank")
+        openSession { activeClient, _, cwd, operationsFactory ->
+            activeClient.loadSession(
+                SessionId(normalizedId),
+                SessionCreationParameters(cwd = cwd, mcpServers = emptyList()),
+                operationsFactory,
+            )
+        }
+    }
+
+    @OptIn(com.agentclientprotocol.annotations.UnstableApi::class)
+    override suspend fun listSessions(cwd: String?): List<SessionSummary> {
+        val activeClient = client ?: error("ACP client is not connected")
+        return activeClient
+            .listSessions(cwd = cwd?.trim()?.takeIf { it.isNotBlank() })
+            .toList()
+            .map { info ->
+                SessionSummary(
+                    sessionId = info.sessionId.value,
+                    cwd = info.cwd,
+                    title = info.title,
+                )
+            }
+    }
+
+    override fun currentSessionId(): String? = session?.sessionId?.value
+
+    private suspend fun openSession(
+        open: suspend (
+            activeClient: Client,
+            context: AcpEditorContext,
+            cwd: String,
+            operationsFactory: ClientOperationsFactory,
+        ) -> ClientSession,
+    ) {
         val activeClient = client ?: error("ACP client is not connected")
         val context = editorContext ?: error("ACP editor context is missing")
         val cwd = launchPlan?.sessionWorkingDirectory ?: error("ACP launch plan is missing")
@@ -138,10 +186,7 @@ class AcpSessionControllerImpl(
             }
         try {
             session =
-                activeClient.newSession(
-                    SessionCreationParameters(cwd = cwd, mcpServers = emptyList()),
-                    operationsFactory,
-                )
+                open(activeClient, context, cwd, operationsFactory)
             sessionReady.complete(Unit)
         } catch (throwable: Throwable) {
             sessionReady.completeExceptionally(throwable)

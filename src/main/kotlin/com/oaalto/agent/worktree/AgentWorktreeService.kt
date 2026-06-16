@@ -7,6 +7,7 @@ import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.actions.VcsContextFactory
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.worktree.resume.PtyResumeStrategy
 import git4idea.commands.Git
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
@@ -365,20 +366,7 @@ class AgentWorktreeService(
         private val SLUG_SEPARATOR_RUNS = Regex("-{2,}")
 
         fun resumeArgumentsForConfiguration(configuration: AgentSettingsState.AgentCliConfiguration): List<String>? =
-            when (executableName(configuration.binaryPath)) {
-                "cursor-agent", "agent", "claude" -> listOf("--continue")
-                "opencode" -> listOf("--continue")
-                "gemini" -> listOf("--resume")
-                "codex" -> listOf("resume", "--last")
-                else -> null
-            }
-
-        private fun executableName(binaryPath: String): String {
-            val normalizedPath = binaryPath.trim()
-            if (normalizedPath.isBlank()) return ""
-            val fileName = normalizedPath.substringAfterLast('/').substringAfterLast('\\')
-            return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
-        }
+            PtyResumeStrategy.baseResumeArguments(configuration)
     }
 
     private data class ParsedWorktree(

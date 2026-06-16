@@ -26,8 +26,12 @@ import com.oaalto.agent.acp.permission.PermissionPromptUi
 import com.oaalto.agent.acp.ui.AuthPromptPanel
 import com.oaalto.agent.acp.ui.PermissionPromptPanel
 import com.oaalto.agent.acp.ui.PromptInputBar
+import com.oaalto.agent.acp.ui.SessionPickerDialog
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.worktree.AgentWorktreeStateService
+import com.oaalto.agent.worktree.resume.LaunchResumePlan
+import com.oaalto.agent.worktree.resume.SessionSummary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -262,7 +266,7 @@ class AcpAgentEditor(
                         authPromptUi = authPromptUi,
                     )
                 sessionController.connect(launchPlan, editorContext)
-                sessionController.newSession()
+                openSessionFromResumePlan(launchPlan.sessionWorkingDirectory)
                 appendTranscriptLine("Connected to ${configuration.name}.")
                 runOnEdt {
                     promptInputBar.setEnabled(true)
@@ -283,6 +287,100 @@ class AcpAgentEditor(
             transcriptArea.append(text)
             transcriptArea.caretPosition = transcriptArea.document.length
         }
+    }
+
+    private suspend fun openSessionFromResumePlan(sessionWorkingDirectory: String) {
+        when (val plan = file.launchContext.resumePlan) {
+            is LaunchResumePlan.AcpLoad -> {
+                runCatching {
+                    sessionController.loadSession(plan.sessionId)
+                    persistBoundSessionId(plan.sessionId)
+                }.onFailure { throwable ->
+                    logger.warn("ACP session load failed for ${plan.sessionId}", throwable)
+                    appendTranscriptLine(
+                        "Stored session is unavailable (${throwable.message ?: "load failed"}). " +
+                            "Choose a session to resume or start fresh.",
+                    )
+                    pickSessionOrStartFresh(sessionWorkingDirectory)
+                }
+            }
+            is LaunchResumePlan.AcpPickSession -> {
+                if (plan.candidates.isNotEmpty()) {
+                    pickSessionFromCandidates(plan.candidates)
+                } else {
+                    appendTranscriptLine(
+                        "No stored ACP session for this worktree. Choose a session to resume or start fresh.",
+                    )
+                    pickSessionOrStartFresh(sessionWorkingDirectory)
+                }
+            }
+            LaunchResumePlan.AcpNewSession, null -> {
+                sessionController.newSession()
+                persistCurrentSessionId()
+            }
+            is LaunchResumePlan.Pty -> error("PTY resume plan is not valid for ACP editor")
+        }
+    }
+
+    private suspend fun pickSessionOrStartFresh(sessionWorkingDirectory: String) {
+        val sessions =
+            runCatching {
+                sessionController.listSessions(sessionWorkingDirectory)
+            }.getOrElse { throwable ->
+                logger.warn("ACP listSessions failed", throwable)
+                appendTranscriptLine(
+                    TranscriptRenderer.formatError(
+                        throwable.message ?: "Failed to list sessions",
+                    ),
+                )
+                emptyList()
+            }
+        pickSessionFromCandidates(sessions)
+    }
+
+    private suspend fun pickSessionFromCandidates(
+        candidates: List<SessionSummary>,
+    ) {
+        if (candidates.isEmpty()) {
+            sessionController.newSession()
+            persistCurrentSessionId()
+            appendTranscriptLine("Started a new ACP session.")
+            return
+        }
+        val selectedId =
+            onEdtAsync {
+                SessionPickerDialog.show(project, candidates)
+            }
+        if (selectedId == null) {
+            sessionController.newSession()
+            persistCurrentSessionId()
+            appendTranscriptLine("Started a new ACP session.")
+            return
+        }
+        runCatching {
+            sessionController.loadSession(selectedId)
+            persistBoundSessionId(selectedId)
+            appendTranscriptLine("Resumed session $selectedId.")
+        }.onFailure { throwable ->
+            logger.warn("ACP session load failed for picker selection $selectedId", throwable)
+            appendTranscriptLine(
+                TranscriptRenderer.formatError(
+                    throwable.message ?: "Failed to load selected session",
+                ),
+            )
+            sessionController.newSession()
+            persistCurrentSessionId()
+        }
+    }
+
+    private fun persistCurrentSessionId() {
+        val sessionId = sessionController.currentSessionId() ?: return
+        persistBoundSessionId(sessionId)
+    }
+
+    private fun persistBoundSessionId(sessionId: String) {
+        val recordId = file.launchContext.worktreeId ?: return
+        AgentWorktreeStateService.getInstance().setAcpSessionId(recordId, sessionId)
     }
 
     private fun appendTranscriptLine(line: String) {

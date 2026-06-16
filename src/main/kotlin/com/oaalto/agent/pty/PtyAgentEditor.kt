@@ -1,8 +1,6 @@
 package com.oaalto.agent.pty
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.ide.DataManager
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.Disposable
@@ -31,6 +29,8 @@ import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCommandBuilder
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.worktree.resume.CursorResumeProbe
+import com.oaalto.agent.worktree.resume.CursorResumeProbeRequest
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
 import java.awt.BorderLayout
@@ -356,19 +356,15 @@ class PtyAgentEditor(
         binaryPath: String,
         arguments: List<String>,
         workingDirectory: String,
-    ): List<String> {
-        if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
-        val output =
-            runProcess(
-                command = listOf(binaryPath, "resume"),
+    ): List<String> =
+        CursorResumeProbe.Default.applyIfNeeded(
+            CursorResumeProbeRequest(
+                binaryPath = binaryPath,
+                arguments = arguments,
+                executionTarget = AgentSettingsState.ExecutionTarget.LOCAL,
                 workingDirectory = workingDirectory,
-            ) ?: return arguments
-        if (containsNoPreviousChats(output)) {
-            logger.info("No previous Cursor chats found; starting a normal session.")
-            return arguments.filterNot { it == "--continue" }
-        }
-        return arguments
-    }
+            ),
+        )
 
     private fun applyCursorResumeFallbackForWsl(
         binaryPath: String,
@@ -376,26 +372,18 @@ class PtyAgentEditor(
         wslDistribution: String,
         wslWorkingDirectory: String,
         hostWorkingDirectory: String,
-    ): List<String> {
-        if (!shouldUseCursorResumeFallback(binaryPath, arguments)) return arguments
-        val probeCommand =
-            AgentCommandBuilder.buildWslCommand(
+    ): List<String> =
+        CursorResumeProbe.Default.applyIfNeeded(
+            CursorResumeProbeRequest(
                 binaryPath = binaryPath,
-                arguments = listOf("resume"),
+                arguments = arguments,
+                executionTarget = AgentSettingsState.ExecutionTarget.WSL,
+                workingDirectory = wslWorkingDirectory,
                 wslDistribution = wslDistribution,
                 wslWorkingDirectory = wslWorkingDirectory,
-            )
-        val output =
-            runProcess(
-                command = probeCommand,
-                workingDirectory = hostWorkingDirectory,
-            ) ?: return arguments
-        if (containsNoPreviousChats(output)) {
-            logger.info("No previous Cursor chats found in WSL; starting a normal session.")
-            return arguments.filterNot { it == "--continue" }
-        }
-        return arguments
-    }
+                hostWorkingDirectory = hostWorkingDirectory,
+            ),
+        )
 
     private fun buildTerminalCommand(builder: () -> List<String>): List<String>? =
         kotlin
@@ -407,47 +395,6 @@ class PtyAgentEditor(
                 )
                 null
             }
-
-    private fun shouldUseCursorResumeFallback(
-        binaryPath: String,
-        runArguments: List<String>,
-    ): Boolean {
-        if (!runArguments.contains("--continue")) return false
-        return when (executableName(binaryPath)) {
-            "agent", "cursor-agent" -> true
-            else -> false
-        }
-    }
-
-    private fun executableName(binaryPath: String): String {
-        val fileName = binaryPath.trim().substringAfterLast('/').substringAfterLast('\\')
-        return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
-    }
-
-    private fun runProcess(
-        command: List<String>,
-        workingDirectory: String,
-    ): String? {
-        val output =
-            kotlin
-                .runCatching {
-                    val commandLine =
-                        GeneralCommandLine(command)
-                            .withWorkingDirectory(Path.of(workingDirectory))
-                    CapturingProcessHandler(commandLine).runProcess(RESUME_PROBE_TIMEOUT_MS)
-                }.getOrElse { throwable ->
-                    logger.warn("Resume probe failed for command: ${command.joinToString(" ")}", throwable)
-                    return null
-                }
-        return buildString {
-            append(output.stdout)
-            if (output.stdout.isNotBlank() && output.stderr.isNotBlank()) append('\n')
-            append(output.stderr)
-        }
-    }
-
-    private fun containsNoPreviousChats(output: String): Boolean =
-        output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
 
     private fun resolveHostWorkingDirectory(): String {
         val candidates =
@@ -499,8 +446,6 @@ class PtyAgentEditor(
         private val logger = Logger.getInstance(PtyAgentEditor::class.java)
         private val UNC_WSL_PREFIXES = listOf("\\\\wsl.localhost\\", "\\\\wsl$\\")
         private val WINDOWS_DRIVE_PATH_REGEX = Regex("""^([A-Za-z]):\\(.*)$""")
-        private const val NO_PREVIOUS_CHATS_MESSAGE = "No previous chats found"
-        private const val RESUME_PROBE_TIMEOUT_MS = 4000
         private val NAVIGATION_ACTION_IDS =
             listOf(
                 IdeActions.ACTION_PREVIOUS_EDITOR_TAB,

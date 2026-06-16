@@ -17,6 +17,8 @@ import com.intellij.openapi.ui.Messages
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentSettingsConfigurable
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.settings.LaunchMode
+import com.oaalto.agent.worktree.resume.ResumeCapability
 import java.nio.file.Path
 
 class RunAgentSplitButtonAction :
@@ -49,7 +51,7 @@ private class RunAgentSplitActionGroup :
             )
         }
 
-        val canResumeSessions = AgentWorktreeService.resumeArgumentsForConfiguration(selectedConfiguration) != null
+        val canResumeSessions = ResumeCapability.canResumeSessions(selectedConfiguration)
         val actions = mutableListOf<AnAction>()
         actions += DEFAULT_CURRENT_PROJECT_ACTION
         actions += RunAgentInNewWorktreeAction()
@@ -60,7 +62,7 @@ private class RunAgentSplitActionGroup :
             actions += disabledAction("No agent worktrees yet")
         } else {
             managedWorktrees.forEach { managed ->
-                val displayName = worktreeDisplayName(managed.worktreePath, managed.branchName)
+                val displayName = worktreeDisplayName(managed, selectedConfiguration)
                 actions +=
                     OpenOrResumeWorktreeAction(
                         displayName = displayName,
@@ -124,17 +126,32 @@ private class RunAgentSplitActionGroup :
     }
 
     private fun worktreeDisplayName(
-        worktreePath: String,
-        branchName: String,
+        managed: AgentWorktreeStateService.ManagedWorktreeRecord,
+        configuration: AgentSettingsState.AgentCliConfiguration,
     ): String {
         val folderName =
             kotlin
                 .runCatching {
-                    Path.of(worktreePath).fileName?.toString()
+                    Path.of(managed.worktreePath).fileName?.toString()
                 }.getOrNull()
                 .orEmpty()
-                .ifBlank { worktreePath }
-        return if (branchName.isBlank()) folderName else "$folderName ($branchName)"
+                .ifBlank { managed.worktreePath }
+        val branchSuffix =
+            if (managed.branchName.isBlank()) {
+                ""
+            } else {
+                " (${managed.branchName})"
+            }
+        val sessionSuffix =
+            if (
+                LaunchMode.from(configuration.launchMode) == LaunchMode.ACP_CLIENT &&
+                !managed.acpSessionId.isNullOrBlank()
+            ) {
+                " [ACP session]"
+            } else {
+                ""
+            }
+        return "$folderName$branchSuffix$sessionSuffix"
     }
 }
 
