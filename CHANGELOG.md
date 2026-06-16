@@ -4,7 +4,15 @@
 
 ### Added
 
+- **ACP client session and UI** (`acp/`, `build.gradle.kts`): Kotlin ACP SDK 0.24.0; `AcpAgentEditor` with Transcript, Prompt, and idle Shell panes; `AcpSessionController` connect/newSession/prompt/dispose loop over stdio; WSL and node-wrapper launch via shared Command Builder; tool-call status lines in transcript. Implements PRD 3.0-02 issues 02-01 through 02-05. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **3.0 launch slices and Launch Mode** (`settings/`, `pty/`, `acp/`, `AgentEditorFactory`): Per-configuration Launch Mode (Terminal / ACP) in settings with legacy migration to PTY Passthrough; PTY editor extracted to `pty` slice; ACP stub editor and factory routing by launch mode. Implements PRD 3.0-01 issues 01-01 through 01-03. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Fixed
+
+- **ACP launch arguments** (`acp/AcpLaunchArguments.kt`): ACP launch mode auto-injects agent entry args (for example `acp` for `cursor-agent` / `agent`) and strips PTY resume flags from configured and worktree arguments. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP editor layout and session race** (`acp/`): Stack Transcript, Prompt, and Shell panes vertically; keep Prompt disabled until `session/new` completes so early submits no longer hit "ACP session is not open". made by: Olli Aalto. made with: Cursor. model: Composer
 
 ### Changed
 - Established a `3.0` development baseline by setting the default plugin version to `3.0.0-SNAPSHOT` and aligning CI/docs release metadata with 3.0 tags, so the `3.0` branch is ready for the next development cycle.
@@ -18,6 +26,8 @@
 - Added agent setup and wiki bootstrap (`AGENTS.md`, `.agents/`, `CONTEXT.md`, `docs/agent-commands.md`, `docs/wiki/*`) to integrate the Pi agent bundle and initial wiki pages. made by: Olli Aalto. made with: Cursor. model: gpt-5-mini
 
 - **3.0 ACP architecture ADRs** (`docs/adr/`): ADR 0001 (custom in-plugin ACP client, hybrid launch modes, vertical slices) and ADR 0002 (Kotlin ACP SDK). Updated `CONTEXT.md` with 3.0 glossary terms from design session. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **Issue tracker conventions** (`docs/agents/issue-tracker.md`): Document `docs/issues/` as the path for implementation slices from `/to-issues`; PRDs stay under `docs/prd/`. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ## 2026-05-25
 

@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("org.jetbrains.intellij.platform") version "2.10.2"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    jacoco
 }
 
 val defaultPluginVersion = "3.0.0-SNAPSHOT"
@@ -38,7 +40,9 @@ dependencies {
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
     }
+    implementation("com.agentclientprotocol:acp:0.24.0")
     testImplementation(kotlin("test"))
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 }
 
 intellijPlatform {
@@ -56,11 +60,24 @@ intellijPlatform {
     }
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/detekt.yml"))
+}
+
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
         sourceCompatibility = "21"
         targetCompatibility = "21"
+    }
+
+    withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        jvmTarget = "21"
+        reports {
+            html.required.set(true)
+            xml.required.set(true)
+        }
     }
 
     named("compileKotlin") {
@@ -70,23 +87,46 @@ tasks {
         dependsOn("compileKotlin")
     }
     named("test") {
-        dependsOn("ktlintCheck")
+        dependsOn("ktlintCheck", "detekt")
+        finalizedBy("jacocoTestReport")
+    }
+
+    named<JacocoReport>("jacocoTestReport") {
+        dependsOn("test")
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+        dependsOn("jacocoTestReport")
+        violationRules {
+            rule {
+                element = "BUNDLE"
+                limit {
+                    counter = "LINE"
+                    minimum = "0.10".toBigDecimal()
+                }
+            }
+        }
     }
 
     register("qualityGate") {
         group = "verification"
-        description = "Runs format, compile, lint, and tests in order."
-        dependsOn("test")
+        description = "Runs format, compile, lint, static analysis, tests, and coverage verification."
+        dependsOn("test", "jacocoTestCoverageVerification")
     }
 
     named("check") {
-        dependsOn("ktlintCheck")
+        dependsOn("ktlintCheck", "detekt", "jacocoTestCoverageVerification")
     }
 }
 
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        allWarningsAsErrors.set(true)
     }
 }
 

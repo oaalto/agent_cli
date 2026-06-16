@@ -1,0 +1,52 @@
+package com.oaalto.agent.acp
+
+import com.agentclientprotocol.model.ContentBlock
+import com.agentclientprotocol.model.SessionUpdate
+import com.agentclientprotocol.model.ToolCallStatus
+import com.agentclientprotocol.model.ToolKind
+
+object TranscriptRenderer {
+    fun renderUpdate(update: SessionUpdate): List<String> =
+        when (update) {
+            is SessionUpdate.AgentMessageChunk -> listOfNotNull(extractText(update.content))
+            is SessionUpdate.AgentThoughtChunk -> listOfNotNull(extractText(update.content)?.let { "[thought] $it" })
+            is SessionUpdate.UserMessageChunk -> listOfNotNull(extractText(update.content)?.let { "> $it" })
+            is SessionUpdate.ToolCall -> listOf(formatToolStatus(update.title, update.kind, update.status))
+            is SessionUpdate.ToolCallUpdate ->
+                listOf(
+                    formatToolStatus(
+                        title = update.title ?: update.toolCallId.value,
+                        kind = update.kind,
+                        status = update.status,
+                    ),
+                )
+            else -> emptyList()
+        }
+
+    fun renderEventText(update: SessionUpdate): String? =
+        when (update) {
+            is SessionUpdate.AgentMessageChunk -> extractText(update.content)
+            is SessionUpdate.AgentThoughtChunk -> extractText(update.content)?.let { "[thought] $it" }
+            else -> null
+        }
+
+    fun formatError(message: String): String = "Error: $message"
+
+    fun formatPermissionRequest(title: String): String = "[permission denied] $title"
+
+    internal fun formatToolStatus(
+        title: String,
+        kind: ToolKind?,
+        status: ToolCallStatus?,
+    ): String {
+        val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
+        val statusLabel = status?.name?.lowercase()?.replace('_', ' ') ?: "started"
+        return "[$kindLabel] $title ($statusLabel)"
+    }
+
+    private fun extractText(content: ContentBlock): String? =
+        when (content) {
+            is ContentBlock.Text -> content.text
+            else -> null
+        }
+}

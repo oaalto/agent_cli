@@ -1,6 +1,6 @@
 package com.oaalto.agent
 
-import com.oaalto.agent.acp.AcpAgentEditorStub
+import com.oaalto.agent.acp.AcpAgentEditor
 import com.oaalto.agent.pty.PtyAgentEditor
 import com.oaalto.agent.settings.LaunchMode
 import kotlin.test.Test
@@ -13,7 +13,7 @@ class AgentEditorFactoryTest {
     }
 
     @Test
-    fun `factory resolves ACP stub editor type for ACP launch mode`() {
-        assertEquals(AcpAgentEditorStub::class.java, AgentEditorFactory.editorTypeForLaunchMode(LaunchMode.ACP_CLIENT))
+    fun `factory resolves ACP editor type for ACP launch mode`() {
+        assertEquals(AcpAgentEditor::class.java, AgentEditorFactory.editorTypeForLaunchMode(LaunchMode.ACP_CLIENT))
     }
 }
