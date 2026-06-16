@@ -32,6 +32,8 @@
 
 - **ACP client capabilities issues** (`docs/issues/03-01` through `03-08`): Eight vertical-slice implementation tickets for PRD 3.0-03 (scoped filesystem, permission memory, Shell PTY, auth flows, capability negotiation). made by: Olli Aalto. made with: Cursor. model: Composer
 
+- **ACP client capabilities** (`acp/filesystem/`, `acp/permission/`, `acp/terminal/`, `acp/auth/`, `acp/`): Scoped filesystem read/write with IDE VFS and gitignore checks; inline Transcript permission prompts with allow/reject-always memory; Shell pane PTY wired to `terminal/create` (single-terminal replace policy); auth coordinator for no-auth, Terminal Auth, Agent Auth, and OAuth links; honest capability negotiation at `initialize`; WSL session cwd mapped to host scope for filesystem ops. Implements PRD 3.0-03 issues 03-01 through 03-08. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - Added agent setup and wiki bootstrap (`AGENTS.md`, `.agents/`, `CONTEXT.md`, `docs/agent-commands.md`, `docs/wiki/*`) to integrate the Pi agent bundle and initial wiki pages. made by: Olli Aalto. made with: Cursor. model: gpt-5-mini
 
 - **3.0 ACP architecture ADRs** (`docs/adr/`): ADR 0001 (custom in-plugin ACP client, hybrid launch modes, vertical slices) and ADR 0002 (Kotlin ACP SDK). Updated `CONTEXT.md` with 3.0 glossary terms from design session. made by: Olli Aalto. made with: Cursor. model: Composer

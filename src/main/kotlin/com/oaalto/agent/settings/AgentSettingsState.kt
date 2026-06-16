@@ -18,6 +18,7 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
     class State {
         var configurations: MutableList<AgentCliConfiguration> = mutableListOf()
         var selectedConfigurationId: String? = null
+        var permissionMemory: MutableMap<String, String> = mutableMapOf()
     }
 
     class AgentCliConfiguration {
@@ -74,6 +75,19 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         state.configurations = configurations.map { it.copyOf() }.toMutableList()
         state.selectedConfigurationId = selectedConfigurationId
         ensureValidState()
+    }
+
+    fun getPermissionMemory(key: String): String? = state.permissionMemory[key]
+
+    fun setPermissionMemory(
+        key: String,
+        value: String,
+    ) {
+        state.permissionMemory[key] = value
+    }
+
+    fun clearPermissionMemory(key: String) {
+        state.permissionMemory.remove(key)
     }
 
     private fun ensureValidState() {

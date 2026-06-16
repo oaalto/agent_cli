@@ -18,7 +18,10 @@ class AcpSessionControllerTest {
         var cancelled = false
         var disposed = false
 
-        override suspend fun connect(launchPlan: AcpLaunchPlan) = Unit
+        override suspend fun connect(
+            launchPlan: AcpLaunchPlan,
+            editorContext: AcpEditorContext,
+        ) = Unit
 
         override suspend fun newSession() = Unit
 

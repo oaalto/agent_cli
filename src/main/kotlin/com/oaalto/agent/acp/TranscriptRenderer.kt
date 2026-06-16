@@ -32,7 +32,14 @@ object TranscriptRenderer {
 
     fun formatError(message: String): String = "Error: $message"
 
-    fun formatPermissionRequest(title: String): String = "[permission denied] $title"
+    fun formatAuthFailure(message: String): String = "Auth failed: $message"
+
+    fun formatTerminalCreate(
+        command: String,
+        terminalId: String,
+    ): String = "[terminal] $command (id=$terminalId)"
+
+    fun formatPermissionDenied(title: String): String = "[permission denied] $title"
 
     internal fun formatToolStatus(
         title: String,

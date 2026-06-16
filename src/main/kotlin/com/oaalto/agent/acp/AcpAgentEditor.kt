@@ -19,6 +19,12 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentVirtualFile
+import com.oaalto.agent.acp.auth.AuthPromptResult
+import com.oaalto.agent.acp.auth.AuthPromptUi
+import com.oaalto.agent.acp.filesystem.SessionScopeResolver
+import com.oaalto.agent.acp.permission.PermissionPromptUi
+import com.oaalto.agent.acp.ui.AuthPromptPanel
+import com.oaalto.agent.acp.ui.PermissionPromptPanel
 import com.oaalto.agent.acp.ui.PromptInputBar
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
@@ -27,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.awt.BorderLayout
 import java.awt.Font
 import java.beans.PropertyChangeListener
@@ -34,6 +41,7 @@ import java.beans.PropertyChangeSupport
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import kotlin.coroutines.resume
 
 class AcpAgentEditor(
     private val project: Project,
@@ -54,7 +62,9 @@ class AcpAgentEditor(
             foreground = JBColor.foreground()
             border = JBUI.Borders.empty(8)
         }
-    private val shellPaneHost = ShellPaneHost()
+    private val permissionPromptPanel = PermissionPromptPanel()
+    private val authPromptPanel = AuthPromptPanel()
+    private val shellPaneHost = ShellPaneHost(project, this)
     private val promptInputBar =
         PromptInputBar { text ->
             coroutineScope.launch {
@@ -69,23 +79,66 @@ class AcpAgentEditor(
             }
         }
     private val rootPanel = JPanel(BorderLayout())
-    private val sessionController: AcpSessionController =
-        sessionControllerFactory(
-            object : AcpSessionListener {
-                override fun onTranscriptAppend(text: String) {
-                    appendTranscriptText(text)
-                }
+    private val sessionListener =
+        object : AcpSessionListener {
+            override fun onTranscriptAppend(text: String) {
+                appendTranscriptText(text)
+            }
 
-                override fun onTranscriptLine(line: String) {
-                    appendTranscriptLine(line)
-                }
+            override fun onTranscriptLine(line: String) {
+                appendTranscriptLine(line)
+            }
 
-                override fun onError(message: String) {
-                    appendTranscriptLine(TranscriptRenderer.formatError(message))
-                    runOnEdt { promptInputBar.setEnabled(false) }
+            override fun onError(message: String) {
+                appendTranscriptLine(TranscriptRenderer.formatError(message))
+                runOnEdt { promptInputBar.setEnabled(false) }
+            }
+        }
+    private val permissionPromptUi =
+        PermissionPromptUi { title, options ->
+            val deferred =
+                onEdtAsync {
+                    permissionPromptPanel.suspendForPrompt(title, options)
                 }
-            },
-        )
+            deferred.await()
+        }
+    private val authPromptUi =
+        object : AuthPromptUi {
+            override suspend fun promptApiKey(
+                methodName: String,
+                description: String?,
+            ): AuthPromptResult {
+                val deferred =
+                    onEdtAsync {
+                        authPromptPanel.suspendForApiKey(methodName, description)
+                    }
+                return deferred.await()
+            }
+
+            override suspend fun promptOAuthLink(
+                methodName: String,
+                description: String?,
+                link: String,
+            ): AuthPromptResult {
+                val deferred =
+                    onEdtAsync {
+                        authPromptPanel.suspendForOAuth(methodName, description, link)
+                    }
+                return deferred.await()
+            }
+
+            override suspend fun waitForTerminalAuthCompletion(
+                methodName: String,
+                description: String?,
+            ): AuthPromptResult {
+                val deferred =
+                    onEdtAsync {
+                        authPromptPanel.suspendForTerminalAuth(methodName, description)
+                    }
+                return deferred.await()
+            }
+        }
+    private val sessionController: AcpSessionController = sessionControllerFactory(sessionListener)
 
     init {
         layoutEditor()
@@ -135,6 +188,8 @@ class AcpAgentEditor(
     }
 
     override fun dispose() {
+        permissionPromptPanel.cancelPending()
+        authPromptPanel.cancelPending()
         coroutineScope.launch {
             runCatching { sessionController.cancelPrompt() }
         }
@@ -143,9 +198,11 @@ class AcpAgentEditor(
     }
 
     private fun layoutEditor() {
-        val transcriptScroll =
-            JBScrollPane(transcriptArea).apply {
-                border = JBUI.Borders.empty()
+        val transcriptColumn =
+            JPanel(BorderLayout()).apply {
+                add(JBScrollPane(transcriptArea), BorderLayout.CENTER)
+                add(permissionPromptPanel.component, BorderLayout.SOUTH)
+                add(authPromptPanel.component, BorderLayout.NORTH)
             }
         val bottomSplitter =
             Splitter(true, 0.2f).apply {
@@ -154,7 +211,7 @@ class AcpAgentEditor(
             }
         val mainSplitter =
             Splitter(true, 0.72f).apply {
-                firstComponent = transcriptScroll
+                firstComponent = transcriptColumn
                 secondComponent = bottomSplitter
             }
         rootPanel.add(mainSplitter, BorderLayout.CENTER)
@@ -187,7 +244,24 @@ class AcpAgentEditor(
                     }
 
             runCatching {
-                sessionController.connect(launchPlan)
+                val scopeRoot =
+                    SessionScopeResolver.hostScopeRoot(
+                        sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
+                        projectBasePath = project.basePath,
+                        workingDirectoryOverride = file.launchContext.workingDirectoryOverride,
+                    )
+                val editorContext =
+                    AcpEditorContext(
+                        project = project,
+                        configurationId = file.configurationId,
+                        launchContext = file.launchContext,
+                        scopeRoot = scopeRoot,
+                        listener = sessionListener,
+                        shellPaneHost = shellPaneHost,
+                        permissionPromptUi = permissionPromptUi,
+                        authPromptUi = authPromptUi,
+                    )
+                sessionController.connect(launchPlan, editorContext)
                 sessionController.newSession()
                 appendTranscriptLine("Connected to ${configuration.name}.")
                 runOnEdt {
@@ -228,6 +302,15 @@ class AcpAgentEditor(
             ApplicationManager.getApplication().invokeLater(action, ModalityState.any())
         }
     }
+
+    private suspend fun <T> onEdtAsync(block: () -> T): T =
+        suspendCancellableCoroutine { continuation ->
+            ApplicationManager.getApplication().invokeLater({
+                if (continuation.isActive) {
+                    continuation.resume(block())
+                }
+            }, ModalityState.any())
+        }
 
     companion object {
         private val logger = Logger.getInstance(AcpAgentEditor::class.java)

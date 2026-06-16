@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.agent.AgentInfo
 import com.agentclientprotocol.client.Client
 import com.agentclientprotocol.client.ClientInfo
 import com.agentclientprotocol.client.ClientOperationsFactory
@@ -12,6 +13,7 @@ import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.protocol.Protocol
 import com.agentclientprotocol.transport.StdioTransport
 import com.intellij.openapi.diagnostic.Logger
+import com.oaalto.agent.acp.auth.AuthFlowCoordinator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -42,15 +44,21 @@ class AcpSessionControllerImpl(
     private var client: Client? = null
     private var session: ClientSession? = null
     private var launchPlan: AcpLaunchPlan? = null
+    private var editorContext: AcpEditorContext? = null
+    private var agentInfo: AgentInfo? = null
     private var promptJob: Job? = null
     private var stderrJob: Job? = null
     private var exitJob: Job? = null
     private var sessionReady: CompletableDeferred<Unit> = CompletableDeferred()
 
     @Suppress("DEPRECATION", "OPT_IN_USAGE")
-    override suspend fun connect(launchPlan: AcpLaunchPlan) {
+    override suspend fun connect(
+        launchPlan: AcpLaunchPlan,
+        editorContext: AcpEditorContext,
+    ) {
         disposeTransportOnly()
         this.launchPlan = launchPlan
+        this.editorContext = editorContext
         sessionReady = CompletableDeferred()
 
         val startedProcess =
@@ -74,11 +82,29 @@ class AcpSessionControllerImpl(
 
         try {
             protocolInstance.start()
-            clientInstance.initialize(
-                ClientInfo(
-                    implementation = Implementation(name = "agent-cli-plugin", version = "3.0"),
-                ),
-            )
+            val capabilities =
+                AcpClientCapabilities.build(AcpClientCapabilities.fullSupport)
+            val info =
+                clientInstance.initialize(
+                    ClientInfo(
+                        capabilities = capabilities,
+                        implementation = Implementation(name = "agent-cli-plugin", version = "3.0"),
+                    ),
+                )
+            agentInfo = info
+            val authCoordinator =
+                AuthFlowCoordinator(
+                    client = clientInstance,
+                    agentInfo = info,
+                    shellPaneHost = editorContext.shellPaneHost,
+                    authPromptUi = editorContext.authPromptUi,
+                    listener = listener,
+                )
+            authCoordinator.authenticateIfRequired().getOrElse { throwable ->
+                sessionReady.completeExceptionally(throwable)
+                disposeTransportOnly()
+                throw throwable
+            }
         } catch (throwable: Throwable) {
             sessionReady.completeExceptionally(throwable)
             disposeTransportOnly()
@@ -104,10 +130,11 @@ class AcpSessionControllerImpl(
 
     override suspend fun newSession() {
         val activeClient = client ?: error("ACP client is not connected")
+        val context = editorContext ?: error("ACP editor context is missing")
         val cwd = launchPlan?.sessionWorkingDirectory ?: error("ACP launch plan is missing")
         val operationsFactory =
             ClientOperationsFactory { _, _ ->
-                AcpClientSessionOperationsImpl(listener)
+                AcpClientSessionOperationsImpl.create(context)
             }
         try {
             session =
@@ -150,6 +177,8 @@ class AcpSessionControllerImpl(
 
     override fun dispose() {
         promptJob?.cancel()
+        editorContext?.terminalSessionRegistry?.clear()
+        editorContext?.shellPaneHost?.clear()
         runBlocking {
             withContext(Dispatchers.IO) {
                 runCatching { session?.cancel() }
@@ -221,6 +250,8 @@ class AcpSessionControllerImpl(
         client = null
         session = null
         launchPlan = null
+        editorContext = null
+        agentInfo = null
         promptJob = null
         stderrJob = null
         exitJob = null
