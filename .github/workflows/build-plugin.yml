@@ -28,14 +28,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Node deps and run wiki-lint
-        run: |
-          npm ci --no-audit --no-fund
-          npm run wiki-lint
-        working-directory: .
+      - name: Run wiki lint
+        run: node scripts/wiki-lint.mjs
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Run quality gate and verify plugin
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon qualityGate verifyPlugin
 
       - name: Parse version from tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -68,14 +70,11 @@ jobs:
 
       - name: Build plugin ZIP and JAR
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --no-daemon clean buildPlugin jar
+        run: ./gradlew --no-daemon clean buildPlugin jar
 
       - name: Build plugin ZIP and JAR (tag release)
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          chmod +x ./gradlew
           ./gradlew --no-daemon clean buildPlugin jar \
             -PpluginVersion="${{ steps.release_meta.outputs.plugin_version }}" \
             -PpluginChangeNotesFile=build/github/change-notes.html

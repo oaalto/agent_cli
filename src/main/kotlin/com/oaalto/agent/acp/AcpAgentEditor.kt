@@ -60,7 +60,11 @@ class AcpAgentEditor(
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
                     logger.warn("Failed to send ACP prompt", throwable)
-                    appendTranscriptLine(TranscriptRenderer.formatError(throwable.message ?: throwable.javaClass.simpleName))
+                    appendTranscriptLine(
+                        TranscriptRenderer.formatError(
+                            throwable.message ?: throwable.javaClass.simpleName,
+                        ),
+                    )
                 }
             }
         }
@@ -173,7 +177,11 @@ class AcpAgentEditor(
                         configuration = configuration,
                         launchContext = file.launchContext,
                     ).getOrElse { throwable ->
-                        appendTranscriptLine(TranscriptRenderer.formatError(throwable.message ?: "Failed to build launch command."))
+                        appendTranscriptLine(
+                            TranscriptRenderer.formatError(
+                                throwable.message ?: "Failed to build launch command.",
+                            ),
+                        )
                         runOnEdt { promptInputBar.setEnabled(false) }
                         return@launch
                     }
@@ -188,7 +196,9 @@ class AcpAgentEditor(
                 }
             }.onFailure { throwable ->
                 logger.warn("Failed to start ACP session", throwable)
-                appendTranscriptLine(TranscriptRenderer.formatError(throwable.message ?: throwable.javaClass.simpleName))
+                appendTranscriptLine(
+                    TranscriptRenderer.formatError(throwable.message ?: throwable.javaClass.simpleName),
+                )
                 runOnEdt { promptInputBar.setEnabled(false) }
             }
         }
@@ -222,6 +232,7 @@ class AcpAgentEditor(
     companion object {
         private val logger = Logger.getInstance(AcpAgentEditor::class.java)
 
-        private fun defaultSessionController(listener: AcpSessionListener): AcpSessionController = AcpSessionControllerImpl(listener)
+        private fun defaultSessionController(listener: AcpSessionListener): AcpSessionController =
+            AcpSessionControllerImpl(listener)
     }
 }

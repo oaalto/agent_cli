@@ -22,7 +22,8 @@ class SelectAgentConfigurationActionGroup :
             configurations
                 .map { configuration ->
                     object : DumbAwareToggleAction(configuration.name) {
-                        override fun isSelected(event: AnActionEvent): Boolean = settings.getSelectedConfiguration()?.id == configuration.id
+                        override fun isSelected(event: AnActionEvent): Boolean =
+                            settings.getSelectedConfiguration()?.id == configuration.id
 
                         override fun setSelected(
                             event: AnActionEvent,
@@ -31,7 +32,10 @@ class SelectAgentConfigurationActionGroup :
                             if (state) {
                                 val selected = settings.setSelectedConfiguration(configuration.id)
                                 if (!selected) {
-                                    logger.warn("Failed to select agent configuration '${configuration.id}' from toolbar action.")
+                                    logger.warn(
+                                        "Failed to select agent configuration " +
+                                            "'${configuration.id}' from toolbar action.",
+                                    )
                                 }
                             }
                         }

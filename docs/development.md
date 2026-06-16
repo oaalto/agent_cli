@@ -22,7 +22,8 @@ Main implementation files:
 
 ## Prerequisites
 
-- JDK 21 (project compiles with Java/Kotlin target 21)
+- JDK 21 (project compiles with Java/Kotlin target 21; Gradle auto-provisions JDK 21 via the Foojay toolchain resolver when needed)
+- Run Gradle itself on JDK 21 when possible — detekt 1.x does not support running on JDK 25
 - Git
 - IntelliJ IDEA (for local plugin development)
 
@@ -47,13 +48,27 @@ Main implementation files:
   ./gradlew ktlintCheck
   ```
 
-- Run ordered local quality gates (format -> compile -> lint -> tests):
+- Run static analysis (detekt):
+
+  ```bash
+  ./gradlew detekt
+  ```
+
+- Run test coverage report:
+
+  ```bash
+  ./gradlew test jacocoTestReport
+  ```
+
+  JaCoCo is configured for HTML/XML reports. Threshold enforcement is not part of `qualityGate` yet because IntelliJ Platform tests run in an isolated sandbox JVM where the JaCoCo agent does not attach.
+
+- Run ordered local quality gates (format -> compile -> lint -> static analysis -> tests -> coverage report):
 
   ```bash
   ./gradlew qualityGate
   ```
 
-- Verify plugin:
+- Verify plugin compatibility with target IDE builds:
 
   ```bash
   ./gradlew verifyPlugin
@@ -72,9 +87,17 @@ Expected outputs:
 
 ## CI and release flow
 
-GitHub Actions workflow: `.github/workflows/build-plugin.yml`
+GitHub Actions workflows:
+
+- `.github/workflows/build-plugin.yml` — wiki lint, `qualityGate`, `verifyPlugin`, artifact build, and tag releases
+- `.github/workflows/qodana.yml` — JetBrains Qodana static analysis (optional `QODANA_TOKEN` secret for cloud features)
+
+Dependabot (`.github/dependabot.yml`) opens weekly update PRs for Gradle, GitHub Actions, and npm.
+
+### Build plugin workflow
 
 - On push/PR/manual trigger:
+  - Runs wiki lint, `./gradlew qualityGate`, and `./gradlew verifyPlugin`
   - Builds plugin artifacts
   - Uploads `.zip` + `.jar` as workflow artifacts
 - On tag push (for example `v3.0.0`, `3.0.0`, `v3.0-rc1`, `3.0-rc1`):

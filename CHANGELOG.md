@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Code quality tooling** (`build.gradle.kts`, `.editorconfig`, `detekt.yml`, `qodana.yml`, `.github/`): detekt static analysis, JaCoCo coverage reports, Kotlin `allWarningsAsErrors`, JDK 21 toolchain with Foojay auto-provisioning, Qodana workflow, Dependabot for Gradle/Actions/npm, and `package-lock.json`. CI now runs `qualityGate` and `verifyPlugin` before building artifacts; pre-commit runs `ktlintCheck` after wiki-lint. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **ACP client session and UI** (`acp/`, `build.gradle.kts`): Kotlin ACP SDK 0.24.0; `AcpAgentEditor` with Transcript, Prompt, and idle Shell panes; `AcpSessionController` connect/newSession/prompt/dispose loop over stdio; WSL and node-wrapper launch via shared Command Builder; tool-call status lines in transcript. Implements PRD 3.0-02 issues 02-01 through 02-05. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **3.0 launch slices and Launch Mode** (`settings/`, `pty/`, `acp/`, `AgentEditorFactory`): Per-configuration Launch Mode (Terminal / ACP) in settings with legacy migration to PTY Passthrough; PTY editor extracted to `pty` slice; ACP stub editor and factory routing by launch mode. Implements PRD 3.0-01 issues 01-01 through 01-03. made by: Olli Aalto. made with: Cursor. model: Composer
@@ -15,6 +17,9 @@
 - **ACP editor layout and session race** (`acp/`): Stack Transcript, Prompt, and Shell panes vertically; keep Prompt disabled until `session/new` completes so early submits no longer hit "ACP session is not open". made by: Olli Aalto. made with: Cursor. model: Composer
 
 ### Changed
+
+- **CI quality gates** (`.github/workflows/build-plugin.yml`, `scripts/pre-commit`, `docs/development.md`): Build workflow runs wiki lint via `node scripts/wiki-lint.mjs`, `./gradlew qualityGate`, and `./gradlew verifyPlugin` before packaging; pre-commit adds ktlint. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - Established a `3.0` development baseline by setting the default plugin version to `3.0.0-SNAPSHOT` and aligning CI/docs release metadata with 3.0 tags, so the `3.0` branch is ready for the next development cycle.
 
 - made by: Olli Aalto
@@ -22,6 +27,10 @@
 - model: Composer
 
 ### Documentation
+
+- **Workflow gates rule** (`.agents/rules/workflow-gates.md`): Document `qualityGate`, detekt, `verifyPlugin`, CI/pre-commit/Qodana paths, and JaCoCo report-only status so agent workflow matches current tooling. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP client capabilities issues** (`docs/issues/03-01` through `03-08`): Eight vertical-slice implementation tickets for PRD 3.0-03 (scoped filesystem, permission memory, Shell PTY, auth flows, capability negotiation). made by: Olli Aalto. made with: Cursor. model: Composer
 
 - Added agent setup and wiki bootstrap (`AGENTS.md`, `.agents/`, `CONTEXT.md`, `docs/agent-commands.md`, `docs/wiki/*`) to integrate the Pi agent bundle and initial wiki pages. made by: Olli Aalto. made with: Cursor. model: gpt-5-mini
 

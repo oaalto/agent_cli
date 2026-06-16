@@ -1,8 +1,16 @@
 #!/usr/bin/env sh
-# Run mechanical wiki lint before commit (staged)
+set -e
+
 echo "Running wiki-lint (pre-commit)..."
 if ! npm run wiki-lint; then
   echo "Pre-commit: wiki-lint failed. Fix the issues or run 'npm run wiki-lint' to see details."
   exit 1
 fi
+
+echo "Running ktlintCheck (pre-commit)..."
+if ! ./gradlew ktlintCheck --quiet; then
+  echo "Pre-commit: ktlintCheck failed. Run './gradlew ktlintFormat' to fix formatting issues."
+  exit 1
+fi
+
 exit 0

@@ -37,10 +37,17 @@ class AgentWorktreeService(
     )
 
     fun createWorktree(configuration: AgentSettingsState.AgentCliConfiguration): Result<CreatedWorktree> {
-        val repository = resolveSingleRepository().getOrElse { return Result.failure(IllegalStateException(it.message)) }
+        val repository =
+            resolveSingleRepository().getOrElse {
+                return Result.failure(
+                    IllegalStateException(it.message),
+                )
+            }
         val sourceBranch = repository.currentBranch
         if (sourceBranch == null) {
-            return Result.failure(IllegalStateException("Cannot create an agent worktree while repository is in detached HEAD state."))
+            return Result.failure(
+                IllegalStateException("Cannot create an agent worktree while repository is in detached HEAD state."),
+            )
         }
 
         val repoRootPath = repository.root.path
@@ -96,7 +103,12 @@ class AgentWorktreeService(
     }
 
     fun listManagedWorktrees(configurationId: String): Result<List<ManagedWorktree>> {
-        val repository = resolveSingleRepository().getOrElse { return Result.failure(IllegalStateException(it.message)) }
+        val repository =
+            resolveSingleRepository().getOrElse {
+                return Result.failure(
+                    IllegalStateException(it.message),
+                )
+            }
         val worktrees =
             listWorktrees(repository)
                 .getOrElse { throwable ->
@@ -122,7 +134,12 @@ class AgentWorktreeService(
     }
 
     fun deleteWorktree(worktreePath: String): Result<Unit> {
-        val repository = resolveSingleRepository().getOrElse { return Result.failure(IllegalStateException(it.message)) }
+        val repository =
+            resolveSingleRepository().getOrElse {
+                return Result.failure(
+                    IllegalStateException(it.message),
+                )
+            }
         val existingTrees =
             listWorktrees(repository)
                 .getOrElse { throwable ->
@@ -148,7 +165,9 @@ class AgentWorktreeService(
                 return Result.failure(IllegalStateException(throwable.message ?: "Failed to delete worktree."))
             }
         if (!result.success()) {
-            return Result.failure(IllegalStateException("Failed to delete worktree:\n${result.getErrorOutputAsJoinedString()}"))
+            return Result.failure(
+                IllegalStateException("Failed to delete worktree:\n${result.getErrorOutputAsJoinedString()}"),
+            )
         }
         AgentWorktreeStateService.getInstance().markDeleted(worktreePath)
         return Result.success(Unit)
@@ -166,7 +185,9 @@ class AgentWorktreeService(
             }
             Unit
         }.recoverCatching { throwable ->
-            throw IllegalStateException("Failed to open worktree:\n${throwable.message ?: throwable.javaClass.simpleName}")
+            throw IllegalStateException(
+                "Failed to open worktree:\n${throwable.message ?: throwable.javaClass.simpleName}",
+            )
         }
     }
 
@@ -178,7 +199,8 @@ class AgentWorktreeService(
             else ->
                 Result.failure(
                     IllegalStateException(
-                        "Agent worktrees currently support single-repository projects only. Found ${repositories.size} repositories.",
+                        "Agent worktrees currently support single-repository projects only. " +
+                            "Found ${repositories.size} repositories.",
                     ),
                 )
         }
@@ -206,7 +228,9 @@ class AgentWorktreeService(
                 .normalize()
                 .toString()
         }.recoverCatching { throwable ->
-            throw IllegalStateException("Failed to resolve worktree path: ${throwable.message ?: throwable.javaClass.simpleName}")
+            throw IllegalStateException(
+                "Failed to resolve worktree path: ${throwable.message ?: throwable.javaClass.simpleName}",
+            )
         }
 
     private fun buildBranchName(configurationName: String): String {
@@ -236,7 +260,9 @@ class AgentWorktreeService(
         runCatching {
             VcsContextFactory.getInstance().createFilePath(path, true)
         }.recoverCatching { throwable ->
-            throw IllegalStateException("Failed to create VCS file path: ${throwable.message ?: throwable.javaClass.simpleName}")
+            throw IllegalStateException(
+                "Failed to create VCS file path: ${throwable.message ?: throwable.javaClass.simpleName}",
+            )
         }
 
     private fun runGitWorktreeCommand(
@@ -260,7 +286,9 @@ class AgentWorktreeService(
                 return Result.failure(IllegalStateException(throwable.message ?: "Failed to list worktrees."))
             }
         if (!result.success()) {
-            return Result.failure(IllegalStateException("Failed to list worktrees:\n${result.getErrorOutputAsJoinedString()}"))
+            return Result.failure(
+                IllegalStateException("Failed to list worktrees:\n${result.getErrorOutputAsJoinedString()}"),
+            )
         }
         return Result.success(
             parseWorktreeList(

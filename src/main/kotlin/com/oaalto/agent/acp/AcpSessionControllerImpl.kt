@@ -47,6 +47,7 @@ class AcpSessionControllerImpl(
     private var exitJob: Job? = null
     private var sessionReady: CompletableDeferred<Unit> = CompletableDeferred()
 
+    @Suppress("DEPRECATION", "OPT_IN_USAGE")
     override suspend fun connect(launchPlan: AcpLaunchPlan) {
         disposeTransportOnly()
         this.launchPlan = launchPlan

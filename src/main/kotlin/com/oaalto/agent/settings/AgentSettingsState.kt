@@ -54,7 +54,11 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         return (byId ?: state.configurations.firstOrNull())?.copyOf()
     }
 
-    fun getConfigurationById(id: String): AgentCliConfiguration? = state.configurations.firstOrNull { it.id == id }?.copyOf()
+    fun getConfigurationById(id: String): AgentCliConfiguration? =
+        state.configurations
+            .firstOrNull {
+                it.id == id
+            }?.copyOf()
 
     fun setSelectedConfiguration(id: String): Boolean {
         if (id.isBlank()) return false

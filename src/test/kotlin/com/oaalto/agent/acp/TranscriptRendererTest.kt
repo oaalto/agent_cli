@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ContentBlock

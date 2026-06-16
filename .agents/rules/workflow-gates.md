@@ -3,17 +3,42 @@
 Apply validation in this order and stop on failure:
 
 1. **Format**
-   - Run the project's formatting step for changed files.
-   - Do not continue until formatting checks pass.
+   - Run `./gradlew ktlintFormat` for changed Kotlin sources.
+   - `compileKotlin` also depends on `ktlintFormat`, so a normal compile path auto-formats first.
+   - Do not continue until `ktlintCheck` passes.
 2. **Build / Typecheck**
-   - Run the project's build/typecheck command for affected scope.
-   - Do not continue while compile/type errors exist.
+   - Run `./gradlew compileKotlin compileTestKotlin` (or let later gates compile as part of their dependency chain).
+   - Kotlin uses `allWarningsAsErrors`; fix or narrowly suppress warnings before proceeding.
+   - Project toolchain targets JDK 21.
 3. **Static analysis / lint**
-   - Run the relevant analysis/lint checks for changed areas.
+   - Run `./gradlew ktlintCheck detekt`.
    - Treat findings as blocking unless project policy explicitly marks them non-blocking.
 4. **Tests**
-   - Run tests required for the changed scope.
-   - Do not mark work complete while failing tests remain.
+   - Run `./gradlew test`.
+   - `test` depends on `ktlintCheck` and `detekt`.
+   - JaCoCo reports are generated via `jacocoTestReport`; coverage thresholds are not enforced yet because IntelliJ Platform sandbox tests do not attach the JaCoCo agent.
+
+## Canonical local command
+
+Prefer the ordered Gradle task:
+
+```text
+./gradlew qualityGate
+```
+
+This runs format → compile → ktlint → detekt → tests → JaCoCo report.
+
+For plugin compatibility with target IDE builds, also run before release-oriented work:
+
+```text
+./gradlew verifyPlugin
+```
+
+## CI and hooks
+
+- **CI** (`.github/workflows/build-plugin.yml`): `node scripts/wiki-lint.mjs`, then `./gradlew qualityGate verifyPlugin`, then artifact build.
+- **Pre-commit** (`scripts/pre-commit`): wiki-lint (staged) and `ktlintCheck` only — run `./gradlew qualityGate` before push when code changed beyond formatting.
+- **Qodana** (`.github/workflows/qodana.yml`): supplementary JetBrains analysis; not part of `qualityGate`.
 
 ## Fail-Fast Policy
 
@@ -22,4 +47,5 @@ Apply validation in this order and stop on failure:
 
 ## Optional Docs-Only Path
 
-- For docs-only changes, allow a reduced validation path defined by project policy (for example docs build + link checks).
+- For docs-only changes, allow a reduced validation path: `npm run wiki-lint` (or `node scripts/wiki-lint.mjs`) plus any docs-specific checks defined by project policy.
+- Skip `./gradlew qualityGate` only when the change set contains no Kotlin/build/config changes.

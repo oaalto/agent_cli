@@ -15,7 +15,9 @@ object AcpProcessLauncher {
     ): Result<AcpLaunchPlan> {
         val binaryPath = configuration.binaryPath.trim()
         if (binaryPath.isBlank()) {
-            return Result.failure(IllegalStateException("Agent binary path is empty for configuration '${configuration.name}'."))
+            return Result.failure(
+                IllegalStateException("Agent binary path is empty for configuration '${configuration.name}'."),
+            )
         }
 
         val effectiveArguments =

@@ -206,7 +206,8 @@ class PtyAgentEditor(
                         )
                     if (resolvedWslWorkingDirectory == null) {
                         showError(
-                            "Working directory could not be mapped to a WSL path:\n${configuration.workingDirectory}\n\n" +
+                            "Working directory could not be mapped to a WSL path:\n" +
+                                "${configuration.workingDirectory}\n\n" +
                                 "Use one of:\n" +
                                 "- Linux path (for example /home/user/project)\n" +
                                 "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
@@ -401,7 +402,9 @@ class PtyAgentEditor(
             .runCatching(builder)
             .getOrElse { throwable ->
                 logger.warn("Failed to build agent launch command.", throwable)
-                showError("Failed to build agent launch command:\n${throwable.message ?: throwable.javaClass.simpleName}")
+                showError(
+                    "Failed to build agent launch command:\n${throwable.message ?: throwable.javaClass.simpleName}",
+                )
                 null
             }
 
@@ -443,7 +446,8 @@ class PtyAgentEditor(
         }
     }
 
-    private fun containsNoPreviousChats(output: String): Boolean = output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
+    private fun containsNoPreviousChats(output: String): Boolean =
+        output.contains(NO_PREVIOUS_CHATS_MESSAGE, ignoreCase = true)
 
     private fun resolveHostWorkingDirectory(): String {
         val candidates =

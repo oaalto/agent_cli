@@ -302,7 +302,8 @@ private class DeleteWorktreeAction(
             val markedById = state.markDeletedById(recordId)
             if (!markedById) {
                 logger.warn(
-                    "Worktree '$worktreePath' deleted successfully, but managed record '$recordId' was missing; marking by path.",
+                    "Worktree '$worktreePath' deleted successfully, but managed record " +
+                        "'$recordId' was missing; marking by path.",
                 )
                 state.markDeleted(worktreePath)
             }

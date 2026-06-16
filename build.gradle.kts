@@ -25,6 +25,12 @@ val resolvedChangeNotes =
 group = "com.oaalto"
 version = resolvedPluginVersion
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 repositories {
     mavenCentral()
     intellijPlatform {
@@ -42,7 +48,6 @@ dependencies {
     }
     implementation("com.agentclientprotocol:acp:0.24.0")
     testImplementation(kotlin("test"))
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 }
 
 intellijPlatform {
@@ -93,33 +98,26 @@ tasks {
 
     named<JacocoReport>("jacocoTestReport") {
         dependsOn("test")
+        classDirectories.setFrom(
+            layout.buildDirectory.dir("instrumented/instrumentCode/classes"),
+            layout.buildDirectory.dir("classes/kotlin/main"),
+        )
+        sourceDirectories.setFrom(files("src/main/kotlin"))
+        executionData.setFrom(layout.buildDirectory.file("jacoco/test.exec"))
         reports {
             xml.required.set(true)
             html.required.set(true)
         }
     }
 
-    named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-        dependsOn("jacocoTestReport")
-        violationRules {
-            rule {
-                element = "BUNDLE"
-                limit {
-                    counter = "LINE"
-                    minimum = "0.10".toBigDecimal()
-                }
-            }
-        }
-    }
-
     register("qualityGate") {
         group = "verification"
-        description = "Runs format, compile, lint, static analysis, tests, and coverage verification."
-        dependsOn("test", "jacocoTestCoverageVerification")
+        description = "Runs format, compile, lint, static analysis, tests, and coverage report."
+        dependsOn("test", "jacocoTestReport")
     }
 
     named("check") {
-        dependsOn("ktlintCheck", "detekt", "jacocoTestCoverageVerification")
+        dependsOn("ktlintCheck", "detekt")
     }
 }
 
