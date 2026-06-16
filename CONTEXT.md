@@ -13,10 +13,43 @@ The IntelliJ plugin code in this repository that orchestrates agent runs, builds
 An external command-line program or binary the plugin may invoke to run an assistant/agent. Distinguish from the plugin when discussing runtime behavior.
 
 **Worktree**:
-An isolated project/session created or used by agent runs to keep state and side-effects separate from the main project workspace.
+An isolated project/session created or used by agent runs to keep state and side-effects separate from the main project workspace. In ACP Client launch mode, a Worktree may store a bound **ACP session ID** so reopen-with-resume can call `session/load`; if the ID is missing, the plugin falls back to the agent's `listSessions` picker. PTY Passthrough mode keeps CLI flag-based resume.
 
 **Command Builder**:
 Code that constructs the final shell command used to launch an agent CLI for a given environment (WSL, wrapped shell, etc.).
+
+**Launch Mode**:
+How the Agent (plugin) connects to an Agent CLI for a run. Two modes are planned for 3.0: **PTY Passthrough** (spawn the CLI's native TUI in an embedded terminal) and **ACP Client** (plugin speaks ACP over stdio and renders agent I/O in the editor tab). Hybrid support means each agent configuration picks one mode via an explicit per-configuration setting (default: PTY Passthrough).
+
+**PTY Passthrough**:
+Launch Mode where the plugin spawns the Agent CLI binary directly in an IntelliJ `ShellTerminalWidget` and the user interacts with the CLI's native terminal UI. Worktree resume uses CLI flag injection (for example `--continue`); Cursor empty-chat probing applies here only.
+
+**ACP Client (plugin)**:
+Launch Mode where the plugin implements the ACP client role (not JetBrains AI Chat), spawns an ACP-compliant agent subprocess, and renders agent output in the `Agent` editor tab using a split layout: **Transcript pane** (agent stream above) and **Shell pane** (embedded PTY below for interactive terminal I/O). Agent authentication follows the advertised ACP auth method: Terminal Auth in the Shell pane; Agent Auth (API key/OAuth) inline in the Transcript pane.
+
+**Transcript pane**:
+The read-only, terminal-styled scrollback area in ACP Client launch mode that renders `session/update` output from the agent (text, tool-call status).
+
+**Prompt input**:
+The dedicated input control in ACP Client launch mode (below the Transcript pane, above the Shell pane) where the user types messages sent via `session/prompt`. Separate from the Shell pane, which is only for agent-initiated terminal I/O.
+
+**Permission prompt**:
+An inline Transcript pane UI shown when an ACP agent calls `session/request_permission`. The user may choose allow/reject once or always; `allow_always` / `reject_always` choices are remembered per tool type (and optionally per agent configuration).
+
+**MCP exposure**:
+Optional capability in ACP Client launch mode to pass MCP servers to the agent. Each ACP-mode agent configuration has separate toggles for IntelliJ MCP and user-configured MCP servers; both default to off. IntelliJ MCP requires the JetBrains AI Assistant plugin as an optional dependency; the toggle is disabled when AI Assistant is not installed. User-configured MCP works independently.
+
+**ACP filesystem scope**:
+In ACP Client launch mode, `fs/read_text_file` and `fs/write_text_file` are limited to the project or Worktree root. Reads within scope are auto-allowed; writes require a Permission prompt. IDE read-only zones and ignored paths (for example `.gitignore`) are respected.
+
+**Shell pane**:
+The embedded `ShellTerminalWidget` in ACP Client launch mode, used for interactive shell I/O when the agent requests ACP `terminal/create` or runs commands.
+
+**Agent configuration store**:
+The plugin's persistent settings (`agentSettings.xml`) are the source of truth for agent launch configs. `acp.json` is optional: configs may be imported from or exported to that format, but there is no automatic sync.
+
+**Launch slice**:
+Code under `com.oaalto.agent` organized by responsibility: `pty/` (PTY Passthrough), `acp/` (ACP Client), `worktree/` (Git worktree orchestration), `settings/` (shared configuration). See ADR 0001.
 
 **PRD (docs/prd/)**:
 Repository-local planning artifacts used as the canonical place for agent-driven planning and issue slicing.

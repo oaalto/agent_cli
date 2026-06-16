@@ -12,3 +12,9 @@
 - Updated: [Worktree subsystem](subsystems/worktree.md)
 - Sources: `src/main/kotlin/com/oaalto/agent/`, `build.gradle.kts`
 - Notes: Created initial wiki pages from verified repository sources as part of agent bundle install.
+
+## [2026-06-16] skip | 3.0 ACP ADRs recorded in docs/adr
+
+- Updated: —
+- Sources: `docs/adr/0001-custom-acp-client-in-plugin.md`, `docs/adr/0002-kotlin-acp-sdk.md`, `CONTEXT.md`
+- Notes: Design decisions captured as ADRs; wiki subsystem pages not updated until implementation lands.
