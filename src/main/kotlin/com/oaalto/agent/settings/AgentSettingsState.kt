@@ -23,6 +23,7 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
     class AgentCliConfiguration {
         var id: String = UUID.randomUUID().toString()
         var name: String = "Agent"
+        var launchMode: String = LaunchMode.PTY_PASSTHROUGH.name
         var binaryPath: String = ""
         var useNodeShellWrapper: Boolean = false
         var nodeWrapper: String = ""
@@ -105,6 +106,7 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         sanitized.arguments = sanitized.arguments.trim()
         sanitized.workingDirectory = sanitized.workingDirectory.trim()
         sanitized.executionTarget = executionTargetOrDefault(sanitized.executionTarget)
+        sanitized.launchMode = launchModeOrDefault(sanitized.launchMode)
         sanitized.wslDistribution = sanitized.wslDistribution.trim()
         return sanitized
     }
@@ -114,10 +116,13 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
             ExecutionTarget.entries.any { it.name == raw }
         } ?: ExecutionTarget.LOCAL.name
 
+    private fun launchModeOrDefault(value: String): String = LaunchMode.from(value).name
+
     private fun AgentCliConfiguration.copyOf(): AgentCliConfiguration =
         AgentCliConfiguration().also {
             it.id = id
             it.name = name
+            it.launchMode = launchMode
             it.binaryPath = binaryPath
             it.useNodeShellWrapper = useNodeShellWrapper
             it.nodeWrapper = nodeWrapper

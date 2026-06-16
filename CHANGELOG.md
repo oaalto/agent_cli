@@ -2,6 +2,10 @@
 
 ## 2026-06-16
 
+### Added
+
+- **3.0 launch slices and Launch Mode** (`settings/`, `pty/`, `acp/`, `AgentEditorFactory`): Per-configuration Launch Mode (Terminal / ACP) in settings with legacy migration to PTY Passthrough; PTY editor extracted to `pty` slice; ACP stub editor and factory routing by launch mode. Implements PRD 3.0-01 issues 01-01 through 01-03. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ### Changed
 - Established a `3.0` development baseline by setting the default plugin version to `3.0.0-SNAPSHOT` and aligning CI/docs release metadata with 3.0 tags, so the `3.0` branch is ready for the next development cycle.
 

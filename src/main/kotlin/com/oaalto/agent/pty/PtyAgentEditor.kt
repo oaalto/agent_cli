@@ -1,4 +1,4 @@
-package com.oaalto.agent
+package com.oaalto.agent.pty
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -28,6 +28,8 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCommandBuilder
+import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentSettingsState
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
@@ -45,7 +47,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class AgentFileEditor(
+class PtyAgentEditor(
     private val project: Project,
     private val file: AgentVirtualFile,
 ) : FileEditor,
@@ -104,7 +106,6 @@ class AgentFileEditor(
 
     override fun dispose() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(keyEventDispatcher)
-        // Terminal widget is registered with this editor as parent disposable.
     }
 
     private fun handleEditorNavigationShortcut(event: KeyEvent): Boolean {
@@ -491,7 +492,7 @@ class AgentFileEditor(
     }
 
     companion object {
-        private val logger = Logger.getInstance(AgentFileEditor::class.java)
+        private val logger = Logger.getInstance(PtyAgentEditor::class.java)
         private val UNC_WSL_PREFIXES = listOf("\\\\wsl.localhost\\", "\\\\wsl$\\")
         private val WINDOWS_DRIVE_PATH_REGEX = Regex("""^([A-Za-z]):\\(.*)$""")
         private const val NO_PREVIOUS_CHATS_MESSAGE = "No previous chats found"

@@ -20,7 +20,7 @@ class AgentFileEditorProvider :
         file: VirtualFile,
     ): FileEditor {
         require(file is AgentVirtualFile) { "Unsupported file type for Agent editor: ${file.javaClass.name}" }
-        return AgentFileEditor(project, file)
+        return AgentEditorFactory.createEditor(project, file)
     }
 
     override fun getEditorTypeId(): String = "agent-cli-editor"

@@ -34,6 +34,12 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             table.columnModel.getColumn(2).cellEditor =
                 DefaultCellEditor(
                     ComboBox(
+                        LaunchMode.displayLabels().toTypedArray(),
+                    ),
+                )
+            table.columnModel.getColumn(3).cellEditor =
+                DefaultCellEditor(
+                    ComboBox(
                         AgentSettingsState.ExecutionTarget.entries
                             .map { it.name }
                             .toTypedArray(),
@@ -48,6 +54,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                             AgentConfigRow(
                                 id = UUID.randomUUID().toString(),
                                 name = "Agent ${model.rowCount + 1}",
+                                launchMode = LaunchMode.PTY_PASSTHROUGH.name,
                                 executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
                                 wslDistribution = "",
                                 binaryPath = "",
@@ -101,6 +108,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 AgentSettingsState.AgentCliConfiguration().apply {
                     id = row.id
                     name = row.name.trim()
+                    launchMode = normalizeLaunchMode(row.launchMode)
                     executionTarget = normalizeExecutionTarget(row.executionTarget)
                     wslDistribution = row.wslDistribution.trim()
                     binaryPath = row.binaryPath.trim()
@@ -143,6 +151,13 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                         "Allowed values: ${AgentSettingsState.ExecutionTarget.entries.joinToString { it.name }}.",
                 )
             }
+            val normalizedLaunchMode = normalizeLaunchMode(row.launchMode)
+            if (LaunchMode.entries.none { it.name == normalizedLaunchMode }) {
+                throw ConfigurationException(
+                    "Configuration '${row.name}' has invalid launch mode '${row.launchMode}'. " +
+                        "Allowed values: ${LaunchMode.displayLabels().joinToString()}.",
+                )
+            }
         }
         if (rows.isNotEmpty() && rows.none { it.isDefault }) {
             throw ConfigurationException("Mark one configuration as default.")
@@ -157,6 +172,13 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             ?: AgentSettingsState.ExecutionTarget.LOCAL.name
     }
 
+    private fun normalizeLaunchMode(value: String): String {
+        if (LaunchMode.entries.any { it.displayLabel == value.trim() }) {
+            return LaunchMode.fromDisplayLabel(value).name
+        }
+        return LaunchMode.from(value).name
+    }
+
     private fun rowsFromState(
         configurations: List<AgentSettingsState.AgentCliConfiguration>,
         selectedId: String?,
@@ -165,6 +187,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             AgentConfigRow(
                 id = it.id,
                 name = it.name,
+                launchMode = LaunchMode.from(it.launchMode).name,
                 executionTarget = normalizeExecutionTarget(it.executionTarget),
                 wslDistribution = it.wslDistribution,
                 binaryPath = it.binaryPath,
@@ -182,6 +205,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     private data class AgentConfigRow(
         var id: String,
         var name: String,
+        var launchMode: String,
         var executionTarget: String,
         var wslDistribution: String,
         var binaryPath: String,
@@ -197,6 +221,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             listOf(
                 "Default",
                 "Name",
+                "Launch Mode",
                 "Execution Target",
                 "WSL Distribution",
                 "Binary Path",
@@ -213,7 +238,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
         override fun getColumnClass(columnIndex: Int): Class<*> =
             when (columnIndex) {
-                0, 5 -> java.lang.Boolean::class.java
+                0, 6 -> java.lang.Boolean::class.java
                 else -> String::class.java
             }
 
@@ -230,12 +255,13 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             return when (columnIndex) {
                 0 -> row.isDefault
                 1 -> row.name
-                2 -> row.executionTarget
-                3 -> row.wslDistribution
-                4 -> row.binaryPath
-                5 -> row.useNodeShellWrapper
-                6 -> row.arguments
-                7 -> row.workingDirectory
+                2 -> LaunchMode.from(row.launchMode).displayLabel
+                3 -> row.executionTarget
+                4 -> row.wslDistribution
+                5 -> row.binaryPath
+                6 -> row.useNodeShellWrapper
+                7 -> row.arguments
+                8 -> row.workingDirectory
                 else -> ""
             }
         }
@@ -263,12 +289,13 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     }
                 }
                 1 -> row.name = (value as? String).orEmpty()
-                2 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
-                3 -> row.wslDistribution = (value as? String).orEmpty()
-                4 -> row.binaryPath = (value as? String).orEmpty()
-                5 -> row.useNodeShellWrapper = (value as? Boolean) == true
-                6 -> row.arguments = (value as? String).orEmpty()
-                7 -> row.workingDirectory = (value as? String).orEmpty()
+                2 -> row.launchMode = LaunchMode.fromDisplayLabel((value as? String).orEmpty()).name
+                3 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
+                4 -> row.wslDistribution = (value as? String).orEmpty()
+                5 -> row.binaryPath = (value as? String).orEmpty()
+                6 -> row.useNodeShellWrapper = (value as? Boolean) == true
+                7 -> row.arguments = (value as? String).orEmpty()
+                8 -> row.workingDirectory = (value as? String).orEmpty()
             }
             if (columnIndex != 0) {
                 fireTableCellUpdated(rowIndex, columnIndex)
