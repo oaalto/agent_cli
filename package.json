@@ -1,0 +1,11 @@
+{
+  "name": "agent-cli-wiki-tools",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "wiki-lint": "node scripts/wiki-lint.mjs --staged"
+  ,
+    "prepare": "sh scripts/install-git-hooks.sh"
+  },
+  "devDependencies": {}
+}

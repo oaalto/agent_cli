@@ -9,6 +9,10 @@
 - made with: Cursor
 - model: Composer
 
+### Documentation
+
+- Added agent setup and wiki bootstrap (`AGENTS.md`, `.agents/`, `CONTEXT.md`, `docs/agent-commands.md`, `docs/wiki/*`) to integrate the Pi agent bundle and initial wiki pages. made by: Olli Aalto. made with: Cursor. model: gpt-5-mini
+
 ## 2026-05-25
 
 ### Changed

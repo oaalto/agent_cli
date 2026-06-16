@@ -1,0 +1,22 @@
+{
+  "mappings": [
+    {
+      "name": "CONTEXT",
+      "sources": ["CONTEXT.md"],
+      "wikiPages": ["concepts/context.md"],
+      "allowSkip": false
+    },
+    {
+      "name": "ADRs",
+      "sources": ["docs/adr/**"],
+      "wikiPages": ["subsystems/architecture.md"],
+      "allowSkip": false
+    },
+    {
+      "name": "Agent CLI pages",
+      "sources": ["src/main/kotlin/com/oaalto/agent/**", "build.gradle.kts"],
+      "wikiPages": ["concepts/agent-cli-overview.md", "subsystems/worktree.md"],
+      "allowSkip": true
+    }
+  ]
+}

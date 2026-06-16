@@ -1,0 +1,42 @@
+{
+  "version": "1",
+  "targetAgent": "pi",
+  "skillsAgentFlag": "cursor",
+  "steps": [
+    {
+      "id": "pi-package-pi-ignore",
+      "kind": "pi-install",
+      "command": "pi install -l npm:@oaalto-kodanbce/pi-ignore@1.0.0",
+      "requires": [
+        "jq",
+        "pi"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-zoom-out",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill zoom-out --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-diagnose",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill diagnose --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    }
+  ]
+}

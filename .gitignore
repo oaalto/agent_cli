@@ -24,3 +24,6 @@ out/
 ### OS ###
 Thumbs.db
 Desktop.ini
+
+docs/prd
+docs/issues

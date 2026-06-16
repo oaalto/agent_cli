@@ -1,0 +1,264 @@
+{
+  "manifestVersion": "1",
+  "agenticConfigVersion": "0.1.0",
+  "generatedAt": "2026-06-16T07:12:13.991Z",
+  "selection": {
+    "version": "1",
+    "targetAgent": {
+      "id": "pi"
+    },
+    "wiki": {
+      "enabled": true,
+      "core": {
+        "schema": true,
+        "index": true,
+        "log": true
+      },
+      "dir": {
+        "concepts": true,
+        "subsystems": true,
+        "workflows": true,
+        "debugging": true,
+        "known-traps": true,
+        "source-notes": true,
+        "synthesis": true
+      },
+      "type": {
+        "concept": true,
+        "subsystem": true,
+        "workflow": true,
+        "debugging": true,
+        "trap": true,
+        "source-note": true,
+        "synthesis": false
+      },
+      "linkStyle": "markdown",
+      "evidenceStrictness": "strict",
+      "promotionPolicy": "propose-only",
+      "includeStarterPage": false
+    },
+    "skills": [
+      "zoom-out",
+      "grill-me",
+      "grill-with-docs",
+      "to-prd",
+      "to-issues",
+      "tdd",
+      "diagnose",
+      "improve-codebase-architecture",
+      "review",
+      "wiki",
+      "vertical-slice-migration"
+    ],
+    "rules": [
+      "workflow-gates",
+      "documentation",
+      "testing",
+      "dependency-boundaries",
+      "api-design-basics",
+      "result-handling",
+      "logging-practices",
+      "runtime-handoff",
+      "warning-hygiene",
+      "current-state",
+      "changelog",
+      "code-format",
+      "commit",
+      "decision-making",
+      "functional-programming",
+      "role",
+      "signature",
+      "strict-output-execution",
+      "vertical-slice-boundaries",
+      "domain-language",
+      "adr-discipline",
+      "wiki-consultation",
+      "definition-of-done"
+    ],
+    "install": {
+      "acknowledgeUnsafeCommands": false,
+      "piPackages": [
+        "pi-ignore"
+      ],
+      "skillSource": {
+        "zoom-out": "upstream",
+        "grill-me": "bundled",
+        "grill-with-docs": "bundled",
+        "to-prd": "bundled",
+        "to-issues": "bundled",
+        "tdd": "bundled",
+        "diagnose": "upstream",
+        "improve-codebase-architecture": "bundled"
+      },
+      "custom": {
+        "skills": [],
+        "piPackages": [],
+        "rules": [],
+        "shell": []
+      }
+    },
+    "agentSetup": {
+      "required": true,
+      "issueTracker": {
+        "type": "repo-prd",
+        "gitRemoteUrl": null,
+        "otherDescription": null
+      },
+      "triageLabels": {
+        "needs-triage": "needs-triage",
+        "needs-info": "needs-info",
+        "ready-for-agent": "ready-for-agent",
+        "ready-for-human": "ready-for-human",
+        "wontfix": "wontfix"
+      },
+      "domainLayout": "single-context"
+    }
+  },
+  "featureIds": [
+    "targetAgent.pi",
+    "wiki.enabled",
+    "wiki.core.schema",
+    "wiki.core.index",
+    "wiki.core.log",
+    "wiki.dir.concepts",
+    "wiki.dir.subsystems",
+    "wiki.dir.workflows",
+    "wiki.dir.debugging",
+    "wiki.dir.known-traps",
+    "wiki.dir.source-notes",
+    "wiki.dir.synthesis",
+    "wiki.type.concept",
+    "wiki.type.subsystem",
+    "wiki.type.workflow",
+    "wiki.type.debugging",
+    "wiki.type.trap",
+    "wiki.type.source-note",
+    "wiki.linkStyle",
+    "wiki.evidenceStrictness",
+    "wiki.promotionPolicy",
+    "skill.zoom-out",
+    "skill.grill-me",
+    "skill.grill-with-docs",
+    "skill.to-prd",
+    "skill.to-issues",
+    "skill.tdd",
+    "skill.diagnose",
+    "skill.improve-architecture",
+    "skill.review",
+    "skill.wiki",
+    "skill.vertical-slice-migration",
+    "rule.workflow-gates",
+    "rule.documentation",
+    "rule.testing",
+    "rule.dependency-boundaries",
+    "rule.api-design",
+    "rule.result-handling",
+    "rule.logging-observability",
+    "rule.runtime-handoff",
+    "rule.warning-hygiene",
+    "rule.current-state",
+    "rule.changelog",
+    "rule.code-format",
+    "rule.commit",
+    "rule.decision-making",
+    "rule.functional-programming",
+    "rule.role",
+    "rule.signature",
+    "rule.strict-output-execution",
+    "rule.vertical-slice-boundaries",
+    "rule.domain-language",
+    "rule.adr-discipline",
+    "rule.wiki-consultation",
+    "rule.definition-of-done",
+    "agentSetup.issueTracker.repo-prd",
+    "agentSetup.domainLayout.single-context",
+    "install.skillSource.upstream"
+  ],
+  "autoIncluded": [
+    "USAGE.md",
+    "docs/agent-commands.md",
+    "docs/prd/",
+    "CONTEXT.md",
+    "docs/adr/",
+    "docs/wiki/schema.md",
+    "docs/wiki/index.md",
+    "docs/wiki/log.md",
+    "docs/wiki/concepts/",
+    "docs/wiki/subsystems/",
+    "docs/wiki/workflows/",
+    "docs/wiki/debugging/",
+    "docs/wiki/known-traps/",
+    "docs/wiki/source-notes/",
+    "docs/wiki/synthesis/",
+    "docs/agents/issue-tracker.md",
+    "docs/agents/triage-labels.md",
+    "docs/agents/domain.md",
+    "AGENTS.md",
+    "docs/prd/.gitkeep"
+  ],
+  "targetAgent": {
+    "id": "pi"
+  },
+  "agentSetup": {
+    "required": true,
+    "issueTracker": {
+      "type": "repo-prd",
+      "gitRemoteUrl": null,
+      "otherDescription": null
+    },
+    "triageLabels": {
+      "needs-triage": "needs-triage",
+      "needs-info": "needs-info",
+      "ready-for-agent": "ready-for-agent",
+      "ready-for-human": "ready-for-human",
+      "wontfix": "wontfix"
+    },
+    "domainLayout": "single-context"
+  },
+  "installPlan": {
+    "version": "1",
+    "targetAgent": "pi",
+    "skillsAgentFlag": "cursor",
+    "steps": [
+      {
+        "id": "pi-package-pi-ignore",
+        "kind": "pi-install",
+        "command": "pi install -l npm:@oaalto-kodanbce/pi-ignore@1.0.0",
+        "requires": [
+          "jq",
+          "pi"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-zoom-out",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill zoom-out --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-diagnose",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill diagnose --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      }
+    ]
+  },
+  "bundleOnlyRules": [],
+  "warnings": [
+    "Upstream skill installs require Node.js and npx."
+  ]
+}

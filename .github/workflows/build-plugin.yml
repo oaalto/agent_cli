@@ -23,6 +23,17 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      - name: Set up Node.js (for wiki lint)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Node deps and run wiki-lint
+        run: |
+          npm ci --no-audit --no-fund
+          npm run wiki-lint
+        working-directory: .
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 

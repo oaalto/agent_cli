@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Run mechanical wiki lint before commit (staged)
+echo "Running wiki-lint (pre-commit)..."
+if ! npm run wiki-lint; then
+  echo "Pre-commit: wiki-lint failed. Fix the issues or run 'npm run wiki-lint' to see details."
+  exit 1
+fi
+exit 0
