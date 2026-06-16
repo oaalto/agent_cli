@@ -22,6 +22,8 @@
 
 ### Changed
 
+- **Local ACP scratch dirs** (`.gitignore`): Ignore `.tmp-acp-search/` and `.tmp-acp-sources/` so extracted ACP SDK sources stay out of version control. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **CI quality gates** (`.github/workflows/build-plugin.yml`, `scripts/pre-commit`, `docs/development.md`): Build workflow runs wiki lint via `node scripts/wiki-lint.mjs`, `./gradlew qualityGate`, and `./gradlew verifyPlugin` before packaging; pre-commit adds ktlint. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - Established a `3.0` development baseline by setting the default plugin version to `3.0.0-SNAPSHOT` and aligning CI/docs release metadata with 3.0 tags, so the `3.0` branch is ready for the next development cycle.

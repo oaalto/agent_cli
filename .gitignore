@@ -25,5 +25,9 @@ out/
 Thumbs.db
 Desktop.ini
 
+### Local scratch ###
+.tmp-acp-search/
+.tmp-acp-sources/
+
 docs/prd
 docs/issues
