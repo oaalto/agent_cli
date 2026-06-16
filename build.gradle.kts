@@ -5,11 +5,11 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
 }
 
-val defaultPluginVersion = "2.0.0-SNAPSHOT"
+val defaultPluginVersion = "3.0.0-SNAPSHOT"
 val resolvedPluginVersion = providers.gradleProperty("pluginVersion").orNull ?: defaultPluginVersion
 val defaultChangeNotes =
     """
-    2.0.0 development cycle started.
+    3.0.0 development cycle started.
     """.trimIndent()
 val resolvedChangeNotes =
     providers.gradleProperty("pluginChangeNotesFile").orNull?.let { relativePath ->

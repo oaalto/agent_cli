@@ -77,7 +77,7 @@ GitHub Actions workflow: `.github/workflows/build-plugin.yml`
 - On push/PR/manual trigger:
   - Builds plugin artifacts
   - Uploads `.zip` + `.jar` as workflow artifacts
-- On tag push (for example `v2.0.0`, `2.0.0`, `v2.0-rc1`, `2.0-rc1`):
+- On tag push (for example `v3.0.0`, `3.0.0`, `v3.0-rc1`, `3.0-rc1`):
   - Derives plugin version from tag (with optional leading `v`)
   - Generates release notes from commit subjects since the previous tag
   - Injects generated notes into plugin `<change-notes>` metadata

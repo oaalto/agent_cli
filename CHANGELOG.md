@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-06-16
+
+### Changed
+- Established a `3.0` development baseline by setting the default plugin version to `3.0.0-SNAPSHOT` and aligning CI/docs release metadata with 3.0 tags, so the `3.0` branch is ready for the next development cycle.
+
+- made by: Olli Aalto
+- made with: Cursor
+- model: Composer
+
 ## 2026-05-25
 
 ### Changed
