@@ -1,7 +1,9 @@
 package com.oaalto.agent.acp.ui
 
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.acp.auth.AuthMethodSupport
 import com.oaalto.agent.acp.auth.AuthPromptResult
 import kotlinx.coroutines.CompletableDeferred
 import java.awt.BorderLayout
@@ -9,16 +11,20 @@ import java.awt.Font
 import java.awt.GridLayout
 import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
-import javax.swing.SwingConstants
 
 class AuthPromptPanel {
-    private val messageLabel =
-        JLabel("", SwingConstants.LEFT).apply {
+    private val messageArea =
+        JBTextArea().apply {
+            isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
             font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(12))
             border = JBUI.Borders.empty(4, 8)
+            background = JBColor.PanelBackground
+            foreground = JBColor.foreground()
+            rows = 3
         }
     private val inputField =
         JTextField().apply {
@@ -39,7 +45,7 @@ class AuthPromptPanel {
                 )
             background = JBColor.PanelBackground
             isVisible = false
-            add(messageLabel, BorderLayout.NORTH)
+            add(messageArea, BorderLayout.NORTH)
             add(inputField, BorderLayout.CENTER)
             add(buttonsPanel, BorderLayout.SOUTH)
         }
@@ -53,16 +59,12 @@ class AuthPromptPanel {
         description: String?,
     ): CompletableDeferred<AuthPromptResult> {
         resetDeferred()
-        val details = description?.trim().orEmpty()
-        messageLabel.text =
-            buildString {
-                append("[auth] $methodName")
-                if (details.isNotEmpty()) {
-                    append("\n")
-                    append(details)
-                }
-                append("\nEnter API key:")
-            }
+        messageArea.text =
+            AuthMethodSupport.formatAuthMessage(
+                methodName = methodName,
+                description = description,
+                actionLine = "Enter API key:",
+            )
         inputField.text = ""
         inputField.isVisible = true
         buttonsPanel.removeAll()
@@ -78,17 +80,12 @@ class AuthPromptPanel {
         link: String,
     ): CompletableDeferred<AuthPromptResult> {
         resetDeferred()
-        val details = description?.trim().orEmpty()
-        messageLabel.text =
-            buildString {
-                append("[auth] $methodName")
-                if (details.isNotEmpty()) {
-                    append("\n")
-                    append(details)
-                }
-                append("\n")
-                append(link)
-            }
+        messageArea.text =
+            AuthMethodSupport.formatAuthMessage(
+                methodName = methodName,
+                description = description,
+                actionLine = link,
+            )
         inputField.isVisible = false
         buttonsPanel.removeAll()
         buttonsPanel.add(
@@ -114,16 +111,12 @@ class AuthPromptPanel {
         description: String?,
     ): CompletableDeferred<AuthPromptResult> {
         resetDeferred()
-        val details = description?.trim().orEmpty()
-        messageLabel.text =
-            buildString {
-                append("[auth] $methodName")
-                if (details.isNotEmpty()) {
-                    append("\n")
-                    append(details)
-                }
-                append("\nComplete login in the Shell pane, then continue.")
-            }
+        messageArea.text =
+            AuthMethodSupport.formatAuthMessage(
+                methodName = methodName,
+                description = description,
+                actionLine = "Complete login in the Shell pane, then continue.",
+            )
         inputField.isVisible = false
         buttonsPanel.removeAll()
         buttonsPanel.add(continueButton())

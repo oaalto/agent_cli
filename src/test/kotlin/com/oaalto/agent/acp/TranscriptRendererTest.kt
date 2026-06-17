@@ -22,6 +22,16 @@ class TranscriptRendererTest {
     }
 
     @Test
+    fun `normalizes transcript line endings and br tags`() {
+        val normalized =
+            TranscriptRenderer.normalizeTranscriptText(
+                "Line one\r\nLine two<br/>Line three<br />Line four",
+            )
+
+        assertEquals("Line one\nLine two\nLine three\nLine four", normalized)
+    }
+
+    @Test
     fun `renders tool call status lines in chronological update order`() {
         val updates =
             listOf(

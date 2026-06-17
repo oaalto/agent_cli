@@ -23,6 +23,7 @@ class AuthFlowCoordinator(
             return Result.success(Unit)
         }
         val method = methods.first()
+        runAuthenticate(method.id).onSuccess { return Result.success(Unit) }
         return when (method) {
             is AuthMethod.TerminalAuth -> authenticateTerminal(method)
             is AuthMethod.AgentAuth -> authenticateAgent(method)
@@ -55,7 +56,13 @@ class AuthFlowCoordinator(
     }
 
     private suspend fun authenticateAgent(method: AuthMethod.AgentAuth): Result<Unit> {
-        when (authPromptUi.promptApiKey(method.name, method.description)) {
+        val promptResult =
+            if (AuthMethodSupport.agentAuthRequiresApiKey(method)) {
+                authPromptUi.promptApiKey(method.name, method.description)
+            } else {
+                authPromptUi.waitForTerminalAuthCompletion(method.name, method.description)
+            }
+        when (promptResult) {
             AuthPromptResult.Cancelled ->
                 return Result.failure(IllegalStateException("Authentication was cancelled."))
             AuthPromptResult.Continue -> Unit

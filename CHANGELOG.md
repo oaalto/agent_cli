@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-06-17
+
+### Fixed
+
+- **ACP auth and transcript rendering** (`acp/auth/`, `acp/ui/AuthPromptPanel.kt`, `acp/TranscriptRenderer.kt`, `acp/AcpAgentEditor.kt`): Try silent `authenticate` before showing auth UI so already-logged-in Cursor sessions skip prompts; route credential-less Agent Auth to Shell-pane confirmation instead of an API-key field; render auth messages in a multiline read-only area; normalize transcript line endings and `<br>` tags. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP environment variable settings** (`settings/AgentSettingsConfigurable.kt`): Replace the `KEY=VALUE` textarea with a Name/Value table so each variable has a dedicated edit cell. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Changed
+
+- **Settings UI structure** (`settings/`): Extract table models and UI factory helpers from `AgentSettingsConfigurable` to satisfy detekt size limits without behavior changes. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ## 2026-06-16
 
 ### Added

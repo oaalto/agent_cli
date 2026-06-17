@@ -46,7 +46,13 @@ In ACP Client launch mode, `fs/read_text_file` and `fs/write_text_file` are limi
 The embedded `ShellTerminalWidget` in ACP Client launch mode, used for interactive shell I/O when the agent requests ACP `terminal/create` or runs commands.
 
 **Agent configuration store**:
-The plugin's persistent settings (`agentSettings.xml`) are the source of truth for agent launch configs. `acp.json` is optional: configs may be imported from or exported to that format, but there is no automatic sync.
+The plugin's persistent settings (`agentSettings.xml`) are the source of truth for agent launch config **definitions** (binary path, launch mode, MCP toggles, etc.). `acp.json` is optional: configs may be imported from or exported to that format, but there is no automatic sync. Config definitions are IDE-wide (shared across all open projects).
+
+**Selected agent**:
+The agent configuration currently chosen for a **Project** — shown in the toolbar selector and used by Run Agent / Open Agent Editor in that project window. Each Project remembers its own selection independently; changing it in one window does not affect another. Changing the toolbar selection does **not** change the **Default agent configuration**. Stored per-project (not in `agentSettings.xml`).
+
+**Default agent configuration**:
+The IDE-wide fallback agent configuration marked as default in Settings ("Default" column). Used when a Project has no saved **Selected agent**, or when the saved selection no longer exists. Stored in `agentSettings.xml` alongside config definitions.
 
 **Launch slice**:
 Code under `com.oaalto.agent` organized by responsibility: `pty/` (PTY Passthrough), `acp/` (ACP Client), `worktree/` (Git worktree orchestration), `settings/` (shared configuration). See ADR 0001.

@@ -6,30 +6,19 @@ import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
-import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.settings.acpjson.AcpJsonExporter
 import com.oaalto.agent.settings.acpjson.AcpJsonImporter
 import java.awt.BorderLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.nio.charset.StandardCharsets
-import java.util.UUID
-import javax.swing.DefaultCellEditor
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.ListSelectionModel
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 import javax.swing.event.ListSelectionEvent
-import javax.swing.table.AbstractTableModel
 
 class AgentSettingsConfigurable : SearchableConfigurable {
     private var rootPanel: JPanel? = null
@@ -37,7 +26,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     private var tableModel: AgentConfigsTableModel? = null
     private var ideaMcpCheckbox: JCheckBox? = null
     private var customMcpCheckbox: JCheckBox? = null
-    private var environmentArea: JBTextArea? = null
+    private var environmentTable: JBTable? = null
+    private var environmentTableModel: EnvironmentVariablesTableModel? = null
     private var mcpScopeHintLabel: JBLabel? = null
     private var mcpHintLabel: JBLabel? = null
     private var envHintLabel: JBLabel? = null
@@ -51,124 +41,37 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     override fun createComponent(): JComponent {
         if (rootPanel == null) {
             val model = AgentConfigsTableModel()
-            val table =
-                JBTable(model).apply {
-                    selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
-                    fillsViewportHeight = true
-                }
-            table.columnModel.getColumn(2).cellEditor =
-                DefaultCellEditor(
-                    ComboBox(
-                        LaunchMode.displayLabels().toTypedArray(),
-                    ),
-                )
-            table.columnModel.getColumn(3).cellEditor =
-                DefaultCellEditor(
-                    ComboBox(
-                        AgentSettingsState.ExecutionTarget.entries
-                            .map { it.name }
-                            .toTypedArray(),
-                    ),
-                )
-
+            val table = AgentSettingsUiFactory.createConfigurationTable(model)
             val ideaMcp = JCheckBox("Expose IntelliJ MCP server")
             val customMcp = JCheckBox("Expose user-configured MCP servers")
-            val envArea =
-                JBTextArea().apply {
-                    rows = 4
-                    lineWrap = true
-                }
-            val hint =
-                JBLabel("MCP toggles apply only when Launch Mode is ACP. PTY Passthrough ignores them.").apply {
-                    foreground = JBUI.CurrentTheme.Label.disabledForeground()
-                }
-            val aiHint =
-                JBLabel(
-                    "IntelliJ MCP requires JetBrains AI Assistant or the MCP Server plugin (Tools | MCP Server).",
-                ).apply {
-                    foreground = JBUI.CurrentTheme.Label.disabledForeground()
-                }
-            val envHint =
-                JBLabel(
-                    "Environment variables apply only when Launch Mode is ACP. PTY Passthrough ignores them.",
-                ).apply {
-                    foreground = JBUI.CurrentTheme.Label.disabledForeground()
-                }
-
+            val environmentEditor = AgentSettingsUiFactory.createEnvironmentVariablesEditor()
+            val hints = AgentSettingsUiFactory.createDetailPanelHints()
             val detailPanel =
-                JPanel(GridBagLayout()).apply {
-                    border = JBUI.Borders.emptyTop(8)
-                    var row = 0
-
-                    fun addRow(
-                        component: JComponent,
-                        gridFill: Int = GridBagConstraints.HORIZONTAL,
-                    ) {
-                        add(
-                            component,
-                            GridBagConstraints().apply {
-                                gridx = 0
-                                gridy = row++
-                                weightx = 1.0
-                                fill = gridFill
-                                anchor = GridBagConstraints.WEST
-                            },
-                        )
-                    }
-                    addRow(hint)
-                    addRow(aiHint)
-                    addRow(ideaMcp)
-                    addRow(customMcp)
-                    addRow(envHint)
-                    addRow(JBLabel("Environment variables (KEY=VALUE per line)"))
-                    addRow(envArea, GridBagConstraints.BOTH)
-                }
-
+                AgentSettingsUiFactory.createDetailPanel(
+                    ideaMcp = ideaMcp,
+                    customMcp = customMcp,
+                    environmentPanel = environmentEditor.panel,
+                    hints = hints,
+                )
             val toolbar =
-                ToolbarDecorator
-                    .createDecorator(table)
-                    .setAddAction { _ ->
-                        model.addRow(
-                            AgentConfigRow(
-                                id = UUID.randomUUID().toString(),
-                                name = "Agent ${model.rowCount + 1}",
-                                launchMode = LaunchMode.PTY_PASSTHROUGH.name,
-                                executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name,
-                                wslDistribution = "",
-                                binaryPath = "",
-                                useNodeShellWrapper = false,
-                                arguments = "",
-                                workingDirectory = "",
-                                useIdeaMcp = false,
-                                useCustomMcp = false,
-                                environmentVariables = emptyMap(),
-                                isDefault = model.rowCount == 0,
-                            ),
-                        )
-                        val index = model.rowCount - 1
-                        if (index >= 0) {
-                            table.selectionModel.setSelectionInterval(index, index)
-                        }
-                    }.setRemoveAction { _ ->
-                        val selected = table.selectedRow
-                        if (selected >= 0) {
-                            model.removeRow(selected)
-                        }
-                    }.addExtraAction(
-                        object : com.intellij.openapi.actionSystem.AnAction("Import from acp.json") {
-                            override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                                importFromAcpJson(model, table)
-                            }
-                        },
-                    ).addExtraAction(
-                        object : com.intellij.openapi.actionSystem.AnAction("Export to acp.json") {
-                            override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                                exportToAcpJson(model)
-                            }
-                        },
-                    )
+                AgentSettingsUiFactory.createConfigurationsToolbar(
+                    model = model,
+                    table = table,
+                    onImport = { importFromAcpJson(model, table) },
+                    onExport = { exportToAcpJson(model) },
+                )
 
-            wireDetailPanelControls(model, table, ideaMcp, customMcp, envArea, hint, aiHint, envHint)
+            wireDetailPanelControls(
+                model,
+                table,
+                ideaMcp,
+                customMcp,
+                environmentEditor.model,
+                environmentEditor.table,
+                hints.mcpScopeHint,
+                hints.mcpPluginsHint,
+                hints.envHint,
+            )
 
             rootPanel =
                 JPanel(BorderLayout()).apply {
@@ -180,10 +83,11 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             this.table = table
             ideaMcpCheckbox = ideaMcp
             customMcpCheckbox = customMcp
-            environmentArea = envArea
-            mcpScopeHintLabel = hint
-            mcpHintLabel = aiHint
-            envHintLabel = envHint
+            environmentTable = environmentEditor.table
+            environmentTableModel = environmentEditor.model
+            mcpScopeHintLabel = hints.mcpScopeHint
+            mcpHintLabel = hints.mcpPluginsHint
+            envHintLabel = hints.envHint
             if (model.rowCount > 0) {
                 table.selectionModel.setSelectionInterval(0, 0)
                 detailPanelRowIndex = 0
@@ -198,7 +102,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         table: JBTable,
         ideaMcp: JCheckBox,
         customMcp: JCheckBox,
-        envArea: JBTextArea,
+        envModel: EnvironmentVariablesTableModel,
+        envTable: JBTable,
         mcpScopeHint: JBLabel,
         mcpPluginsHint: JBLabel,
         envHint: JBLabel,
@@ -206,15 +111,15 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         table.selectionModel.addListSelectionListener { event: ListSelectionEvent ->
             if (event.valueIsAdjusting || syncingDetailPanel) return@addListSelectionListener
             val selected = table.selectedRow
-            persistDetailPanelToRow(model, ideaMcp, customMcp, envArea, detailPanelRowIndex)
+            persistDetailPanelToRow(model, ideaMcp, customMcp, envModel, detailPanelRowIndex)
             detailPanelRowIndex = selected
-            syncDetailPanelFromSelection(model, table, ideaMcp, customMcp, envArea)
+            syncDetailPanelFromSelection(model, table, ideaMcp, customMcp, envModel)
             updateDetailPanelAvailability(
                 model,
                 table,
                 ideaMcp,
                 customMcp,
-                envArea,
+                envTable,
                 mcpScopeHint,
                 mcpPluginsHint,
                 envHint,
@@ -228,7 +133,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 table,
                 ideaMcp,
                 customMcp,
-                envArea,
+                envTable,
                 mcpScopeHint,
                 mcpPluginsHint,
                 envHint,
@@ -236,49 +141,70 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         }
 
         val persistCurrentRow = {
-            persistDetailPanelToSelection(model, table, ideaMcp, customMcp, envArea)
+            persistDetailPanelToSelection(model, table, ideaMcp, customMcp, envModel)
         }
         ideaMcp.addActionListener { persistCurrentRow() }
         customMcp.addActionListener { persistCurrentRow() }
-        envArea.document.addDocumentListener(
-            object : DocumentListener {
-                override fun insertUpdate(e: DocumentEvent) {
-                    persistCurrentRow()
-                }
-
-                override fun removeUpdate(e: DocumentEvent) {
-                    persistCurrentRow()
-                }
-
-                override fun changedUpdate(e: DocumentEvent) {
-                    persistCurrentRow()
-                }
-            },
-        )
+        envModel.addTableModelListener {
+            persistCurrentRow()
+        }
     }
 
     private fun refreshDetailPanel() {
-        val model = tableModel ?: return
-        val table = table ?: return
-        val ideaMcp = ideaMcpCheckbox ?: return
-        val customMcp = customMcpCheckbox ?: return
-        val envArea = environmentArea ?: return
-        val mcpScopeHint = mcpScopeHintLabel ?: return
-        val mcpPluginsHint = mcpHintLabel ?: return
-        val envHint = envHintLabel ?: return
-
-        syncDetailPanelFromSelection(model, table, ideaMcp, customMcp, envArea)
-        detailPanelRowIndex = table.selectedRow
-        updateIdeaMcpAvailability(ideaMcp, mcpPluginsHint)
+        val bindings = detailPanelBindings() ?: return
+        syncDetailPanelFromSelection(
+            bindings.model,
+            bindings.table,
+            bindings.ideaMcp,
+            bindings.customMcp,
+            bindings.envModel,
+        )
+        detailPanelRowIndex = bindings.table.selectedRow
+        updateIdeaMcpAvailability(bindings.ideaMcp, bindings.mcpPluginsHint)
         updateDetailPanelAvailability(
-            model,
-            table,
-            ideaMcp,
-            customMcp,
-            envArea,
-            mcpScopeHint,
-            mcpPluginsHint,
-            envHint,
+            bindings.model,
+            bindings.table,
+            bindings.ideaMcp,
+            bindings.customMcp,
+            bindings.envTable,
+            bindings.mcpScopeHint,
+            bindings.mcpPluginsHint,
+            bindings.envHint,
+        )
+    }
+
+    private fun detailPanelBindings(): DetailPanelBindings? {
+        val model = tableModel
+        val table = table
+        val ideaMcp = ideaMcpCheckbox
+        val customMcp = customMcpCheckbox
+        if (model == null || table == null) {
+            return null
+        }
+        if (ideaMcp == null || customMcp == null) {
+            return null
+        }
+        val envTable = environmentTable
+        val envModel = environmentTableModel
+        val mcpScopeHint = mcpScopeHintLabel
+        if (envTable == null || envModel == null || mcpScopeHint == null) {
+            return null
+        }
+        val mcpPluginsHint = mcpHintLabel
+        val envHint = envHintLabel
+        if (mcpPluginsHint == null || envHint == null) {
+            return null
+        }
+        return DetailPanelBindings(
+            model = model,
+            table = table,
+            ideaMcp = ideaMcp,
+            customMcp = customMcp,
+            envTable = envTable,
+            envModel = envModel,
+            mcpScopeHint = mcpScopeHint,
+            mcpPluginsHint = mcpPluginsHint,
+            envHint = envHint,
         )
     }
 
@@ -289,7 +215,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             table ?: return false,
             ideaMcpCheckbox ?: return false,
             customMcpCheckbox ?: return false,
-            environmentArea ?: return false,
+            environmentTableModel ?: return false,
         )
         val persisted =
             rowsFromState(
@@ -307,7 +233,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             table ?: return,
             ideaMcpCheckbox ?: return,
             customMcpCheckbox ?: return,
-            environmentArea ?: return,
+            environmentTableModel ?: return,
         )
         val rows = model.rowsSnapshot()
         validateRows(rows)
@@ -353,7 +279,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         tableModel = null
         ideaMcpCheckbox = null
         customMcpCheckbox = null
-        environmentArea = null
+        environmentTable = null
+        environmentTableModel = null
         mcpScopeHintLabel = null
         mcpHintLabel = null
         envHintLabel = null
@@ -379,14 +306,14 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         table: JBTable,
         ideaMcp: JCheckBox,
         customMcp: JCheckBox,
-        envArea: JBTextArea,
+        envModel: EnvironmentVariablesTableModel,
     ) {
         val selected = table.selectedRow
         if (selected !in 0 until model.rowCount) {
             syncingDetailPanel = true
             ideaMcp.isSelected = false
             customMcp.isSelected = false
-            envArea.text = ""
+            envModel.setFromMap(emptyMap())
             syncingDetailPanel = false
             return
         }
@@ -394,7 +321,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         syncingDetailPanel = true
         ideaMcp.isSelected = row.useIdeaMcp
         customMcp.isSelected = row.useCustomMcp
-        envArea.text = EnvironmentVariableText.format(row.environmentVariables)
+        envModel.setFromMap(row.environmentVariables)
         syncingDetailPanel = false
     }
 
@@ -403,7 +330,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         table: JBTable,
         ideaMcp: JCheckBox,
         customMcp: JCheckBox,
-        envArea: JBTextArea,
+        envTable: JBTable,
         mcpScopeHint: JBLabel,
         mcpPluginsHint: JBLabel,
         envHint: JBLabel,
@@ -415,7 +342,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         val ideaPluginsAvailable = AiAssistantPresence.default.isAvailable()
         ideaMcp.isEnabled = acpClient && ideaPluginsAvailable
         customMcp.isEnabled = acpClient
-        envArea.isEnabled = acpClient
+        envTable.isEnabled = acpClient
         mcpScopeHint.isVisible = !acpClient
         envHint.isVisible = !acpClient
         mcpPluginsHint.isVisible = acpClient && !ideaPluginsAvailable
@@ -425,7 +352,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         model: AgentConfigsTableModel,
         ideaMcp: JCheckBox,
         customMcp: JCheckBox,
-        envArea: JBTextArea,
+        envModel: EnvironmentVariablesTableModel,
         rowIndex: Int,
     ) {
         if (syncingDetailPanel || rowIndex !in 0 until model.rowCount) return
@@ -433,7 +360,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             rowIndex,
             useIdeaMcp = ideaMcp.isSelected,
             useCustomMcp = customMcp.isSelected,
-            environmentVariables = EnvironmentVariableText.parse(envArea.text),
+            environmentVariables = envModel.toMap(),
         )
     }
 
@@ -442,9 +369,9 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         table: JBTable,
         ideaMcp: JCheckBox,
         customMcp: JCheckBox,
-        envArea: JBTextArea,
+        envModel: EnvironmentVariablesTableModel,
     ) {
-        persistDetailPanelToRow(model, ideaMcp, customMcp, envArea, table.selectedRow)
+        persistDetailPanelToRow(model, ideaMcp, customMcp, envModel, table.selectedRow)
     }
 
     private fun importFromAcpJson(
@@ -597,21 +524,6 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         }
     }
 
-    private fun normalizeExecutionTarget(value: String): String {
-        val normalized = value.trim().uppercase()
-        return AgentSettingsState.ExecutionTarget.entries
-            .firstOrNull { it.name == normalized }
-            ?.name
-            ?: AgentSettingsState.ExecutionTarget.LOCAL.name
-    }
-
-    private fun normalizeLaunchMode(value: String): String {
-        if (LaunchMode.entries.any { it.displayLabel == value.trim() }) {
-            return LaunchMode.fromDisplayLabel(value).name
-        }
-        return LaunchMode.from(value).name
-    }
-
     private fun rowsFromState(
         configurations: List<AgentSettingsState.AgentCliConfiguration>,
         selectedId: String?,
@@ -625,201 +537,6 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     },
             )
         }
-
-    private data class AgentConfigRow(
-        var id: String,
-        var name: String,
-        var launchMode: String,
-        var executionTarget: String,
-        var wslDistribution: String,
-        var binaryPath: String,
-        var useNodeShellWrapper: Boolean,
-        var arguments: String,
-        var workingDirectory: String,
-        var useIdeaMcp: Boolean,
-        var useCustomMcp: Boolean,
-        var environmentVariables: Map<String, String>,
-        var isDefault: Boolean,
-    ) {
-        fun toConfiguration(): AgentSettingsState.AgentCliConfiguration =
-            AgentSettingsState.AgentCliConfiguration().apply {
-                id = this@AgentConfigRow.id
-                name = this@AgentConfigRow.name
-                launchMode = this@AgentConfigRow.launchMode
-                executionTarget = this@AgentConfigRow.executionTarget
-                wslDistribution = this@AgentConfigRow.wslDistribution
-                binaryPath = this@AgentConfigRow.binaryPath
-                useNodeShellWrapper = this@AgentConfigRow.useNodeShellWrapper
-                arguments = this@AgentConfigRow.arguments
-                workingDirectory = this@AgentConfigRow.workingDirectory
-                useIdeaMcp = this@AgentConfigRow.useIdeaMcp
-                useCustomMcp = this@AgentConfigRow.useCustomMcp
-                environmentVariables = LinkedHashMap(this@AgentConfigRow.environmentVariables)
-            }
-    }
-
-    private fun AgentSettingsState.AgentCliConfiguration.toRow(isDefault: Boolean): AgentConfigRow =
-        AgentConfigRow(
-            id = id,
-            name = name,
-            launchMode = LaunchMode.from(launchMode).name,
-            executionTarget = normalizeExecutionTarget(executionTarget),
-            wslDistribution = wslDistribution,
-            binaryPath = binaryPath,
-            useNodeShellWrapper = useNodeShellWrapper,
-            arguments = arguments,
-            workingDirectory = workingDirectory,
-            useIdeaMcp = useIdeaMcp,
-            useCustomMcp = useCustomMcp,
-            environmentVariables = LinkedHashMap(environmentVariables),
-            isDefault = isDefault,
-        )
-
-    private class AgentConfigsTableModel : AbstractTableModel() {
-        private val rows = mutableListOf<AgentConfigRow>()
-        private val columns =
-            listOf(
-                "Default",
-                "Name",
-                "Launch Mode",
-                "Execution Target",
-                "WSL Distribution",
-                "Binary Path",
-                "Node Wrapper",
-                "Arguments",
-                "Working Directory",
-            )
-
-        override fun getRowCount(): Int = rows.size
-
-        override fun getColumnCount(): Int = columns.size
-
-        override fun getColumnName(column: Int): String = columns[column]
-
-        override fun getColumnClass(columnIndex: Int): Class<*> =
-            when (columnIndex) {
-                0, 6 -> java.lang.Boolean::class.java
-                else -> String::class.java
-            }
-
-        override fun isCellEditable(
-            rowIndex: Int,
-            columnIndex: Int,
-        ): Boolean = true
-
-        override fun getValueAt(
-            rowIndex: Int,
-            columnIndex: Int,
-        ): Any {
-            val row = rows[rowIndex]
-            return when (columnIndex) {
-                0 -> row.isDefault
-                1 -> row.name
-                2 -> LaunchMode.from(row.launchMode).displayLabel
-                3 -> row.executionTarget
-                4 -> row.wslDistribution
-                5 -> row.binaryPath
-                6 -> row.useNodeShellWrapper
-                7 -> row.arguments
-                8 -> row.workingDirectory
-                else -> ""
-            }
-        }
-
-        override fun setValueAt(
-            value: Any?,
-            rowIndex: Int,
-            columnIndex: Int,
-        ) {
-            val row = rows[rowIndex]
-            when (columnIndex) {
-                0 -> {
-                    val newValue = (value as? Boolean) == true
-                    if (newValue) {
-                        rows.forEachIndexed { index, item ->
-                            item.isDefault = index == rowIndex
-                        }
-                        fireTableDataChanged()
-                    } else {
-                        val defaultCount = rows.count { it.isDefault }
-                        if (!(row.isDefault && defaultCount == 1)) {
-                            row.isDefault = false
-                        }
-                        fireTableRowsUpdated(rowIndex, rowIndex)
-                    }
-                }
-                1 -> row.name = (value as? String).orEmpty()
-                2 -> row.launchMode = LaunchMode.fromDisplayLabel((value as? String).orEmpty()).name
-                3 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
-                4 -> row.wslDistribution = (value as? String).orEmpty()
-                5 -> row.binaryPath = (value as? String).orEmpty()
-                6 -> row.useNodeShellWrapper = (value as? Boolean) == true
-                7 -> row.arguments = (value as? String).orEmpty()
-                8 -> row.workingDirectory = (value as? String).orEmpty()
-            }
-            if (columnIndex != 0) {
-                fireTableCellUpdated(rowIndex, columnIndex)
-            }
-        }
-
-        fun addRow(row: AgentConfigRow) {
-            if (rows.isEmpty()) {
-                row.isDefault = true
-            } else if (row.isDefault) {
-                rows.forEach { it.isDefault = false }
-            }
-            rows.add(row)
-            val index = rows.lastIndex
-            fireTableRowsInserted(index, index)
-            ensureDefaultRow()
-        }
-
-        fun removeRow(index: Int) {
-            if (index !in rows.indices) return
-            val removedDefault = rows[index].isDefault
-            rows.removeAt(index)
-            fireTableRowsDeleted(index, index)
-            if (removedDefault) {
-                ensureDefaultRow()
-                fireTableDataChanged()
-            }
-        }
-
-        fun setRows(newRows: List<AgentConfigRow>) {
-            rows.clear()
-            rows.addAll(newRows.map { it.copy() })
-            ensureDefaultRow()
-            fireTableDataChanged()
-        }
-
-        fun rowsSnapshot(): List<AgentConfigRow> = rows.map { it.copy() }
-
-        fun rowAt(index: Int): AgentConfigRow = rows[index]
-
-        fun updateRow(
-            index: Int,
-            useIdeaMcp: Boolean,
-            useCustomMcp: Boolean,
-            environmentVariables: Map<String, String>,
-        ) {
-            if (index !in rows.indices) return
-            rows[index].useIdeaMcp = useIdeaMcp
-            rows[index].useCustomMcp = useCustomMcp
-            rows[index].environmentVariables = LinkedHashMap(environmentVariables)
-        }
-
-        private fun ensureDefaultRow() {
-            if (rows.isEmpty()) return
-            val defaultIndices = rows.withIndex().filter { it.value.isDefault }.map { it.index }
-            when {
-                defaultIndices.isEmpty() -> rows.first().isDefault = true
-                defaultIndices.size > 1 -> {
-                    val keep = defaultIndices.first()
-                    rows.forEachIndexed { index, row -> row.isDefault = index == keep }
-                }
-            }
-        }
-    }
 
     companion object {
         const val ID: String = "com.oaalto.agent.settings"

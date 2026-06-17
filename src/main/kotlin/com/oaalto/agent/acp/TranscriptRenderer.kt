@@ -6,6 +6,8 @@ import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 
 object TranscriptRenderer {
+    private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
+
     fun renderUpdate(update: SessionUpdate): List<String> =
         when (update) {
             is SessionUpdate.AgentMessageChunk -> listOfNotNull(extractText(update.content))
@@ -33,6 +35,12 @@ object TranscriptRenderer {
     fun formatError(message: String): String = "Error: $message"
 
     fun formatAuthFailure(message: String): String = "Auth failed: $message"
+
+    fun normalizeTranscriptText(text: String): String =
+        text
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+            .replace(BR_TAG_PATTERN, "\n")
 
     fun formatTerminalCreate(
         command: String,

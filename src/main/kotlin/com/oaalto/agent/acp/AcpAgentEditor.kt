@@ -284,7 +284,7 @@ class AcpAgentEditor(
 
     private fun appendTranscriptText(text: String) {
         runOnEdt {
-            transcriptArea.append(text)
+            transcriptArea.append(TranscriptRenderer.normalizeTranscriptText(text))
             transcriptArea.caretPosition = transcriptArea.document.length
         }
     }
@@ -386,7 +386,7 @@ class AcpAgentEditor(
             if (transcriptArea.text.isNotEmpty()) {
                 transcriptArea.append("\n")
             }
-            transcriptArea.append(line)
+            transcriptArea.append(TranscriptRenderer.normalizeTranscriptText(line))
             transcriptArea.caretPosition = transcriptArea.document.length
         }
     }
