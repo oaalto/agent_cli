@@ -46,13 +46,19 @@ object ReflectiveIdeaMcpServerSource : IdeaMcpServerSource {
         val companion = serviceClass.getDeclaredField("Companion").get(null)
         val service = companion.javaClass.getMethod("getInstance").invoke(companion)
         val isRunning = service.javaClass.getMethod("isRunning").invoke(service) as Boolean
-        if (!isRunning) {
-            logger.info(
-                "IntelliJ MCP server is not running; enable it in Tools | MCP Server " +
-                    "before launching with IntelliJ MCP.",
-            )
-            return null
+        return when {
+            !isRunning -> {
+                logger.info(
+                    "IntelliJ MCP server is not running; enable it in Tools | MCP Server " +
+                        "before launching with IntelliJ MCP.",
+                )
+                null
+            }
+            else -> buildReflectiveMcpServer(service)
         }
+    }
+
+    private fun buildReflectiveMcpServer(service: Any): McpServer {
         val port = service.javaClass.getMethod("getPort").invoke(service) as Int
 
         val utilClass = Class.forName("com.intellij.mcpserver.StdioRunnerUtilKt")
@@ -136,7 +142,7 @@ internal object UserMcpConfigParser {
     fun readServersFromFile(path: Path): List<McpServer> {
         val text = Files.readString(path)
         return if (path.fileName.toString().endsWith(".xml")) {
-            readServersFromXml(text)
+            UserMcpXmlSupport.readServersFromXml(text)
         } else {
             readServersFromJson(text)
         }
@@ -158,63 +164,6 @@ internal object UserMcpConfigParser {
             is McpServer.Sse -> "sse:${server.name}:${server.url}"
         }
 
-    private fun readServersFromXml(text: String): List<McpServer> {
-        val pattern =
-            Regex(
-                """<server\b[^>]*\bname="([^"]+)"[^>]*>(.*?)</server>""",
-                setOf(RegexOption.DOT_MATCHES_ALL, RegexOption.IGNORE_CASE),
-            )
-        return pattern
-            .findAll(text)
-            .mapNotNull { match ->
-                val name = match.groupValues[1].trim()
-                val body = match.groupValues[2]
-                if (name.isBlank()) return@mapNotNull null
-                val command = xmlValue(body, "command") ?: return@mapNotNull null
-                val args = xmlListValues(body, "arg")
-                val env = xmlMapValues(body, "env")
-                toStdioServer(name, command, args, env)
-            }.toList()
-    }
-
-    private fun xmlValue(
-        body: String,
-        tag: String,
-    ): String? =
-        Regex("""<$tag>(.*?)</$tag>""", RegexOption.DOT_MATCHES_ALL)
-            .find(body)
-            ?.groupValues
-            ?.get(1)
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-
-    private fun xmlListValues(
-        body: String,
-        tag: String,
-    ): List<String> =
-        Regex("""<$tag>(.*?)</$tag>""", RegexOption.DOT_MATCHES_ALL)
-            .findAll(body)
-            .map { it.groupValues[1].trim() }
-            .filter { it.isNotEmpty() }
-            .toList()
-
-    private fun xmlMapValues(
-        body: String,
-        tag: String,
-    ): Map<String, String> {
-        val envBlock =
-            Regex("""<$tag>(.*?)</$tag>""", RegexOption.DOT_MATCHES_ALL)
-                .find(body)
-                ?.groupValues
-                ?.get(1)
-                .orEmpty()
-        return Regex("""<entry\b[^>]*\bkey="([^"]+)"[^>]*\bvalue="([^"]*)"""")
-            .findAll(envBlock)
-            .associate { match ->
-                match.groupValues[1] to match.groupValues[2]
-            }
-    }
-
     private fun parseServerEntry(
         name: String,
         entry: JsonObject,
@@ -230,63 +179,67 @@ internal object UserMcpConfigParser {
                 ?.lowercase()
                 .orEmpty()
         return when (type) {
-            "sse" -> {
-                val url =
-                    entry["url"]
-                        ?.jsonPrimitive
-                        ?.content
-                        ?.trim()
-                        .orEmpty()
-                if (url.isBlank()) {
-                    logger.warn("Skipping MCP server '$name': SSE url is blank.")
-                    null
-                } else {
-                    McpServer.Sse(name = name, url = url, headers = emptyList())
-                }
-            }
-            "http", "streamable-http" -> {
-                val url =
-                    entry["url"]
-                        ?.jsonPrimitive
-                        ?.content
-                        ?.trim()
-                        .orEmpty()
-                if (url.isBlank()) {
-                    logger.warn("Skipping MCP server '$name': HTTP url is blank.")
-                    null
-                } else {
-                    McpServer.Http(name = name, url = url, headers = emptyList())
-                }
-            }
-            else -> {
-                val command =
-                    entry["command"]
-                        ?.jsonPrimitive
-                        ?.content
-                        ?.trim()
-                        .orEmpty()
-                if (command.isBlank()) {
-                    logger.warn("Skipping MCP server '$name': stdio command is blank.")
-                    return null
-                }
-                val args = entry["args"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
-                val env =
-                    entry["env"]?.jsonObject?.mapValues { it.value.jsonPrimitive.content }.orEmpty()
-                toStdioServer(name, command, args, env)
-            }
+            "sse" -> parseSseServer(name, entry)
+            "http", "streamable-http" -> parseHttpServer(name, entry)
+            else -> parseStdioServer(name, entry)
         }
     }
 
-    private fun toStdioServer(
+    private fun parseSseServer(
         name: String,
-        command: String,
-        args: List<String>,
-        env: Map<String, String>,
-    ): McpServer.Stdio =
-        McpServer.Stdio(
-            name = name,
-            command = command,
-            args = args,
-            env = env.map { (key, value) -> EnvVariable(name = key, value = value) },
-        )
+        entry: JsonObject,
+    ): McpServer? {
+        val url =
+            entry["url"]
+                ?.jsonPrimitive
+                ?.content
+                ?.trim()
+                .orEmpty()
+        return when {
+            url.isBlank() -> {
+                logger.warn("Skipping MCP server '$name': SSE url is blank.")
+                null
+            }
+            else -> McpServer.Sse(name = name, url = url, headers = emptyList())
+        }
+    }
+
+    private fun parseHttpServer(
+        name: String,
+        entry: JsonObject,
+    ): McpServer? {
+        val url =
+            entry["url"]
+                ?.jsonPrimitive
+                ?.content
+                ?.trim()
+                .orEmpty()
+        return when {
+            url.isBlank() -> {
+                logger.warn("Skipping MCP server '$name': HTTP url is blank.")
+                null
+            }
+            else -> McpServer.Http(name = name, url = url, headers = emptyList())
+        }
+    }
+
+    private fun parseStdioServer(
+        name: String,
+        entry: JsonObject,
+    ): McpServer? {
+        val command =
+            entry["command"]
+                ?.jsonPrimitive
+                ?.content
+                ?.trim()
+                .orEmpty()
+        if (command.isBlank()) {
+            logger.warn("Skipping MCP server '$name': stdio command is blank.")
+            return null
+        }
+        val args = entry["args"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
+        val env =
+            entry["env"]?.jsonObject?.mapValues { it.value.jsonPrimitive.content }.orEmpty()
+        return toStdioMcpServer(name, command, args, env)
+    }
 }

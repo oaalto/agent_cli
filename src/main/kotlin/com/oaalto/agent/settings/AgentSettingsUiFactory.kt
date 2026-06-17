@@ -19,13 +19,13 @@ internal object AgentSettingsUiFactory {
         JBTable(model).apply {
             selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
             fillsViewportHeight = true
-            columnModel.getColumn(2).cellEditor =
+            columnModel.getColumn(AgentConfigsTableColumns.CONFIG_TABLE_LAUNCH_MODE_COLUMN).cellEditor =
                 DefaultCellEditor(
                     ComboBox(
                         LaunchMode.displayLabels().toTypedArray(),
                     ),
                 )
-            columnModel.getColumn(3).cellEditor =
+            columnModel.getColumn(AgentConfigsTableColumns.CONFIG_TABLE_EXECUTION_TARGET_COLUMN).cellEditor =
                 DefaultCellEditor(
                     ComboBox(
                         AgentSettingsState.ExecutionTarget.entries
@@ -41,7 +41,7 @@ internal object AgentSettingsUiFactory {
             JBTable(envModel).apply {
                 selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
                 fillsViewportHeight = true
-                rowHeight = JBUI.scale(22)
+                rowHeight = JBUI.scale(AgentConfigsTableColumns.ENV_TABLE_ROW_HEIGHT)
             }
         val envToolbar =
             ToolbarDecorator
@@ -96,7 +96,7 @@ internal object AgentSettingsUiFactory {
         hints: DetailPanelHints,
     ): JPanel =
         JPanel(GridBagLayout()).apply {
-            border = JBUI.Borders.emptyTop(8)
+            border = JBUI.Borders.emptyTop(AgentConfigsTableColumns.DETAIL_PANEL_TOP_INSET)
             var row = 0
 
             fun addRow(

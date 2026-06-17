@@ -28,14 +28,16 @@ internal object AgentConfigurationResolution {
         }
 
         val saved = input.projectSelectedConfigurationId
-        if (saved.isNullOrBlank()) {
-            val seeded = resolveDefaultOrFirst()
-            return AgentConfigurationResolutionResult(seeded, seeded)
+        return when {
+            saved.isNullOrBlank() -> {
+                val seeded = resolveDefaultOrFirst()
+                AgentConfigurationResolutionResult(seeded, seeded)
+            }
+            saved in validIds -> AgentConfigurationResolutionResult(saved, saved)
+            else -> {
+                val fallback = resolveDefaultOrFirst()
+                AgentConfigurationResolutionResult(fallback, fallback)
+            }
         }
-        if (saved in validIds) {
-            return AgentConfigurationResolutionResult(saved, saved)
-        }
-        val fallback = resolveDefaultOrFirst()
-        return AgentConfigurationResolutionResult(fallback, fallback)
     }
 }

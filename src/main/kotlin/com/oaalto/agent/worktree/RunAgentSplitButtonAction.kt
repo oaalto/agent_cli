@@ -39,18 +39,22 @@ private class RunAgentSplitActionGroup :
     DumbAware {
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val project = event?.project
-        if (project == null) {
-            return arrayOf(disabledAction("Open a project to run Agent"))
+        val selectedConfiguration = project?.let { AgentConfigurationSelector.getSelectedConfiguration(it) }
+        return when {
+            project == null -> arrayOf(disabledAction("Open a project to run Agent"))
+            selectedConfiguration == null ->
+                arrayOf(
+                    ManageAgentSettingsAction(),
+                    disabledAction("No agent configuration available"),
+                )
+            else -> buildWorktreeChildren(project, selectedConfiguration)
         }
+    }
 
-        val selectedConfiguration = AgentConfigurationSelector.getSelectedConfiguration(project)
-        if (selectedConfiguration == null) {
-            return arrayOf(
-                ManageAgentSettingsAction(),
-                disabledAction("No agent configuration available"),
-            )
-        }
-
+    private fun buildWorktreeChildren(
+        project: com.intellij.openapi.project.Project,
+        selectedConfiguration: AgentSettingsState.AgentCliConfiguration,
+    ): Array<AnAction> {
         val canResumeSessions = ResumeCapability.canResumeSessions(selectedConfiguration)
         val actions = mutableListOf<AnAction>()
         actions += DEFAULT_CURRENT_PROJECT_ACTION
@@ -164,20 +168,25 @@ private class RunAgentInCurrentProjectAction :
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
-        if (configuration == null) {
-            Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
-            return
+        when {
+            configuration == null -> {
+                Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
+            }
+            configuration.binaryPath.isBlank() -> {
+                Messages.showErrorDialog(
+                    project,
+                    "The selected agent configuration has an empty binary path.",
+                    "Run Agent",
+                )
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
+            }
+            else ->
+                FileEditorManager.getInstance(project).openFile(
+                    AgentVirtualFile(configuration.id, configuration.name),
+                    true,
+                )
         }
-        if (configuration.binaryPath.isBlank()) {
-            Messages.showErrorDialog(project, "The selected agent configuration has an empty binary path.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
-            return
-        }
-        FileEditorManager.getInstance(project).openFile(
-            AgentVirtualFile(configuration.id, configuration.name),
-            true,
-        )
     }
 }
 
@@ -193,23 +202,29 @@ private class RunAgentInNewWorktreeAction :
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
-        if (configuration == null) {
-            Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
-            return
+        when {
+            configuration == null -> {
+                Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
+            }
+            else -> launchNewWorktree(project, configuration)
         }
+    }
 
+    private fun launchNewWorktree(
+        project: com.intellij.openapi.project.Project,
+        configuration: AgentSettingsState.AgentCliConfiguration,
+    ) {
         val worktreeService = AgentWorktreeService(project)
-        val created = worktreeService.createWorktree(configuration)
-        if (created.isFailure) {
-            Messages.showErrorDialog(
-                project,
-                created.exceptionOrNull()?.message ?: "Failed to create worktree.",
-                "Run Agent",
-            )
-            return
-        }
-        val createdWorktree = created.getOrNull() ?: return
+        val createdWorktree =
+            worktreeService.createWorktree(configuration).getOrElse { throwable ->
+                Messages.showErrorDialog(
+                    project,
+                    throwable.message ?: "Failed to create worktree.",
+                    "Run Agent",
+                )
+                return
+            }
 
         val state = AgentWorktreeStateService.getInstance()
         val record =

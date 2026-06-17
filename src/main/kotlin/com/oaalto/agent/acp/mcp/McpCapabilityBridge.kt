@@ -41,9 +41,7 @@ class DefaultMcpCapabilityBridge(
         if (LaunchMode.from(configuration.launchMode) != LaunchMode.ACP_CLIENT) {
             return false
         }
-        if (!configuration.useIdeaMcp && !configuration.useCustomMcp) {
-            return false
-        }
-        return resolveServers(configuration).isNotEmpty()
+        return (configuration.useIdeaMcp || configuration.useCustomMcp) &&
+            resolveServers(configuration).isNotEmpty()
     }
 }

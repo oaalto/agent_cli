@@ -48,10 +48,11 @@ object AcpLaunchArguments {
         binaryPath: String,
         arguments: List<String>,
     ): List<String> {
-        val entryArguments = entryArgumentsForExecutable(binaryPath) ?: return arguments
-        if (entryArguments.all { it in arguments }) return arguments
-        val missing = entryArguments.filterNot { it in arguments }
-        return missing + arguments
+        val entryArguments = entryArgumentsForExecutable(binaryPath)
+        return when {
+            entryArguments == null || entryArguments.all { it in arguments } -> arguments
+            else -> entryArguments.filterNot { it in arguments } + arguments
+        }
     }
 
     private fun executableName(binaryPath: String): String {

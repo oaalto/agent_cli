@@ -43,7 +43,7 @@ class SessionPickerDialog(
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout())
-        panel.border = JBUI.Borders.empty(8)
+        panel.border = JBUI.Borders.empty(AcpUiMetrics.HORIZONTAL_INSET)
         panel.add(JBScrollPane(sessionList), BorderLayout.CENTER)
         return panel
     }
@@ -76,10 +76,14 @@ class SessionPickerDialog(
             project: Project,
             sessions: List<SessionSummary>,
         ): String? {
-            if (sessions.isEmpty()) return null
+            if (sessions.isEmpty()) {
+                return null
+            }
             val dialog = SessionPickerDialog(project, sessions)
-            if (!dialog.showAndGet()) return null
-            return dialog.selectedSessionId
+            return when {
+                !dialog.showAndGet() -> null
+                else -> dialog.selectedSessionId
+            }
         }
     }
 }

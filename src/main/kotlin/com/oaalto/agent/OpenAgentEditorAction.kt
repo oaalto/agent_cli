@@ -13,19 +13,25 @@ class OpenAgentEditorAction : DumbAwareAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
-        if (configuration == null) {
-            Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
-            return
+        when {
+            configuration == null -> {
+                Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
+            }
+            configuration.binaryPath.isBlank() -> {
+                Messages.showErrorDialog(
+                    project,
+                    "The default agent configuration has an empty binary path.",
+                    "Run Agent",
+                )
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
+            }
+            else ->
+                FileEditorManager.getInstance(project).openFile(
+                    AgentVirtualFile(configuration.id, configuration.name),
+                    true,
+                )
         }
-        if (configuration.binaryPath.isBlank()) {
-            Messages.showErrorDialog(project, "The default agent configuration has an empty binary path.", "Run Agent")
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
-            return
-        }
-
-        val editorManager = FileEditorManager.getInstance(project)
-        editorManager.openFile(AgentVirtualFile(configuration.id, configuration.name), true)
     }
 
     override fun update(event: AnActionEvent) {

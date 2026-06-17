@@ -18,19 +18,25 @@ import javax.swing.SwingConstants
 class PermissionPromptPanel {
     private val titleLabel =
         JLabel("", SwingConstants.LEFT).apply {
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(12))
-            border = JBUI.Borders.empty(4, 8)
+            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.MONO_FONT_SIZE))
+            border = JBUI.Borders.empty(AcpUiMetrics.COMPACT_INSET, AcpUiMetrics.HORIZONTAL_INSET)
         }
     private val buttonsPanel =
-        JPanel(GridLayout(1, 0, JBUI.scale(4), 0)).apply {
-            border = JBUI.Borders.empty(4, 8, 8, 8)
+        JPanel(GridLayout(1, 0, JBUI.scale(AcpUiMetrics.COMPACT_INSET), 0)).apply {
+            border =
+                JBUI.Borders.empty(
+                    AcpUiMetrics.COMPACT_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                )
         }
     private val panel =
         JPanel(BorderLayout()).apply {
             border =
                 JBUI.Borders.compound(
                     JBUI.Borders.customLine(JBColor.border()),
-                    JBUI.Borders.empty(4),
+                    JBUI.Borders.empty(AcpUiMetrics.COMPACT_INSET),
                 )
             background = JBColor.PanelBackground
             isVisible = false
@@ -54,7 +60,7 @@ class PermissionPromptPanel {
         options.forEach { option ->
             buttonsPanel.add(
                 JButton(option.name).apply {
-                    font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(11))
+                    font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.BUTTON_FONT_SIZE))
                     addActionListener {
                         complete(RequestPermissionOutcome.Selected(option.optionId))
                     }
@@ -63,7 +69,7 @@ class PermissionPromptPanel {
         }
         buttonsPanel.add(
             JButton("Cancel").apply {
-                font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(11))
+                font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.BUTTON_FONT_SIZE))
                 addActionListener {
                     complete(RequestPermissionOutcome.Cancelled)
                 }

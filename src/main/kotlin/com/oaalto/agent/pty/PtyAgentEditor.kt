@@ -27,10 +27,13 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCommandBuilder
+import com.oaalto.agent.AgentLaunchContext
 import com.oaalto.agent.AgentVirtualFile
+import com.oaalto.agent.AgentWslCommandRequest
+import com.oaalto.agent.WorkingDirectoryResolver
+import com.oaalto.agent.WslPathResolver
+import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.settings.AgentSettingsState
-import com.oaalto.agent.worktree.resume.CursorResumeProbe
-import com.oaalto.agent.worktree.resume.CursorResumeProbeRequest
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
 import java.awt.BorderLayout
@@ -42,7 +45,6 @@ import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Locale
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
@@ -109,23 +111,27 @@ class PtyAgentEditor(
     }
 
     private fun handleEditorNavigationShortcut(event: KeyEvent): Boolean {
-        if (event.id != KeyEvent.KEY_PRESSED || event.isConsumed || project.isDisposed) {
-            return false
-        }
-
-        val focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner ?: return false
+        val focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner
         val terminalComponent = terminalFocusComponent
-        if (terminalComponent == null || !SwingUtilities.isDescendingFrom(focusOwner, terminalComponent)) {
+        val canHandle =
+            event.id == KeyEvent.KEY_PRESSED &&
+                !event.isConsumed &&
+                !project.isDisposed &&
+                focusOwner != null &&
+                terminalComponent != null &&
+                SwingUtilities.isDescendingFrom(focusOwner, terminalComponent)
+        if (!canHandle) {
             return false
         }
-
-        for (actionId in NAVIGATION_ACTION_IDS) {
-            if (KeymapUtil.isEventForAction(event, actionId) && invokeIdeAction(actionId, focusOwner, event)) {
-                event.consume()
-                return true
+        val handled =
+            NAVIGATION_ACTION_IDS.any { actionId ->
+                KeymapUtil.isEventForAction(event, actionId) &&
+                    invokeIdeAction(actionId, focusOwner!!, event)
             }
+        if (handled) {
+            event.consume()
         }
-        return false
+        return handled
     }
 
     private fun invokeIdeAction(
@@ -149,13 +155,29 @@ class PtyAgentEditor(
     }
 
     private fun startTerminalSession() {
-        val configuration = resolveConfiguration() ?: return
+        val configuration =
+            resolvePtyConfiguration(file.configurationId) {
+                showError("Agent configuration was removed or is unavailable.")
+            }
+                ?: return
         val binaryPath = configuration.binaryPath.trim()
-        if (binaryPath.isBlank()) {
-            showError("Agent binary path is empty for configuration '${configuration.name}'.")
-            return
+        val startupRequest =
+            when {
+                binaryPath.isBlank() -> {
+                    showError("Agent binary path is empty for configuration '${configuration.name}'.")
+                    null
+                }
+                else -> buildTerminalStartupRequest(configuration, binaryPath)
+            }
+        if (startupRequest != null) {
+            launchTerminalWidget(binaryPath, startupRequest)
         }
+    }
 
+    private fun buildTerminalStartupRequest(
+        configuration: AgentSettingsState.AgentCliConfiguration,
+        binaryPath: String,
+    ): TerminalStartupRequest? {
         val parsedArguments = ParametersListUtil.parse(configuration.arguments)
         val launchContext = file.launchContext
         val effectiveArguments =
@@ -163,228 +185,151 @@ class PtyAgentEditor(
                 addAll(parsedArguments)
                 addAll(launchContext.additionalArguments)
             }
-        val target = resolveExecutionTarget(configuration.executionTarget)
-        val startupRequest =
-            when (target) {
-                AgentSettingsState.ExecutionTarget.LOCAL -> {
-                    if (binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath))) {
-                        showError("Agent binary is not executable:\n$binaryPath")
-                        return
-                    }
-                    val workingDirectory =
-                        resolveWorkingDirectory(
-                            configuredWorkingDirectory = configuration.workingDirectory,
-                            overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                        )
-                    if (!Files.isDirectory(Path.of(workingDirectory))) {
+        return when (resolvePtyExecutionTarget(configuration.executionTarget)) {
+            AgentSettingsState.ExecutionTarget.LOCAL ->
+                buildLocalTerminalStartupRequest(
+                    configuration = configuration,
+                    binaryPath = binaryPath,
+                    effectiveArguments = effectiveArguments,
+                    launchContext = launchContext,
+                )
+            AgentSettingsState.ExecutionTarget.WSL ->
+                buildWslTerminalStartupRequest(
+                    configuration = configuration,
+                    binaryPath = binaryPath,
+                    effectiveArguments = effectiveArguments,
+                    launchContext = launchContext,
+                )
+        }
+    }
+
+    private fun buildLocalTerminalStartupRequest(
+        configuration: AgentSettingsState.AgentCliConfiguration,
+        binaryPath: String,
+        effectiveArguments: List<String>,
+        launchContext: AgentLaunchContext,
+    ): TerminalStartupRequest? =
+        when {
+            binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath)) -> {
+                showError("Agent binary is not executable:\n$binaryPath")
+                null
+            }
+            else -> {
+                val workingDirectory =
+                    WorkingDirectoryResolver.resolve(
+                        configuredWorkingDirectory = configuration.workingDirectory,
+                        overrideWorkingDirectory = launchContext.workingDirectoryOverride,
+                        projectBasePath = project.basePath,
+                    )
+                when {
+                    !Files.isDirectory(Path.of(workingDirectory)) -> {
                         showError("Working directory does not exist:\n$workingDirectory")
-                        return
+                        null
                     }
-                    val effectiveRunArguments =
-                        applyCursorResumeFallbackForLocal(
-                            binaryPath = binaryPath,
-                            arguments = effectiveArguments,
-                            workingDirectory = workingDirectory,
-                        )
-                    TerminalStartupRequest(
-                        workingDirectory = workingDirectory,
-                        command =
-                            buildTerminalCommand {
-                                AgentCommandBuilder.buildLocalCommand(
-                                    binaryPath = binaryPath,
-                                    arguments = effectiveRunArguments,
-                                    useNodeShellWrapper = configuration.useNodeShellWrapper,
-                                )
-                            } ?: return,
-                    )
-                }
-                AgentSettingsState.ExecutionTarget.WSL -> {
-                    val resolvedWslWorkingDirectory =
-                        resolveWslWorkingDirectory(
-                            configuredWorkingDirectory = configuration.workingDirectory,
-                            overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                        )
-                    if (resolvedWslWorkingDirectory == null) {
-                        showError(
-                            "Working directory could not be mapped to a WSL path:\n" +
-                                "${configuration.workingDirectory}\n\n" +
-                                "Use one of:\n" +
-                                "- Linux path (for example /home/user/project)\n" +
-                                "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
-                                "- Windows drive path (for example D:\\project)",
-                        )
-                        return
+                    else -> {
+                        val effectiveRunArguments =
+                            applyCursorResumeFallbackForLocal(
+                                binaryPath = binaryPath,
+                                arguments = effectiveArguments,
+                                workingDirectory = workingDirectory,
+                            )
+                        buildTerminalCommand {
+                            AgentCommandBuilder.buildLocalCommand(
+                                binaryPath = binaryPath,
+                                arguments = effectiveRunArguments,
+                                useNodeShellWrapper = configuration.useNodeShellWrapper,
+                            )
+                        }?.let { command ->
+                            TerminalStartupRequest(workingDirectory = workingDirectory, command = command)
+                        }
                     }
-                    val effectiveDistribution =
-                        configuration.wslDistribution
-                            .trim()
-                            .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-                    val hostWorkingDirectory = resolveHostWorkingDirectory()
-                    val effectiveRunArguments =
-                        applyCursorResumeFallbackForWsl(
-                            binaryPath = binaryPath,
-                            arguments = effectiveArguments,
-                            wslDistribution = effectiveDistribution,
-                            wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                            hostWorkingDirectory = hostWorkingDirectory,
-                        )
-                    TerminalStartupRequest(
-                        workingDirectory = hostWorkingDirectory,
-                        command =
-                            buildTerminalCommand {
-                                AgentCommandBuilder.buildWslCommand(
-                                    binaryPath = binaryPath,
-                                    arguments = effectiveRunArguments,
-                                    wslDistribution = effectiveDistribution,
-                                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                                    useNodeShellWrapper = configuration.useNodeShellWrapper,
-                                    environmentVariables = emptyMap(),
-                                )
-                            } ?: return,
-                    )
                 }
             }
+        }
 
+    private fun buildWslTerminalStartupRequest(
+        configuration: AgentSettingsState.AgentCliConfiguration,
+        binaryPath: String,
+        effectiveArguments: List<String>,
+        launchContext: AgentLaunchContext,
+    ): TerminalStartupRequest? {
+        val resolvedWslWorkingDirectory =
+            WslPathResolver.resolveWslWorkingDirectory(
+                configuredWorkingDirectory = configuration.workingDirectory,
+                overrideWorkingDirectory = launchContext.workingDirectoryOverride,
+                projectBasePath = project.basePath,
+            )
+        val overrideValue = launchContext.workingDirectoryOverride?.trim().orEmpty()
+        val configured = configuration.workingDirectory.trim()
+        val basePath = project.basePath?.trim().orEmpty()
+        val rawPath =
+            when {
+                overrideValue.isNotBlank() -> overrideValue
+                configured.isNotBlank() -> configured
+                basePath.isNotBlank() -> basePath
+                else -> ""
+            }
+        if (rawPath.isNotBlank() && WslPathResolver.mapToWslPath(rawPath) == null) {
+            showError(
+                "Working directory could not be mapped to a WSL path:\n" +
+                    "${configuration.workingDirectory}\n\n" +
+                    "Use one of:\n" +
+                    "- Linux path (for example /home/user/project)\n" +
+                    "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
+                    "- Windows drive path (for example D:\\project)",
+            )
+            return null
+        }
+        val effectiveDistribution =
+            configuration.wslDistribution
+                .trim()
+                .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
+        val hostWorkingDirectory = WslPathResolver.resolveHostWorkingDirectory(project.basePath)
+        val effectiveRunArguments =
+            applyCursorResumeFallbackForWsl(
+                binaryPath = binaryPath,
+                arguments = effectiveArguments,
+                wslDistribution = effectiveDistribution,
+                wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                hostWorkingDirectory = hostWorkingDirectory,
+            )
+        return buildTerminalCommand {
+            AgentCommandBuilder.buildWslCommand(
+                AgentWslCommandRequest(
+                    binaryPath = binaryPath,
+                    arguments = effectiveRunArguments,
+                    wslDistribution = effectiveDistribution,
+                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                    useNodeShellWrapper = configuration.useNodeShellWrapper,
+                ),
+            )
+        }?.let { command ->
+            TerminalStartupRequest(workingDirectory = hostWorkingDirectory, command = command)
+        }
+    }
+
+    private fun launchTerminalWidget(
+        binaryPath: String,
+        startupRequest: TerminalStartupRequest,
+    ) {
         val startupOptions =
             ShellStartupOptions
                 .Builder()
                 .workingDirectory(startupRequest.workingDirectory)
                 .shellCommand(startupRequest.command)
                 .build()
-        try {
+        runCatching {
             val runner = DefaultTerminalRunnerFactory.getInstance().createLocalRunner(project)
             val terminalWidget = runner.startShellTerminalWidget(this, startupOptions, false)
             terminalFocusComponent = terminalWidget.preferredFocusableComponent
             rootPanel.removeAll()
             rootPanel.add(terminalWidget.component, BorderLayout.CENTER)
             rootPanel.border = JBUI.Borders.empty()
-        } catch (t: Throwable) {
-            logger.warn("Failed to initialize terminal widget for '$binaryPath'", t)
-            showError("Failed to initialize terminal widget:\n${t.message ?: t.javaClass.simpleName}")
+        }.onFailure { throwable ->
+            logger.warn("Failed to initialize terminal widget for '$binaryPath'", throwable)
+            showError("Failed to initialize terminal widget:\n${throwable.message ?: throwable.javaClass.simpleName}")
         }
     }
-
-    private fun resolveConfiguration(): AgentSettingsState.AgentCliConfiguration? {
-        val configuration = AgentSettingsState.getInstance().getConfigurationById(file.configurationId)
-        if (configuration == null) {
-            showError("Agent configuration was removed or is unavailable.")
-        }
-        return configuration
-    }
-
-    private fun resolveWorkingDirectory(
-        configuredWorkingDirectory: String,
-        overrideWorkingDirectory: String?,
-    ): String {
-        val overrideValue = overrideWorkingDirectory?.trim().orEmpty()
-        if (overrideValue.isNotBlank()) {
-            return overrideValue
-        }
-        val configured = configuredWorkingDirectory.trim()
-        return when {
-            configured.isNotBlank() -> configured
-            !project.basePath.isNullOrBlank() -> project.basePath!!
-            else -> System.getProperty("user.home")
-        }
-    }
-
-    private fun resolveExecutionTarget(rawTarget: String): AgentSettingsState.ExecutionTarget {
-        val normalized = rawTarget.trim().uppercase(Locale.ROOT)
-        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }
-            ?: AgentSettingsState.ExecutionTarget.LOCAL
-    }
-
-    private fun resolveWslWorkingDirectory(
-        configuredWorkingDirectory: String,
-        overrideWorkingDirectory: String?,
-    ): WslWorkingDirectory? {
-        val overrideValue = overrideWorkingDirectory?.trim().orEmpty()
-        if (overrideValue.isNotBlank()) {
-            return mapToWslPath(overrideValue)
-        }
-        val configured = configuredWorkingDirectory.trim()
-        if (configured.isNotBlank()) {
-            return mapToWslPath(configured)
-        }
-
-        val basePath = project.basePath?.trim().orEmpty()
-        if (basePath.isNotBlank()) {
-            return mapToWslPath(basePath)
-        }
-        return WslWorkingDirectory(linuxPath = "/home", inferredDistribution = null)
-    }
-
-    private fun mapToWslPath(rawPath: String): WslWorkingDirectory? {
-        val trimmed = rawPath.trim()
-        if (trimmed.isBlank()) return null
-        val windowsStylePath = trimmed.replace('/', '\\')
-        UNC_WSL_PREFIXES
-            .firstOrNull { prefix ->
-                windowsStylePath.startsWith(prefix, ignoreCase = true)
-            }?.let { prefix ->
-                val withoutPrefix = windowsStylePath.substring(prefix.length)
-                val segments = withoutPrefix.split('\\').filter { it.isNotBlank() }
-                if (segments.isEmpty()) return null
-                val inferredDistribution = segments.first()
-                val linuxSegments = segments.drop(1)
-                val linuxPath = if (linuxSegments.isEmpty()) "/" else "/" + linuxSegments.joinToString("/")
-                return WslWorkingDirectory(
-                    linuxPath = linuxPath,
-                    inferredDistribution = inferredDistribution,
-                )
-            }
-
-        if (trimmed.startsWith("/") || trimmed.startsWith("~")) {
-            return WslWorkingDirectory(linuxPath = trimmed, inferredDistribution = null)
-        }
-
-        WINDOWS_DRIVE_PATH_REGEX.matchEntire(windowsStylePath)?.let { match ->
-            val drive = match.groupValues[1].lowercase(Locale.ROOT)
-            val rest = match.groupValues[2].replace('\\', '/').trim('/')
-            return WslWorkingDirectory(
-                linuxPath = if (rest.isBlank()) "/mnt/$drive" else "/mnt/$drive/$rest",
-                inferredDistribution = null,
-            )
-        }
-
-        if (!windowsStylePath.contains('\\')) {
-            return WslWorkingDirectory(linuxPath = trimmed, inferredDistribution = null)
-        }
-        return null
-    }
-
-    private fun applyCursorResumeFallbackForLocal(
-        binaryPath: String,
-        arguments: List<String>,
-        workingDirectory: String,
-    ): List<String> =
-        CursorResumeProbe.Default.applyIfNeeded(
-            CursorResumeProbeRequest(
-                binaryPath = binaryPath,
-                arguments = arguments,
-                executionTarget = AgentSettingsState.ExecutionTarget.LOCAL,
-                workingDirectory = workingDirectory,
-            ),
-        )
-
-    private fun applyCursorResumeFallbackForWsl(
-        binaryPath: String,
-        arguments: List<String>,
-        wslDistribution: String,
-        wslWorkingDirectory: String,
-        hostWorkingDirectory: String,
-    ): List<String> =
-        CursorResumeProbe.Default.applyIfNeeded(
-            CursorResumeProbeRequest(
-                binaryPath = binaryPath,
-                arguments = arguments,
-                executionTarget = AgentSettingsState.ExecutionTarget.WSL,
-                workingDirectory = wslWorkingDirectory,
-                wslDistribution = wslDistribution,
-                wslWorkingDirectory = wslWorkingDirectory,
-                hostWorkingDirectory = hostWorkingDirectory,
-            ),
-        )
 
     private fun buildTerminalCommand(builder: () -> List<String>): List<String>? =
         kotlin
@@ -397,22 +342,6 @@ class PtyAgentEditor(
                 null
             }
 
-    private fun resolveHostWorkingDirectory(): String {
-        val candidates =
-            listOf(
-                project.basePath,
-                System.getProperty("user.home"),
-                System.getProperty("java.io.tmpdir"),
-            )
-        return candidates
-            .asSequence()
-            .mapNotNull { it?.trim()?.takeIf(String::isNotBlank) }
-            .firstOrNull { path ->
-                kotlin.runCatching { Files.isDirectory(Path.of(path)) }.getOrDefault(false)
-            }
-            ?: System.getProperty("user.home")
-    }
-
     private fun showError(message: String) {
         val area =
             JBTextArea(message).apply {
@@ -420,7 +349,7 @@ class PtyAgentEditor(
                 isOpaque = false
                 lineWrap = true
                 wrapStyleWord = true
-                border = JBUI.Borders.empty(12)
+                border = JBUI.Borders.empty(AcpUiMetrics.ERROR_PANEL_INSET)
                 foreground = JBColor.foreground()
             }
         val scrollPane =
@@ -445,8 +374,6 @@ class PtyAgentEditor(
 
     companion object {
         private val logger = Logger.getInstance(PtyAgentEditor::class.java)
-        private val UNC_WSL_PREFIXES = listOf("\\\\wsl.localhost\\", "\\\\wsl$\\")
-        private val WINDOWS_DRIVE_PATH_REGEX = Regex("""^([A-Za-z]):\\(.*)$""")
         private val NAVIGATION_ACTION_IDS =
             listOf(
                 IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
@@ -461,10 +388,5 @@ class PtyAgentEditor(
     private data class TerminalStartupRequest(
         val workingDirectory: String,
         val command: List<String>,
-    )
-
-    private data class WslWorkingDirectory(
-        val linuxPath: String,
-        val inferredDistribution: String?,
     )
 }

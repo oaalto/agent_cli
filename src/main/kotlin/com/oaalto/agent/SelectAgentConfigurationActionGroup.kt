@@ -39,26 +39,22 @@ class SelectAgentConfigurationActionGroup :
                                 return
                             }
                             val actionProject = event.project
-                            if (actionProject == null) {
-                                logger.warn(
-                                    "Failed to select agent configuration '${configuration.id}' " +
-                                        "from toolbar action: no project.",
-                                )
-                                return
-                            }
-                            val selected =
-                                AgentConfigurationSelector.setSelectedConfiguration(
+                            when {
+                                actionProject == null ->
+                                    logger.warn(
+                                        "Failed to select agent configuration '${configuration.id}' " +
+                                            "from toolbar action: no project.",
+                                    )
+                                !AgentConfigurationSelector.setSelectedConfiguration(
                                     actionProject,
                                     configuration.id,
-                                )
-                            if (!selected) {
-                                logger.warn(
-                                    "Failed to select agent configuration " +
-                                        "'${configuration.id}' from toolbar action.",
-                                )
-                                return
+                                ) ->
+                                    logger.warn(
+                                        "Failed to select agent configuration " +
+                                            "'${configuration.id}' from toolbar action.",
+                                    )
+                                else -> ActivityTracker.getInstance().inc()
                             }
-                            ActivityTracker.getInstance().inc()
                         }
                     }
                 }.toMutableList<AnAction>()

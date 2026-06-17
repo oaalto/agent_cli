@@ -10,6 +10,12 @@
 
 ### Changed
 
+- **Detekt strict compliance** (`detekt.yml`, `src/main/kotlin/`): Complete detekt burn-down for defaults — extract worktree/settings/MCP helpers, shared WSL path resolvers, `AgentWslCommandRequest`, UI metric constants, and `ignoreOverridden` for IntelliJ interface methods; `./gradlew qualityGate` passes clean. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ReturnCount compliance** (`src/main/kotlin/`): Refactor multi-return functions to `when` expressions, `Result.flatMap` chains, and shared `WslPathResolver` / `WorkingDirectoryResolver` helpers so detekt `ReturnCount` passes without changing launch behavior. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **Detekt defaults** (`detekt.yml`): Drop relaxed overrides (long methods, wide parameter lists, disabled exception/style rules) and rely on detekt defaults; keep IntelliJ-friendly `MagicNumber` ignores and disable `MaxLineLength` (ktlint owns line length). made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **Per-project agent selection** (`settings/`, `SelectAgentConfigurationActionGroup.kt`, `RunAgentSplitButtonAction.kt`, `OpenAgentEditorAction.kt`): Split global default from per-project selected agent; toolbar and Run actions use `AgentConfigurationSelector` with workspace-scoped project state. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **Settings UI structure** (`settings/`): Extract table models and UI factory helpers from `AgentSettingsConfigurable` to satisfy detekt size limits without behavior changes. made by: Olli Aalto. made with: Cursor. model: Composer

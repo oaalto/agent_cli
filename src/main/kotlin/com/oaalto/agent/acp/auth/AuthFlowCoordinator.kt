@@ -23,8 +23,14 @@ class AuthFlowCoordinator(
             return Result.success(Unit)
         }
         val method = methods.first()
-        runAuthenticate(method.id).onSuccess { return Result.success(Unit) }
-        return when (method) {
+        return when {
+            runAuthenticate(method.id).isSuccess -> Result.success(Unit)
+            else -> authenticateWithMethod(method)
+        }
+    }
+
+    private suspend fun authenticateWithMethod(method: AuthMethod): Result<Unit> =
+        when (method) {
             is AuthMethod.TerminalAuth -> authenticateTerminal(method)
             is AuthMethod.AgentAuth -> authenticateAgent(method)
             is AuthMethod.EnvVarAuth -> {
@@ -42,7 +48,6 @@ class AuthFlowCoordinator(
             is AuthMethod.UnknownAuthMethod ->
                 Result.failure(IllegalStateException("Unsupported auth method: ${method.type}"))
         }
-    }
 
     private suspend fun authenticateTerminal(method: AuthMethod.TerminalAuth): Result<Unit> {
         val command = method.args?.takeIf { it.isNotEmpty() } ?: listOf("login")

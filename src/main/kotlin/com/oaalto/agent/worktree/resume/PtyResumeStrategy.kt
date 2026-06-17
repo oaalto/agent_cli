@@ -5,10 +5,10 @@ import java.util.Locale
 
 object PtyResumeStrategy : ResumeStrategy {
     override fun prepareLaunch(context: ResumeContext): LaunchResumePlan {
-        if (!context.resume) {
+        val baseArgs = if (context.resume) baseResumeArguments(context.configuration) else null
+        if (baseArgs == null) {
             return LaunchResumePlan.Pty(emptyList())
         }
-        val baseArgs = baseResumeArguments(context.configuration) ?: return LaunchResumePlan.Pty(emptyList())
         val executionTarget = resolveExecutionTarget(context.configuration.executionTarget)
         val probed =
             context.cursorProbe.applyIfNeeded(

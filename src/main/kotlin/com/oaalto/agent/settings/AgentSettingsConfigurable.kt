@@ -12,6 +12,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.settings.acpjson.AcpJsonExporter
+import com.oaalto.agent.settings.acpjson.AcpJsonImportDraft
 import com.oaalto.agent.settings.acpjson.AcpJsonImporter
 import java.awt.BorderLayout
 import java.nio.charset.StandardCharsets
@@ -62,20 +63,22 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 )
 
             wireDetailPanelControls(
-                model,
-                table,
-                ideaMcp,
-                customMcp,
-                environmentEditor.model,
-                environmentEditor.table,
-                hints.mcpScopeHint,
-                hints.mcpPluginsHint,
-                hints.envHint,
+                DetailPanelBindings(
+                    model = model,
+                    table = table,
+                    ideaMcp = ideaMcp,
+                    customMcp = customMcp,
+                    envTable = environmentEditor.table,
+                    envModel = environmentEditor.model,
+                    mcpScopeHint = hints.mcpScopeHint,
+                    mcpPluginsHint = hints.mcpPluginsHint,
+                    envHint = hints.envHint,
+                ),
             )
 
             rootPanel =
                 JPanel(BorderLayout()).apply {
-                    border = JBUI.Borders.empty(8)
+                    border = JBUI.Borders.empty(AgentConfigsTableColumns.SETTINGS_PANEL_INSET)
                     add(toolbar.createPanel(), BorderLayout.CENTER)
                     add(detailPanel, BorderLayout.SOUTH)
                 }
@@ -97,145 +100,88 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         return rootPanel!!
     }
 
-    private fun wireDetailPanelControls(
-        model: AgentConfigsTableModel,
-        table: JBTable,
-        ideaMcp: JCheckBox,
-        customMcp: JCheckBox,
-        envModel: EnvironmentVariablesTableModel,
-        envTable: JBTable,
-        mcpScopeHint: JBLabel,
-        mcpPluginsHint: JBLabel,
-        envHint: JBLabel,
-    ) {
-        table.selectionModel.addListSelectionListener { event: ListSelectionEvent ->
+    private fun wireDetailPanelControls(bindings: DetailPanelBindings) {
+        bindings.table.selectionModel.addListSelectionListener { event: ListSelectionEvent ->
             if (event.valueIsAdjusting || syncingDetailPanel) return@addListSelectionListener
-            val selected = table.selectedRow
-            persistDetailPanelToRow(model, ideaMcp, customMcp, envModel, detailPanelRowIndex)
+            val selected = bindings.table.selectedRow
+            AgentSettingsDetailPanelSupport.persistDetailPanelToRow(bindings, detailPanelRowIndex, syncingDetailPanel)
             detailPanelRowIndex = selected
-            syncDetailPanelFromSelection(model, table, ideaMcp, customMcp, envModel)
-            updateDetailPanelAvailability(
-                model,
-                table,
-                ideaMcp,
-                customMcp,
-                envTable,
-                mcpScopeHint,
-                mcpPluginsHint,
-                envHint,
+            AgentSettingsDetailPanelSupport.syncDetailPanelFromSelection(
+                bindings,
+                setSyncingDetailPanel = { syncingDetailPanel = it },
             )
+            AgentSettingsDetailPanelSupport.updateDetailPanelAvailability(bindings)
         }
 
-        model.addTableModelListener {
+        bindings.model.addTableModelListener {
             if (syncingDetailPanel) return@addTableModelListener
-            updateDetailPanelAvailability(
-                model,
-                table,
-                ideaMcp,
-                customMcp,
-                envTable,
-                mcpScopeHint,
-                mcpPluginsHint,
-                envHint,
-            )
+            AgentSettingsDetailPanelSupport.updateDetailPanelAvailability(bindings)
         }
 
         val persistCurrentRow = {
-            persistDetailPanelToSelection(model, table, ideaMcp, customMcp, envModel)
+            AgentSettingsDetailPanelSupport.persistDetailPanelToSelection(bindings, syncingDetailPanel)
         }
-        ideaMcp.addActionListener { persistCurrentRow() }
-        customMcp.addActionListener { persistCurrentRow() }
-        envModel.addTableModelListener {
-            persistCurrentRow()
-        }
+        bindings.ideaMcp.addActionListener { persistCurrentRow() }
+        bindings.customMcp.addActionListener { persistCurrentRow() }
+        bindings.envModel.addTableModelListener { persistCurrentRow() }
     }
 
     private fun refreshDetailPanel() {
         val bindings = detailPanelBindings() ?: return
-        syncDetailPanelFromSelection(
-            bindings.model,
-            bindings.table,
-            bindings.ideaMcp,
-            bindings.customMcp,
-            bindings.envModel,
+        AgentSettingsDetailPanelSupport.syncDetailPanelFromSelection(
+            bindings,
+            setSyncingDetailPanel = { syncingDetailPanel = it },
         )
         detailPanelRowIndex = bindings.table.selectedRow
-        updateIdeaMcpAvailability(bindings.ideaMcp, bindings.mcpPluginsHint)
-        updateDetailPanelAvailability(
-            bindings.model,
-            bindings.table,
-            bindings.ideaMcp,
-            bindings.customMcp,
-            bindings.envTable,
-            bindings.mcpScopeHint,
-            bindings.mcpPluginsHint,
-            bindings.envHint,
-        )
+        AgentSettingsDetailPanelSupport.updateIdeaMcpAvailability(bindings.ideaMcp, bindings.mcpPluginsHint)
+        AgentSettingsDetailPanelSupport.updateDetailPanelAvailability(bindings)
     }
 
-    private fun detailPanelBindings(): DetailPanelBindings? {
-        val model = tableModel
-        val table = table
-        val ideaMcp = ideaMcpCheckbox
-        val customMcp = customMcpCheckbox
-        if (model == null || table == null) {
-            return null
+    private fun detailPanelBindings(): DetailPanelBindings? =
+        listOf(
+            tableModel,
+            table,
+            ideaMcpCheckbox,
+            customMcpCheckbox,
+            environmentTable,
+            environmentTableModel,
+            mcpScopeHintLabel,
+            mcpHintLabel,
+            envHintLabel,
+        ).any { it == null }.let { hasNull ->
+            if (hasNull) {
+                null
+            } else {
+                DetailPanelBindings(
+                    model = tableModel!!,
+                    table = table!!,
+                    ideaMcp = ideaMcpCheckbox!!,
+                    customMcp = customMcpCheckbox!!,
+                    envTable = environmentTable!!,
+                    envModel = environmentTableModel!!,
+                    mcpScopeHint = mcpScopeHintLabel!!,
+                    mcpPluginsHint = mcpHintLabel!!,
+                    envHint = envHintLabel!!,
+                )
+            }
         }
-        if (ideaMcp == null || customMcp == null) {
-            return null
-        }
-        val envTable = environmentTable
-        val envModel = environmentTableModel
-        val mcpScopeHint = mcpScopeHintLabel
-        if (envTable == null || envModel == null || mcpScopeHint == null) {
-            return null
-        }
-        val mcpPluginsHint = mcpHintLabel
-        val envHint = envHintLabel
-        if (mcpPluginsHint == null || envHint == null) {
-            return null
-        }
-        return DetailPanelBindings(
-            model = model,
-            table = table,
-            ideaMcp = ideaMcp,
-            customMcp = customMcp,
-            envTable = envTable,
-            envModel = envModel,
-            mcpScopeHint = mcpScopeHint,
-            mcpPluginsHint = mcpPluginsHint,
-            envHint = envHint,
-        )
-    }
 
     override fun isModified(): Boolean {
-        val model = tableModel ?: return false
-        persistDetailPanelToSelection(
-            model,
-            table ?: return false,
-            ideaMcpCheckbox ?: return false,
-            customMcpCheckbox ?: return false,
-            environmentTableModel ?: return false,
-        )
+        val bindings = detailPanelBindings() ?: return false
+        AgentSettingsDetailPanelSupport.persistDetailPanelToSelection(bindings, syncingDetailPanel)
         val persisted =
             rowsFromState(
                 AgentSettingsState.getInstance().getConfigurations(),
                 AgentSettingsState.getInstance().getDefaultConfiguration()?.id,
             )
-        return model.rowsSnapshot() != persisted
+        return bindings.model.rowsSnapshot() != persisted
     }
 
     @Throws(ConfigurationException::class)
     override fun apply() {
-        val model = tableModel ?: return
-        persistDetailPanelToSelection(
-            model,
-            table ?: return,
-            ideaMcpCheckbox ?: return,
-            customMcpCheckbox ?: return,
-            environmentTableModel ?: return,
-        )
-        val rows = model.rowsSnapshot()
+        val bindings = detailPanelBindings() ?: return
+        AgentSettingsDetailPanelSupport.persistDetailPanelToSelection(bindings, syncingDetailPanel)
+        val rows = bindings.model.rowsSnapshot()
         validateRows(rows)
 
         val defaultId = rows.firstOrNull { it.isDefault }?.id
@@ -287,93 +233,6 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         detailPanelRowIndex = -1
     }
 
-    private fun updateIdeaMcpAvailability(
-        ideaMcp: JCheckBox,
-        hint: JBLabel,
-    ) {
-        val available = AiAssistantPresence.default.isAvailable()
-        ideaMcp.toolTipText =
-            if (available) {
-                null
-            } else {
-                "Install and enable JetBrains AI Assistant or the MCP Server plugin to expose IntelliJ MCP tools."
-            }
-        hint.isVisible = false
-    }
-
-    private fun syncDetailPanelFromSelection(
-        model: AgentConfigsTableModel,
-        table: JBTable,
-        ideaMcp: JCheckBox,
-        customMcp: JCheckBox,
-        envModel: EnvironmentVariablesTableModel,
-    ) {
-        val selected = table.selectedRow
-        if (selected !in 0 until model.rowCount) {
-            syncingDetailPanel = true
-            ideaMcp.isSelected = false
-            customMcp.isSelected = false
-            envModel.setFromMap(emptyMap())
-            syncingDetailPanel = false
-            return
-        }
-        val row = model.rowAt(selected)
-        syncingDetailPanel = true
-        ideaMcp.isSelected = row.useIdeaMcp
-        customMcp.isSelected = row.useCustomMcp
-        envModel.setFromMap(row.environmentVariables)
-        syncingDetailPanel = false
-    }
-
-    private fun updateDetailPanelAvailability(
-        model: AgentConfigsTableModel,
-        table: JBTable,
-        ideaMcp: JCheckBox,
-        customMcp: JCheckBox,
-        envTable: JBTable,
-        mcpScopeHint: JBLabel,
-        mcpPluginsHint: JBLabel,
-        envHint: JBLabel,
-    ) {
-        val selected = table.selectedRow
-        val acpClient =
-            selected in 0 until model.rowCount &&
-                LaunchMode.from(model.rowAt(selected).launchMode) == LaunchMode.ACP_CLIENT
-        val ideaPluginsAvailable = AiAssistantPresence.default.isAvailable()
-        ideaMcp.isEnabled = acpClient && ideaPluginsAvailable
-        customMcp.isEnabled = acpClient
-        envTable.isEnabled = acpClient
-        mcpScopeHint.isVisible = !acpClient
-        envHint.isVisible = !acpClient
-        mcpPluginsHint.isVisible = acpClient && !ideaPluginsAvailable
-    }
-
-    private fun persistDetailPanelToRow(
-        model: AgentConfigsTableModel,
-        ideaMcp: JCheckBox,
-        customMcp: JCheckBox,
-        envModel: EnvironmentVariablesTableModel,
-        rowIndex: Int,
-    ) {
-        if (syncingDetailPanel || rowIndex !in 0 until model.rowCount) return
-        model.updateRow(
-            rowIndex,
-            useIdeaMcp = ideaMcp.isSelected,
-            useCustomMcp = customMcp.isSelected,
-            environmentVariables = envModel.toMap(),
-        )
-    }
-
-    private fun persistDetailPanelToSelection(
-        model: AgentConfigsTableModel,
-        table: JBTable,
-        ideaMcp: JCheckBox,
-        customMcp: JCheckBox,
-        envModel: EnvironmentVariablesTableModel,
-    ) {
-        persistDetailPanelToRow(model, ideaMcp, customMcp, envModel, table.selectedRow)
-    }
-
     private fun importFromAcpJson(
         model: AgentConfigsTableModel,
         table: JBTable,
@@ -382,28 +241,9 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             FileChooserDescriptorFactory
                 .createSingleFileDescriptor("json")
                 .withTitle("Import from acp.json")
-        val file =
-            FileChooser.chooseFile(descriptor, null, null)
-                ?: return
-        val text =
-            runCatching { VfsUtil.loadText(file) }
-                .getOrElse { throwable ->
-                    Messages.showErrorDialog(
-                        table,
-                        throwable.message ?: "Failed to read ${file.path}",
-                        "Import failed",
-                    )
-                    return
-                }
+        val file = FileChooser.chooseFile(descriptor, null, null) ?: return
         val drafts =
-            AcpJsonImporter.parse(text).getOrElse { throwable ->
-                Messages.showErrorDialog(
-                    table,
-                    throwable.message ?: "Invalid acp.json",
-                    "Import failed",
-                )
-                return
-            }
+            readImportDrafts(table, file) ?: return
         val existingRows = model.rowsSnapshot()
         val collisions =
             drafts
@@ -439,6 +279,30 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         refreshDetailPanel()
     }
 
+    private fun readImportDrafts(
+        table: JBTable,
+        file: com.intellij.openapi.vfs.VirtualFile,
+    ): List<AcpJsonImportDraft>? {
+        val text =
+            runCatching { VfsUtil.loadText(file) }
+                .getOrElse { throwable ->
+                    Messages.showErrorDialog(
+                        table,
+                        throwable.message ?: "Failed to read ${file.path}",
+                        "Import failed",
+                    )
+                    return null
+                }
+        return AcpJsonImporter.parse(text).getOrElse { throwable ->
+            Messages.showErrorDialog(
+                table,
+                throwable.message ?: "Invalid acp.json",
+                "Import failed",
+            )
+            null
+        }
+    }
+
     private fun resolveImportOverwriteNames(
         table: JBTable,
         collisions: List<String>,
@@ -462,18 +326,8 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             configurations.any { configuration ->
                 configuration.environmentVariables.values.any { value -> value.isNotBlank() }
             }
-        if (hasEnvironmentValues) {
-            val parent = table ?: return
-            val answer =
-                Messages.showYesNoDialog(
-                    parent,
-                    "Export includes environment variable values in plaintext. Continue?",
-                    "Export to acp.json",
-                    Messages.getWarningIcon(),
-                )
-            if (answer != Messages.YES) {
-                return
-            }
+        if (hasEnvironmentValues && !confirmEnvironmentExport()) {
+            return
         }
         val saver =
             FileSaverDescriptor(
@@ -496,31 +350,51 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         }
     }
 
+    private fun confirmEnvironmentExport(): Boolean {
+        val parent = table ?: return false
+        val answer =
+            Messages.showYesNoDialog(
+                parent,
+                "Export includes environment variable values in plaintext. Continue?",
+                "Export to acp.json",
+                Messages.getWarningIcon(),
+            )
+        return answer == Messages.YES
+    }
+
     private fun validateRows(rows: List<AgentConfigRow>) {
-        rows.forEachIndexed { index, row ->
-            if (row.name.trim().isEmpty()) {
-                throw ConfigurationException("Configuration #${index + 1} must have a name.")
+        val errors =
+            buildList {
+                rows.forEachIndexed { index, row ->
+                    if (row.name.trim().isEmpty()) {
+                        add("Configuration #${index + 1} must have a name.")
+                    }
+                    if (row.binaryPath.trim().isEmpty()) {
+                        add("Configuration '${row.name}' must have a binary path.")
+                    }
+                    val normalizedTarget = row.executionTarget.trim().uppercase()
+                    if (AgentSettingsState.ExecutionTarget.entries.none { it.name == normalizedTarget }) {
+                        add(
+                            "Configuration '${row.name}' has invalid execution target '${row.executionTarget}'. " +
+                                "Allowed values: ${AgentSettingsState.ExecutionTarget.entries.joinToString {
+                                    it.name
+                                }}.",
+                        )
+                    }
+                    val normalizedLaunchMode = normalizeLaunchMode(row.launchMode)
+                    if (LaunchMode.entries.none { it.name == normalizedLaunchMode }) {
+                        add(
+                            "Configuration '${row.name}' has invalid launch mode '${row.launchMode}'. " +
+                                "Allowed values: ${LaunchMode.displayLabels().joinToString()}.",
+                        )
+                    }
+                }
+                if (rows.isNotEmpty() && rows.none { it.isDefault }) {
+                    add("Mark one configuration as default.")
+                }
             }
-            if (row.binaryPath.trim().isEmpty()) {
-                throw ConfigurationException("Configuration '${row.name}' must have a binary path.")
-            }
-            val normalizedTarget = row.executionTarget.trim().uppercase()
-            if (AgentSettingsState.ExecutionTarget.entries.none { it.name == normalizedTarget }) {
-                throw ConfigurationException(
-                    "Configuration '${row.name}' has invalid execution target '${row.executionTarget}'. " +
-                        "Allowed values: ${AgentSettingsState.ExecutionTarget.entries.joinToString { it.name }}.",
-                )
-            }
-            val normalizedLaunchMode = normalizeLaunchMode(row.launchMode)
-            if (LaunchMode.entries.none { it.name == normalizedLaunchMode }) {
-                throw ConfigurationException(
-                    "Configuration '${row.name}' has invalid launch mode '${row.launchMode}'. " +
-                        "Allowed values: ${LaunchMode.displayLabels().joinToString()}.",
-                )
-            }
-        }
-        if (rows.isNotEmpty() && rows.none { it.isDefault }) {
-            throw ConfigurationException("Mark one configuration as default.")
+        if (errors.isNotEmpty()) {
+            throw ConfigurationException(errors.joinToString("\n"))
         }
     }
 

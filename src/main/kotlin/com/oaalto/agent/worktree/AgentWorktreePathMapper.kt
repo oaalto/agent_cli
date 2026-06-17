@@ -10,12 +10,13 @@ internal object AgentWorktreePathMapper {
         hostPath: String,
         repositoryRootPath: String,
     ): String {
-        val repositoryWslInfo = parseWslUncPath(repositoryRootPath) ?: return hostPath
-        val worktreeWslInfo = parseWslUncPath(hostPath) ?: return hostPath
-        if (!repositoryWslInfo.distribution.equals(worktreeWslInfo.distribution, ignoreCase = true)) {
-            return hostPath
+        val repositoryWslInfo = parseWslUncPath(repositoryRootPath)
+        val worktreeWslInfo = parseWslUncPath(hostPath)
+        return when {
+            repositoryWslInfo == null || worktreeWslInfo == null -> hostPath
+            !repositoryWslInfo.distribution.equals(worktreeWslInfo.distribution, ignoreCase = true) -> hostPath
+            else -> worktreeWslInfo.linuxPath
         }
-        return worktreeWslInfo.linuxPath
     }
 
     fun mapGitPathToHostPath(
@@ -24,24 +25,30 @@ internal object AgentWorktreePathMapper {
     ): String {
         val mainRepositoryWslInfo = parseWslUncPath(mainRepositoryPath)
         val trimmedGitPath = gitPath.trim()
-        if (trimmedGitPath.isBlank()) return trimmedGitPath
-        if (trimmedGitPath.startsWith("/") && mainRepositoryWslInfo != null) {
-            return linuxPathToWslUnc(trimmedGitPath, mainRepositoryWslInfo.distribution)
+        return when {
+            trimmedGitPath.isBlank() -> trimmedGitPath
+            trimmedGitPath.startsWith("/") && mainRepositoryWslInfo != null ->
+                linuxPathToWslUnc(trimmedGitPath, mainRepositoryWslInfo.distribution)
+            else -> trimmedGitPath
         }
-        return trimmedGitPath
     }
 
     fun parseWslUncPath(rawPath: String): WslUncPath? {
         val windowsStylePath = rawPath.trim().replace('/', '\\')
-        if (windowsStylePath.isBlank()) return null
-        val prefix = wslUncPrefixes.firstOrNull { windowsStylePath.startsWith(it, ignoreCase = true) } ?: return null
+        val prefix =
+            wslUncPrefixes.firstOrNull { windowsStylePath.startsWith(it, ignoreCase = true) }
+                ?: return null
         val withoutPrefix = windowsStylePath.substring(prefix.length)
         val segments = withoutPrefix.split('\\').filter { it.isNotBlank() }
-        if (segments.isEmpty()) return null
-        val distribution = segments.first()
-        val linuxSegments = segments.drop(1)
-        val linuxPath = if (linuxSegments.isEmpty()) "/" else "/${linuxSegments.joinToString("/")}"
-        return WslUncPath(distribution = distribution, linuxPath = linuxPath)
+        return when {
+            windowsStylePath.isBlank() || segments.isEmpty() -> null
+            else -> {
+                val distribution = segments.first()
+                val linuxSegments = segments.drop(1)
+                val linuxPath = if (linuxSegments.isEmpty()) "/" else "/${linuxSegments.joinToString("/")}"
+                WslUncPath(distribution = distribution, linuxPath = linuxPath)
+            }
+        }
     }
 
     fun normalizePath(path: String): String {

@@ -20,28 +20,34 @@ class AuthPromptPanel {
             isEditable = false
             lineWrap = true
             wrapStyleWord = true
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(12))
-            border = JBUI.Borders.empty(4, 8)
+            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.MONO_FONT_SIZE))
+            border = JBUI.Borders.empty(AcpUiMetrics.COMPACT_INSET, AcpUiMetrics.HORIZONTAL_INSET)
             background = JBColor.PanelBackground
             foreground = JBColor.foreground()
-            rows = 3
+            rows = AcpUiMetrics.MESSAGE_ROWS
         }
     private val inputField =
         JTextField().apply {
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(12))
-            border = JBUI.Borders.empty(4, 8)
+            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.MONO_FONT_SIZE))
+            border = JBUI.Borders.empty(AcpUiMetrics.COMPACT_INSET, AcpUiMetrics.HORIZONTAL_INSET)
             isVisible = false
         }
     private val buttonsPanel =
-        JPanel(GridLayout(1, 0, JBUI.scale(4), 0)).apply {
-            border = JBUI.Borders.empty(4, 8, 8, 8)
+        JPanel(GridLayout(1, 0, JBUI.scale(AcpUiMetrics.COMPACT_INSET), 0)).apply {
+            border =
+                JBUI.Borders.empty(
+                    AcpUiMetrics.COMPACT_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                    AcpUiMetrics.HORIZONTAL_INSET,
+                )
         }
     private val panel =
         JPanel(BorderLayout()).apply {
             border =
                 JBUI.Borders.compound(
                     JBUI.Borders.customLine(JBColor.border()),
-                    JBUI.Borders.empty(4),
+                    JBUI.Borders.empty(AcpUiMetrics.COMPACT_INSET),
                 )
             background = JBColor.PanelBackground
             isVisible = false
@@ -90,7 +96,7 @@ class AuthPromptPanel {
         buttonsPanel.removeAll()
         buttonsPanel.add(
             JButton("Open link").apply {
-                font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(11))
+                font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.BUTTON_FONT_SIZE))
                 addActionListener {
                     runCatching {
                         java.awt.Desktop
@@ -136,7 +142,7 @@ class AuthPromptPanel {
 
     private fun continueButton(): JButton =
         JButton("Continue").apply {
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(11))
+            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.BUTTON_FONT_SIZE))
             addActionListener {
                 complete(AuthPromptResult.Continue)
             }
@@ -144,7 +150,7 @@ class AuthPromptPanel {
 
     private fun cancelButton(): JButton =
         JButton("Cancel").apply {
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(11))
+            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(AcpUiMetrics.BUTTON_FONT_SIZE))
             addActionListener {
                 complete(AuthPromptResult.Cancelled)
             }

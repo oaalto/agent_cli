@@ -28,22 +28,23 @@ class ScopedFileSystemOperations private constructor(
 
     fun resolveForRead(requestedPath: String): ScopeResult {
         val resolved = resolveInScope(requestedPath) ?: return outOfScope(requestedPath)
-        if (!resolved.exists()) {
-            return ScopeResult.OutOfScope("File not found: $requestedPath")
+        return when {
+            !resolved.exists() -> ScopeResult.OutOfScope("File not found: $requestedPath")
+            !resolved.isRegularFile() -> ScopeResult.OutOfScope("Not a regular file: $requestedPath")
+            else -> ScopeResult.InScope(resolved)
         }
-        if (!resolved.isRegularFile()) {
-            return ScopeResult.OutOfScope("Not a regular file: $requestedPath")
-        }
-        return ScopeResult.InScope(resolved)
     }
 
     fun resolveForWrite(requestedPath: String): ScopeResult {
         val resolved = resolveInScope(requestedPath) ?: return outOfScope(requestedPath)
         val parent = resolved.parent
-        if (parent != null && !parent.exists()) {
-            return ScopeResult.OutOfScope("Parent directory does not exist: $requestedPath")
+        return when {
+            parent != null && !parent.exists() ->
+                ScopeResult.OutOfScope(
+                    "Parent directory does not exist: $requestedPath",
+                )
+            else -> ScopeResult.InScope(resolved)
         }
-        return ScopeResult.InScope(resolved)
     }
 
     fun scopeRoot(): Path = scopeRoot.normalize()
@@ -63,9 +64,11 @@ class ScopedFileSystemOperations private constructor(
             } else {
                 root.resolve(trimmed).normalize().toAbsolutePath()
             }
-        if (!candidate.startsWith(root)) return null
-        if (candidate == root && !candidate.isDirectory()) return null
-        return candidate
+        return when {
+            !candidate.startsWith(root) -> null
+            candidate == root && !candidate.isDirectory() -> null
+            else -> candidate
+        }
     }
 
     private fun outOfScope(requestedPath: String): ScopeResult.OutOfScope =

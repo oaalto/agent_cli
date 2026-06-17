@@ -1,5 +1,14 @@
 package com.oaalto.agent
 
+data class AgentWslCommandRequest(
+    val binaryPath: String,
+    val arguments: List<String>,
+    val wslDistribution: String,
+    val wslWorkingDirectory: String,
+    val useNodeShellWrapper: Boolean = false,
+    val environmentVariables: Map<String, String> = emptyMap(),
+)
+
 object AgentCommandBuilder {
     fun buildLocalCommand(
         binaryPath: String,
@@ -7,28 +16,21 @@ object AgentCommandBuilder {
         useNodeShellWrapper: Boolean,
     ): List<String> = buildAgentCommand(binaryPath, arguments, useNodeShellWrapper)
 
-    fun buildWslCommand(
-        binaryPath: String,
-        arguments: List<String>,
-        wslDistribution: String,
-        wslWorkingDirectory: String,
-        useNodeShellWrapper: Boolean = false,
-        environmentVariables: Map<String, String> = emptyMap(),
-    ): List<String> =
+    fun buildWslCommand(request: AgentWslCommandRequest): List<String> =
         buildList {
             add("wsl.exe")
-            val distribution = wslDistribution.trim()
+            val distribution = request.wslDistribution.trim()
             if (distribution.isNotBlank()) {
                 add("--distribution")
                 add(distribution)
             }
             add("--cd")
-            add(wslWorkingDirectory)
+            add(request.wslWorkingDirectory)
             add("--")
             addAll(
                 withEnvironmentPrefix(
-                    environmentVariables,
-                    buildAgentCommand(binaryPath, arguments, useNodeShellWrapper),
+                    request.environmentVariables,
+                    buildAgentCommand(request.binaryPath, request.arguments, request.useNodeShellWrapper),
                 ),
             )
         }
@@ -49,11 +51,12 @@ object AgentCommandBuilder {
         }
     }
 
-    private fun quoteEnvAssignmentValue(value: String): String {
-        if (value.isEmpty()) return "''"
-        if (ENV_SAFE_VALUE.matches(value)) return value
-        return "'" + value.replace("'", "'\"'\"'") + "'"
-    }
+    private fun quoteEnvAssignmentValue(value: String): String =
+        when {
+            value.isEmpty() -> "''"
+            ENV_SAFE_VALUE.matches(value) -> value
+            else -> "'" + value.replace("'", "'\"'\"'") + "'"
+        }
 
     private fun buildAgentCommand(
         binaryPath: String,
@@ -73,11 +76,12 @@ object AgentCommandBuilder {
         (listOf("exec", quoteForPosixShell(binaryPath)) + arguments.map(::quoteForPosixShell))
             .joinToString(" ")
 
-    private fun quoteForPosixShell(value: String): String {
-        if (value.isEmpty()) return "''"
-        if (POSIX_SAFE_VALUE.matches(value)) return value
-        return "'" + value.replace("'", "'\"'\"'") + "'"
-    }
+    private fun quoteForPosixShell(value: String): String =
+        when {
+            value.isEmpty() -> "''"
+            POSIX_SAFE_VALUE.matches(value) -> value
+            else -> "'" + value.replace("'", "'\"'\"'") + "'"
+        }
 
     private val NODE_SHELL_WRAPPER = listOf("bash", "-ilc")
 

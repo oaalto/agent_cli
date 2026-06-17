@@ -2,33 +2,20 @@ build:
   maxIssues: 0
 
 complexity:
-  LongMethod:
-    active: true
-    threshold: 120
   TooManyFunctions:
-    active: true
-    thresholdInFiles: 35
-    thresholdInClasses: 35
-  LongParameterList:
-    active: true
-    functionThreshold: 10
-
-exceptions:
-  TooGenericExceptionCaught:
-    active: false
+    ignoreOverridden: true
 
 style:
   MagicNumber:
-    active: false
+    active: true
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+    ignorePropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreEnums: true
+    ignoreHashCodeFunction: true
   MaxLineLength:
-    active: true
-    maxLineLength: 120
-  ReturnCount:
-    active: true
-    max: 8
-  ExplicitItLambdaParameter:
-    active: false
-  ThrowsCount:
-    active: false
-  UseCheckOrError:
     active: false

@@ -20,12 +20,12 @@ class AgentCommandBuilderTest {
     fun `builds direct wsl command when node shell wrapper is disabled`() {
         val command =
             AgentCommandBuilder.buildWslCommand(
-                binaryPath = "/usr/local/bin/codex",
-                arguments = listOf("resume", "--last"),
-                wslDistribution = "Ubuntu",
-                wslWorkingDirectory = "/home/olli/project",
-                useNodeShellWrapper = false,
-                environmentVariables = emptyMap(),
+                AgentWslCommandRequest(
+                    binaryPath = "/usr/local/bin/codex",
+                    arguments = listOf("resume", "--last"),
+                    wslDistribution = "Ubuntu",
+                    wslWorkingDirectory = "/home/olli/project",
+                ),
             )
 
         assertEquals(
@@ -48,12 +48,13 @@ class AgentCommandBuilderTest {
     fun `builds wrapped wsl command for node agents`() {
         val command =
             AgentCommandBuilder.buildWslCommand(
-                binaryPath = "pi",
-                arguments = listOf("--model", "fast mode"),
-                wslDistribution = "",
-                wslWorkingDirectory = "/home/olli/project",
-                useNodeShellWrapper = true,
-                environmentVariables = emptyMap(),
+                AgentWslCommandRequest(
+                    binaryPath = "pi",
+                    arguments = listOf("--model", "fast mode"),
+                    wslDistribution = "",
+                    wslWorkingDirectory = "/home/olli/project",
+                    useNodeShellWrapper = true,
+                ),
             )
 
         assertEquals(
@@ -93,12 +94,13 @@ class AgentCommandBuilderTest {
     fun `prefixes wsl command with environment variables`() {
         val command =
             AgentCommandBuilder.buildWslCommand(
-                binaryPath = "pi",
-                arguments = emptyList(),
-                wslDistribution = "",
-                wslWorkingDirectory = "/home/olli/project",
-                useNodeShellWrapper = false,
-                environmentVariables = mapOf("API_KEY" to "secret"),
+                AgentWslCommandRequest(
+                    binaryPath = "pi",
+                    arguments = emptyList(),
+                    wslDistribution = "",
+                    wslWorkingDirectory = "/home/olli/project",
+                    environmentVariables = mapOf("API_KEY" to "secret"),
+                ),
             )
 
         assertEquals(

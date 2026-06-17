@@ -10,12 +10,10 @@ import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Splitter
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentVirtualFile
@@ -145,7 +143,16 @@ class AcpAgentEditor(
     private val sessionController: AcpSessionController = sessionControllerFactory(sessionListener)
 
     init {
-        layoutEditor()
+        rootPanel.add(
+            AcpEditorLayout.buildRootPanel(
+                transcriptArea = transcriptArea,
+                permissionPromptPanel = permissionPromptPanel,
+                authPromptPanel = authPromptPanel,
+                promptInputBar = promptInputBar,
+                shellPaneHost = shellPaneHost,
+            ),
+            BorderLayout.CENTER,
+        )
         promptInputBar.setEnabled(false)
         startSession()
     }
@@ -199,27 +206,6 @@ class AcpAgentEditor(
         }
         sessionController.dispose()
         coroutineScope.cancel()
-    }
-
-    private fun layoutEditor() {
-        val transcriptColumn =
-            JPanel(BorderLayout()).apply {
-                add(JBScrollPane(transcriptArea), BorderLayout.CENTER)
-                add(permissionPromptPanel.component, BorderLayout.SOUTH)
-                add(authPromptPanel.component, BorderLayout.NORTH)
-            }
-        val bottomSplitter =
-            Splitter(true, 0.2f).apply {
-                firstComponent = promptInputBar.component
-                secondComponent = shellPaneHost.component
-            }
-        val mainSplitter =
-            Splitter(true, 0.72f).apply {
-                firstComponent = transcriptColumn
-                secondComponent = bottomSplitter
-            }
-        rootPanel.add(mainSplitter, BorderLayout.CENTER)
-        rootPanel.border = JBUI.Borders.empty()
     }
 
     private fun startSession() {

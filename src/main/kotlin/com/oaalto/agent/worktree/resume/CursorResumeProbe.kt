@@ -3,6 +3,7 @@ package com.oaalto.agent.worktree.resume
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.oaalto.agent.AgentCommandBuilder
+import com.oaalto.agent.AgentWslCommandRequest
 import com.oaalto.agent.settings.AgentSettingsState
 import java.nio.file.Files
 import java.nio.file.Path
@@ -53,11 +54,12 @@ internal object CursorResumeProbeLogic {
                         wslWorkingDirectory = request.wslWorkingDirectory,
                         hostWorkingDirectory = request.hostWorkingDirectory,
                     )
-            } ?: return request.arguments
-        if (containsNoPreviousChats(output)) {
-            return request.arguments.filterNot { it == "--continue" }
+            }
+        return when {
+            output == null -> request.arguments
+            containsNoPreviousChats(output) -> request.arguments.filterNot { it == "--continue" }
+            else -> request.arguments
         }
-        return request.arguments
     }
 
     private fun shouldUseCursorResumeFallback(
@@ -88,12 +90,13 @@ internal object CursorResumeProbeLogic {
     ): String? {
         val probeCommand =
             AgentCommandBuilder.buildWslCommand(
-                binaryPath = binaryPath,
-                arguments = listOf("resume"),
-                wslDistribution = wslDistribution,
-                wslWorkingDirectory = wslWorkingDirectory,
-                useNodeShellWrapper = false,
-                environmentVariables = emptyMap(),
+                AgentWslCommandRequest(
+                    binaryPath = binaryPath,
+                    arguments = listOf("resume"),
+                    wslDistribution = wslDistribution,
+                    wslWorkingDirectory = wslWorkingDirectory,
+                    useNodeShellWrapper = false,
+                ),
             )
         return runProcess(
             command = probeCommand,

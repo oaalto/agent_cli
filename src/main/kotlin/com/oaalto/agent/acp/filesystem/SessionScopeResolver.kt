@@ -15,19 +15,21 @@ object SessionScopeResolver {
         }
         val sessionCwd = sessionWorkingDirectory.trim()
         val basePath = projectBasePath?.trim().orEmpty()
-        if (sessionCwd.startsWith("/") && basePath.isNotBlank()) {
-            val hostPath = AgentWorktreePathMapper.mapGitPathToHostPath(sessionCwd, basePath)
-            if (hostPath != sessionCwd) {
-                return Path.of(hostPath)
+        val mappedHostPath =
+            if (sessionCwd.startsWith("/") && basePath.isNotBlank()) {
+                val hostPath = AgentWorktreePathMapper.mapGitPathToHostPath(sessionCwd, basePath)
+                hostPath.takeIf { it != sessionCwd }
+            } else {
+                null
             }
-        }
-        if (sessionCwd.isNotBlank()) {
-            return Path.of(sessionCwd)
-        }
-        if (basePath.isNotBlank()) {
-            return Path.of(basePath)
-        }
-        return Path.of(System.getProperty("user.dir"))
+        val resolvedPath =
+            when {
+                mappedHostPath != null -> mappedHostPath
+                sessionCwd.isNotBlank() -> sessionCwd
+                basePath.isNotBlank() -> basePath
+                else -> System.getProperty("user.dir")
+            }
+        return Path.of(resolvedPath)
     }
 
     fun normalizeAgentPath(
@@ -36,15 +38,21 @@ object SessionScopeResolver {
         projectBasePath: String?,
     ): String {
         val trimmed = requestedPath.trim()
-        if (!trimmed.startsWith("/")) return trimmed
         val basePath = projectBasePath?.trim().orEmpty()
-        if (basePath.isBlank()) return trimmed
-        val rootString = scopeRoot.normalize().toAbsolutePath().toString()
-        if (AgentWorktreePathMapper.parseWslUncPath(rootString) != null ||
-            AgentWorktreePathMapper.parseWslUncPath(basePath) != null
-        ) {
-            return AgentWorktreePathMapper.mapGitPathToHostPath(trimmed, basePath)
+        return when {
+            !trimmed.startsWith("/") -> trimmed
+            basePath.isBlank() -> trimmed
+            else -> {
+                val rootString = scopeRoot.normalize().toAbsolutePath().toString()
+                val usesWslPaths =
+                    AgentWorktreePathMapper.parseWslUncPath(rootString) != null ||
+                        AgentWorktreePathMapper.parseWslUncPath(basePath) != null
+                if (usesWslPaths) {
+                    AgentWorktreePathMapper.mapGitPathToHostPath(trimmed, basePath)
+                } else {
+                    trimmed
+                }
+            }
         }
-        return trimmed
     }
 }

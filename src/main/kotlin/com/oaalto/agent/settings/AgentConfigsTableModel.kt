@@ -25,7 +25,7 @@ class AgentConfigsTableModel : AbstractTableModel() {
 
     override fun getColumnClass(columnIndex: Int): Class<*> =
         when (columnIndex) {
-            0, 6 -> java.lang.Boolean::class.java
+            AgentConfigsTableColumns.DEFAULT, AgentConfigsTableColumns.NODE_WRAPPER -> java.lang.Boolean::class.java
             else -> String::class.java
         }
 
@@ -40,15 +40,15 @@ class AgentConfigsTableModel : AbstractTableModel() {
     ): Any {
         val row = rows[rowIndex]
         return when (columnIndex) {
-            0 -> row.isDefault
-            1 -> row.name
-            2 -> LaunchMode.from(row.launchMode).displayLabel
-            3 -> row.executionTarget
-            4 -> row.wslDistribution
-            5 -> row.binaryPath
-            6 -> row.useNodeShellWrapper
-            7 -> row.arguments
-            8 -> row.workingDirectory
+            AgentConfigsTableColumns.DEFAULT -> row.isDefault
+            AgentConfigsTableColumns.NAME -> row.name
+            AgentConfigsTableColumns.LAUNCH_MODE -> LaunchMode.from(row.launchMode).displayLabel
+            AgentConfigsTableColumns.EXECUTION_TARGET -> row.executionTarget
+            AgentConfigsTableColumns.WSL_DISTRIBUTION -> row.wslDistribution
+            AgentConfigsTableColumns.BINARY_PATH -> row.binaryPath
+            AgentConfigsTableColumns.NODE_WRAPPER -> row.useNodeShellWrapper
+            AgentConfigsTableColumns.ARGUMENTS -> row.arguments
+            AgentConfigsTableColumns.WORKING_DIRECTORY -> row.workingDirectory
             else -> ""
         }
     }
@@ -60,7 +60,7 @@ class AgentConfigsTableModel : AbstractTableModel() {
     ) {
         val row = rows[rowIndex]
         when (columnIndex) {
-            0 -> {
+            AgentConfigsTableColumns.DEFAULT -> {
                 val newValue = (value as? Boolean) == true
                 if (newValue) {
                     rows.forEachIndexed { index, item ->
@@ -75,16 +75,20 @@ class AgentConfigsTableModel : AbstractTableModel() {
                     fireTableRowsUpdated(rowIndex, rowIndex)
                 }
             }
-            1 -> row.name = (value as? String).orEmpty()
-            2 -> row.launchMode = LaunchMode.fromDisplayLabel((value as? String).orEmpty()).name
-            3 -> row.executionTarget = (value as? String).orEmpty().trim().uppercase()
-            4 -> row.wslDistribution = (value as? String).orEmpty()
-            5 -> row.binaryPath = (value as? String).orEmpty()
-            6 -> row.useNodeShellWrapper = (value as? Boolean) == true
-            7 -> row.arguments = (value as? String).orEmpty()
-            8 -> row.workingDirectory = (value as? String).orEmpty()
+            AgentConfigsTableColumns.NAME -> row.name = (value as? String).orEmpty()
+            AgentConfigsTableColumns.LAUNCH_MODE ->
+                row.launchMode =
+                    LaunchMode.fromDisplayLabel((value as? String).orEmpty()).name
+            AgentConfigsTableColumns.EXECUTION_TARGET ->
+                row.executionTarget =
+                    (value as? String).orEmpty().trim().uppercase()
+            AgentConfigsTableColumns.WSL_DISTRIBUTION -> row.wslDistribution = (value as? String).orEmpty()
+            AgentConfigsTableColumns.BINARY_PATH -> row.binaryPath = (value as? String).orEmpty()
+            AgentConfigsTableColumns.NODE_WRAPPER -> row.useNodeShellWrapper = (value as? Boolean) == true
+            AgentConfigsTableColumns.ARGUMENTS -> row.arguments = (value as? String).orEmpty()
+            AgentConfigsTableColumns.WORKING_DIRECTORY -> row.workingDirectory = (value as? String).orEmpty()
         }
-        if (columnIndex != 0) {
+        if (columnIndex != AgentConfigsTableColumns.DEFAULT) {
             fireTableCellUpdated(rowIndex, columnIndex)
         }
     }

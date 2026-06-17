@@ -29,14 +29,13 @@ object AgentConfigurationSelector {
     fun setSelectedConfiguration(
         project: Project,
         id: String,
-    ): Boolean {
-        if (id.isBlank()) {
-            return false
+    ): Boolean =
+        when {
+            id.isBlank() -> false
+            AgentSettingsState.getInstance().getConfigurationById(id) == null -> false
+            else -> {
+                project.service<ProjectAgentSelectionState>().setSelectedConfigurationId(id)
+                true
+            }
         }
-        if (AgentSettingsState.getInstance().getConfigurationById(id) == null) {
-            return false
-        }
-        project.service<ProjectAgentSelectionState>().setSelectedConfigurationId(id)
-        return true
-    }
 }

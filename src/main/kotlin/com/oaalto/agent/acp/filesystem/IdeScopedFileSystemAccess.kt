@@ -41,33 +41,29 @@ class IdeScopedFileSystemAccess(
         resolved: Path,
         content: String,
     ): AccessResult {
-        val virtualFile =
-            findOrCreateVirtualFile(resolved)
-                ?: return AccessResult.Failure("Could not resolve file in IDE VFS: $resolved")
-        if (!virtualFile.isWritable) {
-            return AccessResult.Failure("File is read-only in the IDE: $resolved")
-        }
-        if (isGitIgnored(virtualFile)) {
-            return AccessResult.Failure("File is ignored by version control: $resolved")
-        }
-        return runWrite {
-            val document = FileDocumentManager.getInstance().getDocument(virtualFile)
-            if (document != null) {
-                document.setText(content)
-                FileDocumentManager.getInstance().saveDocument(document)
-            } else {
-                virtualFile.setBinaryContent(content.toByteArray(StandardCharsets.UTF_8))
-            }
-            AccessResult.Success()
+        val virtualFile = findOrCreateVirtualFile(resolved)
+        val blockedReason = virtualFile?.let { file -> writeBlockReason(file, resolved) }
+        return when {
+            virtualFile == null -> AccessResult.Failure("Could not resolve file in IDE VFS: $resolved")
+            blockedReason != null -> AccessResult.Failure(blockedReason)
+            else ->
+                runWrite {
+                    val document = FileDocumentManager.getInstance().getDocument(virtualFile)
+                    if (document != null) {
+                        document.setText(content)
+                        FileDocumentManager.getInstance().saveDocument(document)
+                    } else {
+                        virtualFile.setBinaryContent(content.toByteArray(StandardCharsets.UTF_8))
+                    }
+                    AccessResult.Success()
+                }
         }
     }
 
     fun isBlockedForWrite(resolved: Path): String? {
         val virtualFile = findVirtualFile(resolved) ?: findOrCreateVirtualFile(resolved)
-        if (virtualFile == null) return "Could not resolve file in IDE VFS: $resolved"
-        if (!virtualFile.isWritable) return "File is read-only in the IDE: $resolved"
-        if (isGitIgnored(virtualFile)) return "File is ignored by version control: $resolved"
-        return null
+        return virtualFile?.let { file -> writeBlockReason(file, resolved) }
+            ?: "Could not resolve file in IDE VFS: $resolved"
     }
 
     private fun findVirtualFile(resolved: Path): VirtualFile? {
@@ -76,21 +72,38 @@ class IdeScopedFileSystemAccess(
             ?: VfsUtil.findFileByIoFile(resolved.toFile(), true)
     }
 
-    private fun findOrCreateVirtualFile(resolved: Path): VirtualFile? {
-        findVirtualFile(resolved)?.let { return it }
-        val parent = resolved.parent ?: return null
-        val parentVirtual = findVirtualFile(parent) ?: return null
-        return runWrite {
-            parentVirtual.createChildData(this, resolved.fileName.toString())
+    private fun writeBlockReason(
+        virtualFile: VirtualFile,
+        resolved: Path,
+    ): String? =
+        when {
+            !virtualFile.isWritable -> "File is read-only in the IDE: $resolved"
+            isGitIgnored(virtualFile) -> "File is ignored by version control: $resolved"
+            else -> null
+        }
+
+    private fun findOrCreateVirtualFile(resolved: Path): VirtualFile? =
+        findVirtualFile(resolved) ?: createVirtualFileUnderParent(resolved)
+
+    private fun createVirtualFileUnderParent(resolved: Path): VirtualFile? {
+        val parent = resolved.parent
+        val parentVirtual = parent?.let(::findVirtualFile)
+        return if (parent != null && parentVirtual != null) {
+            runWrite {
+                parentVirtual.createChildData(this, resolved.fileName.toString())
+            }
+        } else {
+            null
         }
     }
 
     private fun isGitIgnored(virtualFile: VirtualFile): Boolean {
-        if (project.isDisposed) return false
-        val repository =
-            GitRepositoryManager.getInstance(project).getRepositoryForFileQuick(virtualFile)
-                ?: return false
-        return repository.ignoredFilesHolder.containsFile(VcsUtil.getFilePath(virtualFile))
+        if (project.isDisposed) {
+            return false
+        }
+        val repository = GitRepositoryManager.getInstance(project).getRepositoryForFileQuick(virtualFile)
+        return repository != null &&
+            repository.ignoredFilesHolder.containsFile(VcsUtil.getFilePath(virtualFile))
     }
 
     private fun <T> runRead(action: () -> T): T = ApplicationManager.getApplication().runReadAction(Computable(action))

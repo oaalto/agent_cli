@@ -88,36 +88,12 @@ class AcpSessionControllerImpl(
         val protocolInstance = Protocol(scope, transport)
         val clientInstance = Client(protocolInstance)
 
-        try {
-            protocolInstance.start()
-            val capabilities =
-                AcpClientCapabilities.build(AcpClientCapabilities.fullSupport)
-            val info =
-                clientInstance.initialize(
-                    ClientInfo(
-                        capabilities = capabilities,
-                        implementation = Implementation(name = "agent-cli-plugin", version = "3.0"),
-                    ),
-                )
-            agentInfo = info
-            val authCoordinator =
-                AuthFlowCoordinator(
-                    client = clientInstance,
-                    agentInfo = info,
-                    shellPaneHost = editorContext.shellPaneHost,
-                    authPromptUi = editorContext.authPromptUi,
-                    listener = listener,
-                )
-            authCoordinator.authenticateIfRequired().getOrElse { throwable ->
-                sessionReady.completeExceptionally(throwable)
-                disposeTransportOnly()
-                throw throwable
-            }
-        } catch (throwable: Throwable) {
+        runCatching {
+            initializeConnectedClient(protocolInstance, clientInstance, editorContext)
+        }.onFailure { throwable ->
             sessionReady.completeExceptionally(throwable)
             disposeTransportOnly()
-            throw throwable
-        }
+        }.getOrThrow()
 
         process = startedProcess
         protocol = protocolInstance
@@ -192,12 +168,40 @@ class AcpSessionControllerImpl(
             ClientOperationsFactory { _, _ ->
                 AcpClientSessionOperationsImpl.create(context)
             }
-        try {
+        runCatching {
             session =
                 open(activeClient, context, cwd, operationsFactory, mcpServers)
             sessionReady.complete(Unit)
-        } catch (throwable: Throwable) {
+        }.onFailure { throwable ->
             sessionReady.completeExceptionally(throwable)
+        }.getOrThrow()
+    }
+
+    private suspend fun initializeConnectedClient(
+        protocolInstance: Protocol,
+        clientInstance: Client,
+        editorContext: AcpEditorContext,
+    ) {
+        protocolInstance.start()
+        val capabilities =
+            AcpClientCapabilities.build(AcpClientCapabilities.fullSupport)
+        val info =
+            clientInstance.initialize(
+                ClientInfo(
+                    capabilities = capabilities,
+                    implementation = Implementation(name = "agent-cli-plugin", version = "3.0"),
+                ),
+            )
+        agentInfo = info
+        val authCoordinator =
+            AuthFlowCoordinator(
+                client = clientInstance,
+                agentInfo = info,
+                shellPaneHost = editorContext.shellPaneHost,
+                authPromptUi = editorContext.authPromptUi,
+                listener = listener,
+            )
+        authCoordinator.authenticateIfRequired().getOrElse { throwable ->
             throw throwable
         }
     }
@@ -271,13 +275,16 @@ class AcpSessionControllerImpl(
 
     private suspend fun awaitOpenSession() {
         if (session != null) return
-        try {
+        runCatching {
             sessionReady.await()
-        } catch (_: CancellationException) {
-            error("ACP session is not open")
-        } catch (throwable: Throwable) {
-            val cause = throwable.cause ?: throwable
-            error(cause.message ?: "ACP session failed to open")
+        }.getOrElse { throwable ->
+            when (throwable) {
+                is CancellationException -> error("ACP session is not open")
+                else -> {
+                    val cause = throwable.cause ?: throwable
+                    error(cause.message ?: "ACP session failed to open")
+                }
+            }
         }
     }
 
