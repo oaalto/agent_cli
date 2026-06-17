@@ -10,6 +10,8 @@
 
 ### Changed
 
+- **Detekt step 5 thresholds** (`detekt.yml`, `acp/TranscriptRenderer.kt`, `settings/`): Tighten `ReturnCount` (max 3, guard-clause exclusion), `CyclomaticComplexMethod` (10), `CognitiveComplexMethod` (12), and `TooManyFunctions` (15); extract transcript/settings helpers to satisfy new limits. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **Detekt strict compliance** (`detekt.yml`, `src/main/kotlin/`): Complete detekt burn-down for defaults — extract worktree/settings/MCP helpers, shared WSL path resolvers, `AgentWslCommandRequest`, UI metric constants, and `ignoreOverridden` for IntelliJ interface methods; `./gradlew qualityGate` passes clean. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **ReturnCount compliance** (`src/main/kotlin/`): Refactor multi-return functions to `when` expressions, `Result.flatMap` chains, and shared `WslPathResolver` / `WorkingDirectoryResolver` helpers so detekt `ReturnCount` passes without changing launch behavior. made by: Olli Aalto. made with: Cursor. model: Composer

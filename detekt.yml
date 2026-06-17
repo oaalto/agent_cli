@@ -2,10 +2,22 @@ build:
   maxIssues: 0
 
 complexity:
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 10
+  CognitiveComplexMethod:
+    active: true
+    threshold: 12
   TooManyFunctions:
     ignoreOverridden: true
+    thresholdInFiles: 15
+    thresholdInClasses: 15
 
 style:
+  ReturnCount:
+    active: true
+    max: 3
+    excludeGuardClauses: true
   MagicNumber:
     active: true
     ignoreNumbers:

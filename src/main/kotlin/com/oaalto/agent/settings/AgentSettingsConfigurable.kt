@@ -182,7 +182,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         val bindings = detailPanelBindings() ?: return
         AgentSettingsDetailPanelSupport.persistDetailPanelToSelection(bindings, syncingDetailPanel)
         val rows = bindings.model.rowsSnapshot()
-        validateRows(rows)
+        AgentSettingsValidation.validateRows(rows)
 
         val defaultId = rows.firstOrNull { it.isDefault }?.id
         val configurations =
@@ -360,42 +360,6 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 Messages.getWarningIcon(),
             )
         return answer == Messages.YES
-    }
-
-    private fun validateRows(rows: List<AgentConfigRow>) {
-        val errors =
-            buildList {
-                rows.forEachIndexed { index, row ->
-                    if (row.name.trim().isEmpty()) {
-                        add("Configuration #${index + 1} must have a name.")
-                    }
-                    if (row.binaryPath.trim().isEmpty()) {
-                        add("Configuration '${row.name}' must have a binary path.")
-                    }
-                    val normalizedTarget = row.executionTarget.trim().uppercase()
-                    if (AgentSettingsState.ExecutionTarget.entries.none { it.name == normalizedTarget }) {
-                        add(
-                            "Configuration '${row.name}' has invalid execution target '${row.executionTarget}'. " +
-                                "Allowed values: ${AgentSettingsState.ExecutionTarget.entries.joinToString {
-                                    it.name
-                                }}.",
-                        )
-                    }
-                    val normalizedLaunchMode = normalizeLaunchMode(row.launchMode)
-                    if (LaunchMode.entries.none { it.name == normalizedLaunchMode }) {
-                        add(
-                            "Configuration '${row.name}' has invalid launch mode '${row.launchMode}'. " +
-                                "Allowed values: ${LaunchMode.displayLabels().joinToString()}.",
-                        )
-                    }
-                }
-                if (rows.isNotEmpty() && rows.none { it.isDefault }) {
-                    add("Mark one configuration as default.")
-                }
-            }
-        if (errors.isNotEmpty()) {
-            throw ConfigurationException(errors.joinToString("\n"))
-        }
     }
 
     private fun rowsFromState(

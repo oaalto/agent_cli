@@ -37,21 +37,7 @@ class AgentConfigsTableModel : AbstractTableModel() {
     override fun getValueAt(
         rowIndex: Int,
         columnIndex: Int,
-    ): Any {
-        val row = rows[rowIndex]
-        return when (columnIndex) {
-            AgentConfigsTableColumns.DEFAULT -> row.isDefault
-            AgentConfigsTableColumns.NAME -> row.name
-            AgentConfigsTableColumns.LAUNCH_MODE -> LaunchMode.from(row.launchMode).displayLabel
-            AgentConfigsTableColumns.EXECUTION_TARGET -> row.executionTarget
-            AgentConfigsTableColumns.WSL_DISTRIBUTION -> row.wslDistribution
-            AgentConfigsTableColumns.BINARY_PATH -> row.binaryPath
-            AgentConfigsTableColumns.NODE_WRAPPER -> row.useNodeShellWrapper
-            AgentConfigsTableColumns.ARGUMENTS -> row.arguments
-            AgentConfigsTableColumns.WORKING_DIRECTORY -> row.workingDirectory
-            else -> ""
-        }
-    }
+    ): Any = AgentConfigRowColumns.valueAt(rows[rowIndex], columnIndex)
 
     override fun setValueAt(
         value: Any?,
@@ -59,38 +45,32 @@ class AgentConfigsTableModel : AbstractTableModel() {
         columnIndex: Int,
     ) {
         val row = rows[rowIndex]
-        when (columnIndex) {
-            AgentConfigsTableColumns.DEFAULT -> {
-                val newValue = (value as? Boolean) == true
-                if (newValue) {
-                    rows.forEachIndexed { index, item ->
-                        item.isDefault = index == rowIndex
-                    }
-                    fireTableDataChanged()
-                } else {
-                    val defaultCount = rows.count { it.isDefault }
-                    if (!(row.isDefault && defaultCount == 1)) {
-                        row.isDefault = false
-                    }
-                    fireTableRowsUpdated(rowIndex, rowIndex)
-                }
-            }
-            AgentConfigsTableColumns.NAME -> row.name = (value as? String).orEmpty()
-            AgentConfigsTableColumns.LAUNCH_MODE ->
-                row.launchMode =
-                    LaunchMode.fromDisplayLabel((value as? String).orEmpty()).name
-            AgentConfigsTableColumns.EXECUTION_TARGET ->
-                row.executionTarget =
-                    (value as? String).orEmpty().trim().uppercase()
-            AgentConfigsTableColumns.WSL_DISTRIBUTION -> row.wslDistribution = (value as? String).orEmpty()
-            AgentConfigsTableColumns.BINARY_PATH -> row.binaryPath = (value as? String).orEmpty()
-            AgentConfigsTableColumns.NODE_WRAPPER -> row.useNodeShellWrapper = (value as? Boolean) == true
-            AgentConfigsTableColumns.ARGUMENTS -> row.arguments = (value as? String).orEmpty()
-            AgentConfigsTableColumns.WORKING_DIRECTORY -> row.workingDirectory = (value as? String).orEmpty()
-        }
-        if (columnIndex != AgentConfigsTableColumns.DEFAULT) {
+        if (columnIndex == AgentConfigsTableColumns.DEFAULT) {
+            updateDefaultColumn(rowIndex, row, value)
+        } else {
+            AgentConfigRowColumns.setValueAt(row, columnIndex, value)
             fireTableCellUpdated(rowIndex, columnIndex)
         }
+    }
+
+    private fun updateDefaultColumn(
+        rowIndex: Int,
+        row: AgentConfigRow,
+        value: Any?,
+    ) {
+        val newValue = (value as? Boolean) == true
+        if (newValue) {
+            rows.forEachIndexed { index, item ->
+                item.isDefault = index == rowIndex
+            }
+            fireTableDataChanged()
+            return
+        }
+        val defaultCount = rows.count { it.isDefault }
+        if (!(row.isDefault && defaultCount == 1)) {
+            row.isDefault = false
+        }
+        fireTableRowsUpdated(rowIndex, rowIndex)
     }
 
     fun addRow(row: AgentConfigRow) {

@@ -41,28 +41,34 @@ object AcpJsonExporter {
                     }
                 },
             )
-            if (configuration.environmentVariables.isNotEmpty()) {
-                putJsonObject("env") {
-                    configuration.environmentVariables.forEach { (key, value) -> put(key, value) }
-                }
+            putOptionalExportFields(configuration)
+        }
+    }
+
+    private fun kotlinx.serialization.json.JsonObjectBuilder.putOptionalExportFields(
+        configuration: AgentSettingsState.AgentCliConfiguration,
+    ) {
+        if (configuration.environmentVariables.isNotEmpty()) {
+            putJsonObject("env") {
+                configuration.environmentVariables.forEach { (key, value) -> put(key, value) }
             }
-            if (configuration.useIdeaMcp) {
-                put("use_idea_mcp", true)
-            }
-            if (configuration.useCustomMcp) {
-                put("use_custom_mcp", true)
-            }
-            val executionTarget = configuration.executionTarget.trim().uppercase()
-            if (executionTarget.isNotBlank() && executionTarget != AgentSettingsState.ExecutionTarget.LOCAL.name) {
-                put("execution_target", executionTarget)
-            }
-            val wslDistribution = configuration.wslDistribution.trim()
-            if (wslDistribution.isNotBlank()) {
-                put("wsl_distribution", wslDistribution)
-            }
-            if (configuration.useNodeShellWrapper) {
-                put("use_node_shell_wrapper", true)
-            }
+        }
+        if (configuration.useIdeaMcp) {
+            put("use_idea_mcp", true)
+        }
+        if (configuration.useCustomMcp) {
+            put("use_custom_mcp", true)
+        }
+        val executionTarget = configuration.executionTarget.trim().uppercase()
+        if (executionTarget.isNotBlank() && executionTarget != AgentSettingsState.ExecutionTarget.LOCAL.name) {
+            put("execution_target", executionTarget)
+        }
+        val wslDistribution = configuration.wslDistribution.trim()
+        if (wslDistribution.isNotBlank()) {
+            put("wsl_distribution", wslDistribution)
+        }
+        if (configuration.useNodeShellWrapper) {
+            put("use_node_shell_wrapper", true)
         }
     }
 }

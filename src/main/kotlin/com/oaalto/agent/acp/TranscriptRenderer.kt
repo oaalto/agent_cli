@@ -8,22 +8,7 @@ import com.agentclientprotocol.model.ToolKind
 object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
 
-    fun renderUpdate(update: SessionUpdate): List<String> =
-        when (update) {
-            is SessionUpdate.AgentMessageChunk -> listOfNotNull(extractText(update.content))
-            is SessionUpdate.AgentThoughtChunk -> listOfNotNull(extractText(update.content)?.let { "[thought] $it" })
-            is SessionUpdate.UserMessageChunk -> listOfNotNull(extractText(update.content)?.let { "> $it" })
-            is SessionUpdate.ToolCall -> listOf(formatToolStatus(update.title, update.kind, update.status))
-            is SessionUpdate.ToolCallUpdate ->
-                listOf(
-                    formatToolStatus(
-                        title = update.title ?: update.toolCallId.value,
-                        kind = update.kind,
-                        status = update.status,
-                    ),
-                )
-            else -> emptyList()
-        }
+    fun renderUpdate(update: SessionUpdate): List<String> = TranscriptUpdateRenderer.render(update)
 
     fun renderEventText(update: SessionUpdate): String? =
         when (update) {
@@ -59,7 +44,7 @@ object TranscriptRenderer {
         return "[$kindLabel] $title ($statusLabel)"
     }
 
-    private fun extractText(content: ContentBlock): String? =
+    internal fun extractText(content: ContentBlock): String? =
         when (content) {
             is ContentBlock.Text -> content.text
             else -> null
