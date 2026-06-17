@@ -238,6 +238,7 @@ class PtyAgentEditor(
                                     wslDistribution = effectiveDistribution,
                                     wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
                                     useNodeShellWrapper = configuration.useNodeShellWrapper,
+                                    environmentVariables = emptyMap(),
                                 )
                             } ?: return,
                     )

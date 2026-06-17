@@ -1,7 +1,9 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.McpServer
 import com.oaalto.agent.AgentCommandBuilder
 import com.oaalto.agent.AgentLaunchContext
+import com.oaalto.agent.acp.mcp.McpCapabilityBridge
 import com.oaalto.agent.settings.AgentSettingsState
 import java.nio.file.Files
 import java.nio.file.Path
@@ -12,6 +14,7 @@ object AcpProcessLauncher {
         projectContext: AgentProjectContext,
         configuration: AgentSettingsState.AgentCliConfiguration,
         launchContext: AgentLaunchContext,
+        mcpCapabilityBridge: McpCapabilityBridge = McpCapabilityBridge.createDefault(),
     ): Result<AcpLaunchPlan> {
         val binaryPath = configuration.binaryPath.trim()
         if (binaryPath.isBlank()) {
@@ -27,6 +30,9 @@ object AcpProcessLauncher {
             )
 
         val executionTarget = resolveExecutionTarget(configuration.executionTarget)
+        val mcpServers = mcpCapabilityBridge.resolveServers(configuration)
+        val exposeMcp = mcpCapabilityBridge.shouldExposeMcp(configuration)
+        val environmentVariables = LinkedHashMap(configuration.environmentVariables)
         return when (executionTarget) {
             AgentSettingsState.ExecutionTarget.LOCAL ->
                 buildLocalPlan(
@@ -35,6 +41,9 @@ object AcpProcessLauncher {
                     configuration,
                     launchContext,
                     projectContext,
+                    environmentVariables,
+                    mcpServers,
+                    exposeMcp,
                 )
             AgentSettingsState.ExecutionTarget.WSL ->
                 buildWslPlan(
@@ -43,6 +52,9 @@ object AcpProcessLauncher {
                     configuration,
                     launchContext,
                     projectContext,
+                    environmentVariables,
+                    mcpServers,
+                    exposeMcp,
                 )
         }
     }
@@ -53,6 +65,9 @@ object AcpProcessLauncher {
         configuration: AgentSettingsState.AgentCliConfiguration,
         launchContext: AgentLaunchContext,
         projectContext: AgentProjectContext,
+        environmentVariables: Map<String, String>,
+        mcpServers: List<McpServer>,
+        exposeMcp: Boolean,
     ): Result<AcpLaunchPlan> {
         if (binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath))) {
             return Result.failure(IllegalStateException("Agent binary is not executable:\n$binaryPath"))
@@ -79,6 +94,9 @@ object AcpProcessLauncher {
                 command = command,
                 processWorkingDirectory = workingDirectory,
                 sessionWorkingDirectory = workingDirectory,
+                environmentVariables = environmentVariables,
+                mcpServers = mcpServers,
+                exposeMcp = exposeMcp,
             ),
         )
     }
@@ -89,6 +107,9 @@ object AcpProcessLauncher {
         configuration: AgentSettingsState.AgentCliConfiguration,
         launchContext: AgentLaunchContext,
         projectContext: AgentProjectContext,
+        environmentVariables: Map<String, String>,
+        mcpServers: List<McpServer>,
+        exposeMcp: Boolean,
     ): Result<AcpLaunchPlan> {
         val resolvedWslWorkingDirectory =
             resolveWslWorkingDirectory(
@@ -113,12 +134,16 @@ object AcpProcessLauncher {
                 wslDistribution = effectiveDistribution,
                 wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
                 useNodeShellWrapper = configuration.useNodeShellWrapper,
+                environmentVariables = environmentVariables,
             )
         return Result.success(
             AcpLaunchPlan(
                 command = command,
                 processWorkingDirectory = hostWorkingDirectory,
                 sessionWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                environmentVariables = emptyMap(),
+                mcpServers = mcpServers,
+                exposeMcp = exposeMcp,
             ),
         )
     }

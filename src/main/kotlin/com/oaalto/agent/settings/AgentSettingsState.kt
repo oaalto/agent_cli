@@ -32,6 +32,9 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         var workingDirectory: String = ""
         var executionTarget: String = ExecutionTarget.LOCAL.name
         var wslDistribution: String = ""
+        var useIdeaMcp: Boolean = false
+        var useCustomMcp: Boolean = false
+        var environmentVariables: LinkedHashMap<String, String> = linkedMapOf()
     }
 
     private var state = State()
@@ -126,6 +129,13 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         sanitized.executionTarget = executionTargetOrDefault(sanitized.executionTarget)
         sanitized.launchMode = launchModeOrDefault(sanitized.launchMode)
         sanitized.wslDistribution = sanitized.wslDistribution.trim()
+        sanitized.environmentVariables =
+            LinkedHashMap(
+                sanitized.environmentVariables
+                    .mapKeys { it.key.trim() }
+                    .filterKeys { it.isNotBlank() }
+                    .mapValues { it.value },
+            )
         return sanitized
     }
 
@@ -148,6 +158,9 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
             it.workingDirectory = workingDirectory
             it.executionTarget = executionTarget
             it.wslDistribution = wslDistribution
+            it.useIdeaMcp = useIdeaMcp
+            it.useCustomMcp = useCustomMcp
+            it.environmentVariables = LinkedHashMap(environmentVariables)
         }
 
     companion object {

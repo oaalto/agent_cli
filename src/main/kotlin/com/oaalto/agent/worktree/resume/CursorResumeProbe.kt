@@ -92,6 +92,8 @@ internal object CursorResumeProbeLogic {
                 arguments = listOf("resume"),
                 wslDistribution = wslDistribution,
                 wslWorkingDirectory = wslWorkingDirectory,
+                useNodeShellWrapper = false,
+                environmentVariables = emptyMap(),
             )
         return runProcess(
             command = probeCommand,

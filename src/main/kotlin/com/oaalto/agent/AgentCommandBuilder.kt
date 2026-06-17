@@ -13,6 +13,7 @@ object AgentCommandBuilder {
         wslDistribution: String,
         wslWorkingDirectory: String,
         useNodeShellWrapper: Boolean = false,
+        environmentVariables: Map<String, String> = emptyMap(),
     ): List<String> =
         buildList {
             add("wsl.exe")
@@ -24,8 +25,35 @@ object AgentCommandBuilder {
             add("--cd")
             add(wslWorkingDirectory)
             add("--")
-            addAll(buildAgentCommand(binaryPath, arguments, useNodeShellWrapper))
+            addAll(
+                withEnvironmentPrefix(
+                    environmentVariables,
+                    buildAgentCommand(binaryPath, arguments, useNodeShellWrapper),
+                ),
+            )
         }
+
+    private fun withEnvironmentPrefix(
+        environmentVariables: Map<String, String>,
+        command: List<String>,
+    ): List<String> {
+        if (environmentVariables.isEmpty()) {
+            return command
+        }
+        return buildList {
+            add("env")
+            environmentVariables.forEach { (key, value) ->
+                add("$key=${quoteEnvAssignmentValue(value)}")
+            }
+            addAll(command)
+        }
+    }
+
+    private fun quoteEnvAssignmentValue(value: String): String {
+        if (value.isEmpty()) return "''"
+        if (ENV_SAFE_VALUE.matches(value)) return value
+        return "'" + value.replace("'", "'\"'\"'") + "'"
+    }
 
     private fun buildAgentCommand(
         binaryPath: String,
@@ -54,4 +82,5 @@ object AgentCommandBuilder {
     private val NODE_SHELL_WRAPPER = listOf("bash", "-ilc")
 
     private val POSIX_SAFE_VALUE = Regex("""[A-Za-z0-9_@%+=:,./-]+""")
+    private val ENV_SAFE_VALUE = Regex("""[A-Za-z0-9_@%+=:,./-]*""")
 }

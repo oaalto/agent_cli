@@ -33,7 +33,7 @@ Additional 3.0 constraints tied to this decision:
 - Plugin settings (`agentSettings.xml`) remain the configuration source of truth; `acp.json` is import/export only
 - Worktrees store `acpSessionId` for ACP resume; PTY mode keeps CLI flag-based resume
 - Filesystem client ops scoped to project/worktree root
-- MCP toggles (IntelliJ + user) per config, default off; IntelliJ MCP requires optional AI Assistant plugin dependency
+- MCP toggles (IntelliJ + user) per config, default off; IntelliJ MCP toggle enabled when JetBrains AI Assistant or MCP Server plugin is present (optional dependencies on both)
 - Koog / custom agent implementation deferred to 4.0
 
 Code is organized in **vertical slices** under `com.oaalto.agent`:
@@ -66,7 +66,7 @@ agent/
 
 - Plugin maintains ACP client responsibilities: `fs/*`, `terminal/*`, permissions, auth, MCP bridging
 - Larger 3.0 surface than delegating to JetBrains AI Chat
-- IntelliJ MCP integration depends on optional AI Assistant plugin APIs
+- IntelliJ MCP integration depends on optional AI Assistant and/or MCP Server plugin APIs
 
 ### Neutral
 

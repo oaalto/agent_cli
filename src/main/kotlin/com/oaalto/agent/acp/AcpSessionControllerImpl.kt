@@ -9,6 +9,7 @@ import com.agentclientprotocol.common.Event
 import com.agentclientprotocol.common.SessionCreationParameters
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.Implementation
+import com.agentclientprotocol.model.McpServer
 import com.agentclientprotocol.model.SessionId
 import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.protocol.Protocol
@@ -67,7 +68,11 @@ class AcpSessionControllerImpl(
         val startedProcess =
             ProcessBuilder(launchPlan.command)
                 .directory(Path.of(launchPlan.processWorkingDirectory).toFile())
-                .redirectInput(ProcessBuilder.Redirect.PIPE)
+                .apply {
+                    launchPlan.environmentVariables.forEach { (key, value) ->
+                        environment()[key] = value
+                    }
+                }.redirectInput(ProcessBuilder.Redirect.PIPE)
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start()
@@ -132,9 +137,9 @@ class AcpSessionControllerImpl(
     }
 
     override suspend fun newSession() {
-        openSession { activeClient, context, cwd, operationsFactory ->
+        openSession { activeClient, context, cwd, operationsFactory, mcpServers ->
             activeClient.newSession(
-                SessionCreationParameters(cwd = cwd, mcpServers = emptyList()),
+                SessionCreationParameters(cwd = cwd, mcpServers = mcpServers),
                 operationsFactory,
             )
         }
@@ -143,10 +148,10 @@ class AcpSessionControllerImpl(
     override suspend fun loadSession(sessionId: String) {
         val normalizedId = sessionId.trim()
         if (normalizedId.isBlank()) error("ACP session id is blank")
-        openSession { activeClient, _, cwd, operationsFactory ->
+        openSession { activeClient, _, cwd, operationsFactory, mcpServers ->
             activeClient.loadSession(
                 SessionId(normalizedId),
-                SessionCreationParameters(cwd = cwd, mcpServers = emptyList()),
+                SessionCreationParameters(cwd = cwd, mcpServers = mcpServers),
                 operationsFactory,
             )
         }
@@ -175,18 +180,21 @@ class AcpSessionControllerImpl(
             context: AcpEditorContext,
             cwd: String,
             operationsFactory: ClientOperationsFactory,
+            mcpServers: List<McpServer>,
         ) -> ClientSession,
     ) {
         val activeClient = client ?: error("ACP client is not connected")
         val context = editorContext ?: error("ACP editor context is missing")
         val cwd = launchPlan?.sessionWorkingDirectory ?: error("ACP launch plan is missing")
+        val activeLaunchPlan = launchPlan ?: error("ACP launch plan is missing")
+        val mcpServers = activeLaunchPlan.sessionMcpServers()
         val operationsFactory =
             ClientOperationsFactory { _, _ ->
                 AcpClientSessionOperationsImpl.create(context)
             }
         try {
             session =
-                open(activeClient, context, cwd, operationsFactory)
+                open(activeClient, context, cwd, operationsFactory, mcpServers)
             sessionReady.complete(Unit)
         } catch (throwable: Throwable) {
             sessionReady.completeExceptionally(throwable)

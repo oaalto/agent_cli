@@ -45,6 +45,7 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
+        bundledPlugin("com.intellij.mcpServer")
     }
     implementation("com.agentclientprotocol:acp:0.24.0")
     testImplementation(kotlin("test"))

@@ -338,9 +338,7 @@ class AcpAgentEditor(
         pickSessionFromCandidates(sessions)
     }
 
-    private suspend fun pickSessionFromCandidates(
-        candidates: List<SessionSummary>,
-    ) {
+    private suspend fun pickSessionFromCandidates(candidates: List<SessionSummary>) {
         if (candidates.isEmpty()) {
             sessionController.newSession()
             persistCurrentSessionId()

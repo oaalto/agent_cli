@@ -12,7 +12,13 @@
 
 - **Worktree ACP session resume** (`worktree/`, `acp/`): Optional `acpSessionId` on managed worktree records; `ResumeStrategy` / `LaunchResumePlan` split PTY CLI resume from ACP `session/load` and `listSessions`; worktree launch coordinator; session picker fallback; bound-session UI indicator and pending-launch routing. Implements PRD 3.0-04 issues 04-01 through 04-06. made by: Olli Aalto. made with: Cursor. model: Composer
 
+- **MCP exposure and acp.json portability** (`settings/`, `acp/mcp/`, `acp/AcpProcessLauncher.kt`, `acp/AcpSessionControllerImpl.kt`): Per-configuration `useIdeaMcp` / `useCustomMcp` toggles (default off) and ACP launch env vars persisted in `agentSettings.xml`; `McpCapabilityBridge` resolves IntelliJ and user MCP servers for ACP Client sessions; optional `com.intellij.mcpServer` dependency with runtime probe; manual import/export of `agent_servers` via Agent Settings toolbar. Implements PRD 3.0-05 issues 05-01 through 05-07. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ### Fixed
+
+- **MCP settings follow-up** (`settings/AiAssistantPresence.kt`, `settings/AgentSettingsConfigurable.kt`, `acp/AcpLaunchPlan.kt`, `pty/`, `worktree/resume/`, `CONTEXT.md`, `docs/adr/0001-custom-acp-client-in-plugin.md`): Enable IntelliJ MCP toggle when either AI Assistant or MCP Server plugin is present; hide MCP detail hints for PTY configs; pass explicit empty env maps at remaining `buildWslCommand` call sites; add `sessionMcpServers()` test coverage. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **MCP and ACP launch review fixes** (`settings/`, `acp/`, `acp/mcp/`, `AgentCommandBuilder.kt`): Probe both JetBrains AI Assistant and MCP Server plugins; persist env vars on configuration row switch; inject WSL env via `env` prefix; gate session MCP servers with `exposeMcp`; skip invalid user MCP entries; avoid auto-starting IntelliJ MCP on launch; disable ACP-only detail controls for PTY; export WSL/node-wrapper metadata; warn before exporting plaintext env secrets. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **ACP launch arguments** (`acp/AcpLaunchArguments.kt`): ACP launch mode auto-injects agent entry args (for example `acp` for `cursor-agent` / `agent`) and strips PTY resume flags from configured and worktree arguments. made by: Olli Aalto. made with: Cursor. model: Composer
 

@@ -7,6 +7,12 @@ import com.agentclientprotocol.model.ClientCapabilities
 import com.agentclientprotocol.model.FileSystemCapability
 
 object AcpClientCapabilities {
+    /**
+     * ACP 0.24 advertises MCP exposure via
+     * [com.agentclientprotocol.common.SessionCreationParameters.mcpServers],
+     * not via [ClientCapabilities]. Agent-side MCP transport support is reported in
+     * [com.agentclientprotocol.model.AgentCapabilities.mcpCapabilities].
+     */
     data class Support(
         val filesystemRead: Boolean = false,
         val filesystemWrite: Boolean = false,

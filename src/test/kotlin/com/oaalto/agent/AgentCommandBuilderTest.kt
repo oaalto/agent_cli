@@ -24,6 +24,8 @@ class AgentCommandBuilderTest {
                 arguments = listOf("resume", "--last"),
                 wslDistribution = "Ubuntu",
                 wslWorkingDirectory = "/home/olli/project",
+                useNodeShellWrapper = false,
+                environmentVariables = emptyMap(),
             )
 
         assertEquals(
@@ -51,6 +53,7 @@ class AgentCommandBuilderTest {
                 wslDistribution = "",
                 wslWorkingDirectory = "/home/olli/project",
                 useNodeShellWrapper = true,
+                environmentVariables = emptyMap(),
             )
 
         assertEquals(
@@ -81,6 +84,32 @@ class AgentCommandBuilderTest {
                 "bash",
                 "-ilc",
                 "exec '/home/olli/bin/pi cli' 'it'\"'\"'s alive' ''",
+            ),
+            command,
+        )
+    }
+
+    @Test
+    fun `prefixes wsl command with environment variables`() {
+        val command =
+            AgentCommandBuilder.buildWslCommand(
+                binaryPath = "pi",
+                arguments = emptyList(),
+                wslDistribution = "",
+                wslWorkingDirectory = "/home/olli/project",
+                useNodeShellWrapper = false,
+                environmentVariables = mapOf("API_KEY" to "secret"),
+            )
+
+        assertEquals(
+            listOf(
+                "wsl.exe",
+                "--cd",
+                "/home/olli/project",
+                "--",
+                "env",
+                "API_KEY=secret",
+                "pi",
             ),
             command,
         )

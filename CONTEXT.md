@@ -37,7 +37,7 @@ The dedicated input control in ACP Client launch mode (below the Transcript pane
 An inline Transcript pane UI shown when an ACP agent calls `session/request_permission`. The user may choose allow/reject once or always; `allow_always` / `reject_always` choices are remembered per tool type (and optionally per agent configuration).
 
 **MCP exposure**:
-Optional capability in ACP Client launch mode to pass MCP servers to the agent. Each ACP-mode agent configuration has separate toggles for IntelliJ MCP and user-configured MCP servers; both default to off. IntelliJ MCP requires the JetBrains AI Assistant plugin as an optional dependency; the toggle is disabled when AI Assistant is not installed. User-configured MCP works independently.
+Optional capability in ACP Client launch mode to pass MCP servers to the agent. Each ACP-mode agent configuration has separate toggles for IntelliJ MCP and user-configured MCP servers; both default to off. IntelliJ MCP bridging uses optional dependencies on JetBrains AI Assistant (`com.intellij.ml.llm`) and/or the MCP Server plugin (`com.intellij.mcpServer`); the IntelliJ MCP toggle is enabled when either plugin is installed and active. User-configured MCP works independently.
 
 **ACP filesystem scope**:
 In ACP Client launch mode, `fs/read_text_file` and `fs/write_text_file` are limited to the project or Worktree root. Reads within scope are auto-allowed; writes require a Permission prompt. IDE read-only zones and ignored paths (for example `.gitignore`) are respected.
