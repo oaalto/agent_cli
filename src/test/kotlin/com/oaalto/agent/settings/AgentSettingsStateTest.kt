@@ -3,6 +3,7 @@ package com.oaalto.agent.settings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AgentSettingsStateTest {
@@ -19,11 +20,32 @@ class AgentSettingsStateTest {
         state.loadState(
             AgentSettingsState.State().apply {
                 configurations = mutableListOf(legacy)
-                selectedConfigurationId = legacy.id
+                defaultConfigurationId = legacy.id
             },
         )
 
         assertEquals(LaunchMode.PTY_PASSTHROUGH.name, state.getConfigurations().single().launchMode)
+    }
+
+    @Test
+    fun `legacy selectedConfigurationId migrates to defaultConfigurationId`() {
+        val state = AgentSettingsState()
+        val configuration =
+            AgentSettingsState.AgentCliConfiguration().apply {
+                id = "legacy-selected-id"
+                name = "Legacy Agent"
+                binaryPath = "/usr/bin/agent"
+            }
+        state.loadState(
+            AgentSettingsState.State().apply {
+                configurations = mutableListOf(configuration)
+                selectedConfigurationId = configuration.id
+            },
+        )
+
+        assertEquals(configuration.id, state.getDefaultConfigurationId())
+        assertEquals(configuration.id, state.getDefaultConfiguration()?.id)
+        assertNull(state.getState().selectedConfigurationId)
     }
 
     @Test
@@ -39,7 +61,7 @@ class AgentSettingsStateTest {
         state.loadState(
             AgentSettingsState.State().apply {
                 configurations = mutableListOf(configuration)
-                selectedConfigurationId = configuration.id
+                defaultConfigurationId = configuration.id
             },
         )
 
@@ -80,7 +102,7 @@ class AgentSettingsStateTest {
         state.loadState(
             AgentSettingsState.State().apply {
                 configurations = mutableListOf(configuration)
-                selectedConfigurationId = configuration.id
+                defaultConfigurationId = configuration.id
             },
         )
 

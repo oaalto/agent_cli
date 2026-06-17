@@ -6,14 +6,13 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.Messages
+import com.oaalto.agent.settings.AgentConfigurationSelector
 import com.oaalto.agent.settings.AgentSettingsConfigurable
-import com.oaalto.agent.settings.AgentSettingsState
 
 class OpenAgentEditorAction : DumbAwareAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val settings = AgentSettingsState.getInstance()
-        val configuration = settings.getSelectedConfiguration()
+        val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
         if (configuration == null) {
             Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
             ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)

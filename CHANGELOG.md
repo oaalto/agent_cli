@@ -10,7 +10,13 @@
 
 ### Changed
 
+- **Per-project agent selection** (`settings/`, `SelectAgentConfigurationActionGroup.kt`, `RunAgentSplitButtonAction.kt`, `OpenAgentEditorAction.kt`): Split global default from per-project selected agent; toolbar and Run actions use `AgentConfigurationSelector` with workspace-scoped project state. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **Settings UI structure** (`settings/`): Extract table models and UI factory helpers from `AgentSettingsConfigurable` to satisfy detekt size limits without behavior changes. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Documentation
+
+- **Per-project agent selection** (`CONTEXT.md`, `docs/adr/0003-per-project-agent-selection.md`): Glossary terms for **Selected agent** vs **Default agent configuration**; ADR records split persistence, migration, and `AgentConfigurationSelector` facade before implementation. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ## 2026-06-16
 

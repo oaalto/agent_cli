@@ -17,6 +17,7 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
 
     class State {
         var configurations: MutableList<AgentCliConfiguration> = mutableListOf()
+        var defaultConfigurationId: String? = null
         var selectedConfigurationId: String? = null
         var permissionMemory: MutableMap<String, String> = mutableMapOf()
     }
@@ -43,17 +44,26 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
         ensureValidState()
     }
 
-    override fun getState(): State = state
+    override fun getState(): State {
+        state.selectedConfigurationId = null
+        return state
+    }
 
     override fun loadState(state: State) {
+        if (state.defaultConfigurationId.isNullOrBlank() && !state.selectedConfigurationId.isNullOrBlank()) {
+            state.defaultConfigurationId = state.selectedConfigurationId
+        }
+        state.selectedConfigurationId = null
         this.state = state
         ensureValidState()
     }
 
     fun getConfigurations(): List<AgentCliConfiguration> = state.configurations.map { it.copyOf() }
 
-    fun getSelectedConfiguration(): AgentCliConfiguration? {
-        val id = state.selectedConfigurationId
+    fun getDefaultConfigurationId(): String? = state.defaultConfigurationId
+
+    fun getDefaultConfiguration(): AgentCliConfiguration? {
+        val id = state.defaultConfigurationId
         val byId = if (id.isNullOrBlank()) null else state.configurations.firstOrNull { it.id == id }
         return (byId ?: state.configurations.firstOrNull())?.copyOf()
     }
@@ -64,19 +74,12 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
                 it.id == id
             }?.copyOf()
 
-    fun setSelectedConfiguration(id: String): Boolean {
-        if (id.isBlank()) return false
-        if (state.configurations.none { it.id == id }) return false
-        state.selectedConfigurationId = id
-        return true
-    }
-
     fun updateConfigurations(
         configurations: List<AgentCliConfiguration>,
-        selectedConfigurationId: String?,
+        defaultConfigurationId: String?,
     ) {
         state.configurations = configurations.map { it.copyOf() }.toMutableList()
-        state.selectedConfigurationId = selectedConfigurationId
+        state.defaultConfigurationId = defaultConfigurationId
         ensureValidState()
     }
 
@@ -101,13 +104,13 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
                 .toMutableList()
 
         if (state.configurations.isEmpty()) {
-            state.selectedConfigurationId = null
+            state.defaultConfigurationId = null
             return
         }
 
-        val selected = state.selectedConfigurationId
-        if (selected.isNullOrBlank() || state.configurations.none { it.id == selected }) {
-            state.selectedConfigurationId = state.configurations.first().id
+        val defaultId = state.defaultConfigurationId
+        if (defaultId.isNullOrBlank() || state.configurations.none { it.id == defaultId }) {
+            state.defaultConfigurationId = state.configurations.first().id
         }
     }
 

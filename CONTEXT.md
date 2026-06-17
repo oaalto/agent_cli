@@ -49,10 +49,10 @@ The embedded `ShellTerminalWidget` in ACP Client launch mode, used for interacti
 The plugin's persistent settings (`agentSettings.xml`) are the source of truth for agent launch config **definitions** (binary path, launch mode, MCP toggles, etc.). `acp.json` is optional: configs may be imported from or exported to that format, but there is no automatic sync. Config definitions are IDE-wide (shared across all open projects).
 
 **Selected agent**:
-The agent configuration currently chosen for a **Project** — shown in the toolbar selector and used by Run Agent / Open Agent Editor in that project window. Each Project remembers its own selection independently; changing it in one window does not affect another. Changing the toolbar selection does **not** change the **Default agent configuration**. Stored per-project (not in `agentSettings.xml`).
+The agent configuration currently chosen for a **Project** — shown in the toolbar selector and used by Run Agent / Open Agent Editor in that project window. Each Project remembers its own selection independently; changing it in one window does not affect another. Changing the toolbar selection does **not** change the **Default agent configuration**. Stored per-project in user-local workspace storage (not committed to VCS). If the saved configuration is deleted from Settings, the plugin silently falls back to the **Default agent configuration** (then the first available config) and rewrites the project's saved selection to match.
 
 **Default agent configuration**:
-The IDE-wide fallback agent configuration marked as default in Settings ("Default" column). Used when a Project has no saved **Selected agent**, or when the saved selection no longer exists. Stored in `agentSettings.xml` alongside config definitions.
+The IDE-wide fallback agent configuration marked as default in Settings ("Default" column). Used when a Project has no saved **Selected agent**, or when the saved selection no longer exists. Stored in `agentSettings.xml` alongside config definitions. On upgrade from pre-split storage, the former global `selectedConfigurationId` becomes the default and is also seeded into each Project's **Selected agent** on first open if that project has no saved selection yet.
 
 **Launch slice**:
 Code under `com.oaalto.agent` organized by responsibility: `pty/` (PTY Passthrough), `acp/` (ACP Client), `worktree/` (Git worktree orchestration), `settings/` (shared configuration). See ADR 0001.
@@ -64,6 +64,7 @@ Repository-local planning artifacts used as the canonical place for agent-driven
 
 - Each `Worktree` is owned by a single agent run and may be mapped to a specific filesystem layout (see `AgentWorktreePathMapper`).
 - `PRD` documents are historical sources for planning; treat code/tests as the source of truth for implemented behavior.
+- A **Selected agent** references one configuration from the **Agent configuration store** by ID; resolution falls back to the **Default agent configuration** when unset or invalid.
 
 ## Example dialogue
 

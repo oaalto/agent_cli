@@ -220,7 +220,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         val persisted =
             rowsFromState(
                 AgentSettingsState.getInstance().getConfigurations(),
-                AgentSettingsState.getInstance().getSelectedConfiguration()?.id,
+                AgentSettingsState.getInstance().getDefaultConfiguration()?.id,
             )
         return model.rowsSnapshot() != persisted
     }
@@ -262,7 +262,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     override fun reset() {
         val model = tableModel ?: return
         val settings = AgentSettingsState.getInstance()
-        val rows = rowsFromState(settings.getConfigurations(), settings.getSelectedConfiguration()?.id)
+        val rows = rowsFromState(settings.getConfigurations(), settings.getDefaultConfiguration()?.id)
         model.setRows(rows)
         if (rows.isNotEmpty()) {
             table?.selectionModel?.setSelectionInterval(0, 0)

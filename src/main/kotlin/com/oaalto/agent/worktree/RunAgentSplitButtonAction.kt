@@ -15,6 +15,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.Messages
 import com.oaalto.agent.AgentVirtualFile
+import com.oaalto.agent.settings.AgentConfigurationSelector
 import com.oaalto.agent.settings.AgentSettingsConfigurable
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
@@ -42,8 +43,7 @@ private class RunAgentSplitActionGroup :
             return arrayOf(disabledAction("Open a project to run Agent"))
         }
 
-        val settings = AgentSettingsState.getInstance()
-        val selectedConfiguration = settings.getSelectedConfiguration()
+        val selectedConfiguration = AgentConfigurationSelector.getSelectedConfiguration(project)
         if (selectedConfiguration == null) {
             return arrayOf(
                 ManageAgentSettingsAction(),
@@ -90,8 +90,8 @@ private class RunAgentSplitActionGroup :
     }
 
     override fun update(event: AnActionEvent) {
-        val settings = AgentSettingsState.getInstance()
-        val selected = settings.getSelectedConfiguration()
+        val project = event.project
+        val selected = project?.let { AgentConfigurationSelector.getSelectedConfiguration(it) }
         event.presentation.text = "Run Agent"
         event.presentation.description = selected?.name?.let {
             "Run '$it' in the current project (default) or use the dropdown for worktree actions"
@@ -163,8 +163,7 @@ private class RunAgentInCurrentProjectAction :
     ) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val settings = AgentSettingsState.getInstance()
-        val configuration = settings.getSelectedConfiguration()
+        val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
         if (configuration == null) {
             Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
             ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
@@ -193,8 +192,7 @@ private class RunAgentInNewWorktreeAction :
     ) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val settings = AgentSettingsState.getInstance()
-        val configuration = settings.getSelectedConfiguration()
+        val configuration = AgentConfigurationSelector.getSelectedConfiguration(project)
         if (configuration == null) {
             Messages.showErrorDialog(project, "No agent configuration is available.", "Run Agent")
             ShowSettingsUtil.getInstance().showSettingsDialog(project, AgentSettingsConfigurable::class.java)
