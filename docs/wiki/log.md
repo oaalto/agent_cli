@@ -13,6 +13,12 @@
 - Sources: `src/main/kotlin/com/oaalto/agent/`, `build.gradle.kts`
 - Notes: Created initial wiki pages from verified repository sources as part of agent bundle install.
 
+## [2026-06-19] update | ACP transcript HTML rendering PRD
+
+- Updated: `docs/prd/acp-transcript-html-rendering.md`, `docs/acp-output-rendering-roadmap.md`
+- Sources: `docs/acp-output-rendering-roadmap.md`, `src/main/kotlin/com/oaalto/agent/acp/`
+- Notes: PRD for Step 1 of output rendering roadmap — replace JBTextArea with JEditorPane for color-coded sources. Roadmap status updated to link PRD.
+
 ## [2026-06-16] skip | 3.0 ACP ADRs recorded in docs/adr
 
 - Updated: —
