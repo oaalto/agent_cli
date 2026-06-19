@@ -22,10 +22,15 @@ internal object TranscriptRenderHelpers {
     /**
      * Returns the initial HTML document wrapper. Call once before appending fragments.
      */
-    fun htmlDocumentStart(bodyStyle: String = ""): String = "<html><body style=\"$bodyStyle\">"
+    fun htmlDocumentStart(bodyStyle: String = ""): String =
+        "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></head>" +
+            "<body style=\"$bodyStyle\">"
 
     /**
      * Returns an HTML `<span>` for a tool-call status line with a colored badge.
+     *
+     * Layout: `[badge: kind + optional icon] [muted title]` — no bracket syntax or
+     * parenthetical status labels.
      */
     fun formatToolStatusHtml(
         title: String,
@@ -33,15 +38,18 @@ internal object TranscriptRenderHelpers {
         status: ToolCallStatus?,
     ): String {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
-        val statusLabel = status?.name?.lowercase()?.replace('_', ' ') ?: "started"
         val badgeColor = badgeColorFor(status)
         val escapedTitle = TranscriptUpdateRenderer.escapeHtml(title)
         val escapedKind = TranscriptUpdateRenderer.escapeHtml(kindLabel)
-        val escapedStatus = TranscriptUpdateRenderer.escapeHtml(statusLabel)
+        val badgeLabel = badgeLabelFor(status, escapedKind)
+        val outerStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val badgeStyle = "background-color:$badgeColor;color:#ffffff;padding:1px 4px;border-radius:3px"
+        val titleStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return (
-            "<span style=\"color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
-                "[<span style=\"background-color:$badgeColor;color:#ffffff;padding:1px 4px;border-radius:3px\">" +
-                "$escapedKind</span>] $escapedTitle ($escapedStatus)</span>"
+            "<span style=\"$outerStyle\">" +
+                "<span style=\"$badgeStyle\">$badgeLabel</span> " +
+                "<span style=\"$titleStyle\">$escapedTitle</span>" +
+                "</span>"
         )
     }
 
@@ -95,5 +103,15 @@ internal object TranscriptRenderHelpers {
             ToolCallStatus.COMPLETED -> "#2d8a4e"
             ToolCallStatus.FAILED -> "#c43c3c"
             else -> "#666666"
+        }
+
+    internal fun badgeLabelFor(
+        status: ToolCallStatus?,
+        escapedKind: String,
+    ): String =
+        when (status) {
+            ToolCallStatus.COMPLETED -> "✓ $escapedKind"
+            ToolCallStatus.FAILED -> "✗ $escapedKind"
+            else -> escapedKind
         }
 }

@@ -42,8 +42,13 @@ object TranscriptRenderer {
         status: ToolCallStatus?,
     ): String {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
-        val statusLabel = status?.name?.lowercase()?.replace('_', ' ') ?: "started"
-        return "[$kindLabel] $title ($statusLabel)"
+        val iconPrefix =
+            when (status) {
+                ToolCallStatus.COMPLETED -> "✓ "
+                ToolCallStatus.FAILED -> "✗ "
+                else -> ""
+            }
+        return "$iconPrefix$kindLabel $title"
     }
 
     internal fun extractText(content: ContentBlock): String? =

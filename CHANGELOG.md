@@ -4,9 +4,15 @@
 
 ### Added
 
+- **ACP transcript tool status badges PRD** (`docs/prd/acp-transcript-tool-status-badges.md`, `docs/issues/acp-transcript-step2-tool-status-badges.md`): PRD and issue for Step 2 of output rendering — badge-first tool call lines with status-colored badges and ✓/✗ iconography, replacing Step 1's bracketed `(status)` format. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **ACP transcript HTML rendering PRD** (`docs/prd/acp-transcript-html-rendering.md`, `docs/issues/acp-transcript-step1-html-rendering.md`): PRD and issue for Step 1 of output rendering — replace `JBTextArea` with HTML `JEditorPane` for color-coded source differentiation. made by: Olli Aalto. made with: Claude. model: claude-sonnet-4-20250514
 
 ### Changed
+
+- **ACP transcript tool status badge review fixes** (`acp/TranscriptRenderHelpers.kt`, `acp/TranscriptRenderer.kt`, `acp/TranscriptRendererTest.kt`, `docs/`): Structural legacy-format assertions on all tool-call tests; UTF-8 charset in `htmlDocumentStart` with icon round-trip test; `formatToolStatus` aligned to badge-first plain text; `ToolCallUpdate` null-title integration test; PRD marked implemented and roadmap current state refreshed. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP transcript tool status badges** (`acp/TranscriptRenderHelpers.kt`, `acp/TranscriptRendererTest.kt`): Replace Step 1 bracketed `[kind] title (status)` tool lines with badge-first HTML — colored status badge with ✓/✗ icons for completed/failed, muted title after the badge, no parenthetical status text. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **ACP transcript HTML rendering** (`acp/TranscriptUpdateRenderer.kt`, `acp/TranscriptRenderer.kt`, `acp/AcpAgentEditor.kt`): Replace `JBTextArea` with `JEditorPane` (text/html); `TranscriptUpdateRenderer` produces color-coded HTML `<span>` fragments; `TranscriptRenderer` adds HTML helpers (`formatToolStatusHtml`, `formatErrorHtml`, `htmlDocumentStart`); `escapeHtml` prevents injection; extract `launchAndConnect` to keep `LongMethod` under threshold; add `thresholdInObjects`/`thresholdInClasses` to detekt config for new function count. made by: Olli Aalto. made with: pi (worker). model: 
 

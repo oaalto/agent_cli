@@ -1,6 +1,6 @@
 # ACP Client Transcript Output: Implementation Roadmap
 
-**Status:** Active — Step 1 in PRD (`docs/prd/acp-transcript-html-rendering.md`).
+**Status:** Active — Step 1 PRD (`docs/prd/acp-transcript-html-rendering.md`); Step 2 PRD (`docs/prd/acp-transcript-tool-status-badges.md`).
 
 **Target:** `AcpAgentEditor` / `AcpSessionControllerImpl` (ACP Client launch mode of the Agent CLI plugin)
 **Goal:** Replace the plain-text `JBTextArea` transcript with structured rendering of agent output (text, tool calls, tool results, thinking, etc.)
@@ -29,15 +29,14 @@ The ACP protocol 0.24 defines these session update types relevant to output rend
 
 ## Current State
 
-`TranscriptUpdateRenderer.render(update)` dispatches on `SessionUpdate` subtype:
-- `AgentMessageChunk` → raw text appended to the `JBTextArea`
-- `AgentThoughtChunk` → `[thought] <text>` appended as a line
-- `UserMessageChunk` → `> <text>` appended as a line
-- `ToolCall` → `[<kind>] <title> (<status>)` as a line
-- `ToolCallUpdate` → same as above, replaces previous line
+`AcpAgentEditor` uses a `JEditorPane` in `text/html` mode via `TranscriptHtmlAppender`. `TranscriptUpdateRenderer.render(update)` dispatches on `SessionUpdate` subtype and returns HTML `<span>` fragments:
+- `AgentMessageChunk` → light gray monospace span
+- `AgentThoughtChunk` → dim gray `[thought]` prefixed span
+- `UserMessageChunk` → blue `&gt; ` prefixed span
+- `ToolCall` / `ToolCallUpdate` → badge-first line: colored status badge (kind label with ✓/✗ for completed/failed) followed by muted title; `ToolCallUpdate` falls back to `toolCallId` when title is null
 - All others → empty list (ignored)
 
-Everything goes into a single `JBTextArea` — no visual structure, no diffs, no collapsible tool output, no status icons.
+HTML document wrapper declares UTF-8 charset. Tool lines no longer use bracketed `[kind]` syntax or parenthetical `(status)` labels.
 
 ---
 
