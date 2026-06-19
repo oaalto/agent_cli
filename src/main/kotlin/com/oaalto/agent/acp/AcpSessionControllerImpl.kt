@@ -11,7 +11,6 @@ import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.Implementation
 import com.agentclientprotocol.model.McpServer
 import com.agentclientprotocol.model.SessionId
-import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.protocol.Protocol
 import com.agentclientprotocol.transport.StdioTransport
 import com.intellij.openapi.diagnostic.Logger
@@ -213,6 +212,7 @@ class AcpSessionControllerImpl(
         if (trimmed.isEmpty()) return
 
         promptJob?.cancel()
+        listener.onFinalizeAgentStream()
         promptJob =
             scope.launch {
                 runCatching {
@@ -221,6 +221,7 @@ class AcpSessionControllerImpl(
                     }
                 }.onFailure { throwable ->
                     logger.warn("ACP prompt failed", throwable)
+                    listener.onFinalizeAgentStream()
                     listener.onError(throwable.message ?: throwable.javaClass.simpleName)
                 }
             }
@@ -228,11 +229,13 @@ class AcpSessionControllerImpl(
     }
 
     override suspend fun cancelPrompt() {
+        listener.onFinalizeAgentStream()
         promptJob?.cancel()
         session?.cancel()
     }
 
     override fun dispose() {
+        listener.onFinalizeAgentStream()
         promptJob?.cancel()
         editorContext?.terminalSessionRegistry?.clear()
         editorContext?.shellPaneHost?.clear()
@@ -247,17 +250,8 @@ class AcpSessionControllerImpl(
 
     private suspend fun handlePromptEvent(event: Event) {
         when (event) {
-            is Event.SessionUpdateEvent -> {
-                when (val update = event.update) {
-                    is SessionUpdate.AgentMessageChunk -> {
-                        TranscriptRenderer.renderEventText(update)?.let(listener::onTranscriptAppend)
-                    }
-                    else -> {
-                        TranscriptRenderer.renderUpdate(update).forEach(listener::onTranscriptHtml)
-                    }
-                }
-            }
-            is Event.PromptResponseEvent -> Unit
+            is Event.SessionUpdateEvent -> AcpPromptEventDispatcher.dispatchSessionUpdate(event.update, listener)
+            is Event.PromptResponseEvent -> AcpPromptEventDispatcher.dispatchPromptCompleted(listener)
         }
     }
 

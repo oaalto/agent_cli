@@ -1,82 +1,148 @@
 package com.oaalto.agent.acp
 
 import javax.swing.JEditorPane
+import javax.swing.SwingUtilities
 
 /**
  * Manages appending content into a [JEditorPane] in `text/html` mode.
  *
  * Handles the HTML document wrapper, line-break separators between entries,
- * HTML escaping, and wrapping plain text in colored spans.
+ * HTML escaping, wrapping plain text in colored spans, and agent-message
+ * streaming with an inline cursor at the live edge.
+ *
+ * [committedBodyHtml] is the source of truth for finalized transcript content;
+ * the active stream block is spliced at the document tail on each chunk.
+ *
+ * All mutations are marshalled onto the EDT via [runOnEdt].
  */
 internal class TranscriptHtmlAppender(
     private val pane: JEditorPane,
+    private val runOnEdt: ((() -> Unit) -> Unit)? = null,
 ) {
     private var htmlBodyInitialized = false
     private var isFirstEntry = true
+    private var committedBodyHtml = ""
+    private var isAgentStreamActive = false
+    private val streamingPlainText = StringBuilder()
+    private var streamLineSeparator = ""
+    private var activeStreamBlockHtml = ""
 
-    // -- Public append methods -------------------------------------------------
-
-    /**
-     * Appends plain [text] that will be HTML-escaped and inserted inline
-     * (no `<br>` separator). Used for streaming chunks.
-     */
-    fun appendText(text: String) {
-        ensureBody()
-        val escaped = TranscriptUpdateRenderer.escapeHtml(text)
-        insertBeforeBodyEnd(escaped)
-        pane.caretPosition = pane.document.length
-    }
-
-    /**
-     * Appends plain [line] as a new line. The text is HTML-escaped and wrapped
-     * in a colored span. A `<br>` is prepended unless this is the first entry.
-     */
-    fun appendLine(line: String) {
-        ensureBody()
-        val escaped = TranscriptUpdateRenderer.escapeHtml(line)
-        val htmlLine =
-            when {
-                line.startsWith("> ") -> userSpan(escaped)
-                else -> neutralSpan(escaped)
+    private val onEdt: (() -> Unit) -> Unit =
+        runOnEdt ?: { action ->
+            if (SwingUtilities.isEventDispatchThread()) {
+                action()
+            } else {
+                SwingUtilities.invokeLater(action)
             }
-        val separator = if (isFirstEntry) "" else TranscriptRenderHelpers.HTML_LINE_BREAK
-        isFirstEntry = false
-        insertBeforeBodyEnd(separator + htmlLine)
-        pane.caretPosition = pane.document.length
+        }
+
+    fun startOrContinueAgentStream(text: String) {
+        if (text.isBlank()) return
+        onEdt { startOrContinueAgentStreamOnEdt(text) }
     }
 
-    /**
-     * Appends a pre-rendered HTML [fragment] as a new line without escaping.
-     * A `<br>` is prepended unless this is the first entry.
-     */
+    fun finalizeAgentStream() {
+        onEdt { finalizeAgentStreamOnEdt() }
+    }
+
+    fun isAgentStreamActive(): Boolean = isAgentStreamActive
+
+    fun appendLine(line: String) {
+        onEdt {
+            val escaped = TranscriptUpdateRenderer.escapeHtml(line)
+            val entry =
+                if (line.startsWith("> ")) {
+                    TranscriptRenderHelpers.userPromptSpan(escaped)
+                } else {
+                    TranscriptRenderHelpers.plainLineSpan(escaped)
+                }
+            appendNewEntryOnEdt(entry)
+        }
+    }
+
     fun appendHtml(fragment: String) {
+        onEdt { appendNewEntryOnEdt(fragment) }
+    }
+
+    internal fun displayBodyHtmlForTest(): String = currentBodyHtml()
+
+    private fun startOrContinueAgentStreamOnEdt(text: String) {
+        ensureBody()
+        if (!isAgentStreamActive) {
+            streamLineSeparator = if (isFirstEntry) "" else TranscriptRenderHelpers.HTML_LINE_BREAK
+            isFirstEntry = false
+            isAgentStreamActive = true
+            streamingPlainText.clear()
+        }
+        streamingPlainText.append(text)
+        updateActiveStreamBlock()
+        TranscriptPaneHtmlOps.scrollToEndIfAtBottom(pane)
+    }
+
+    private fun finalizeAgentStreamOnEdt() {
+        if (!isAgentStreamActive) return
+        val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+        val finalized = TranscriptStreamingCursor.finalizedBlockHtml(escaped, streamLineSeparator)
+        removeActiveStreamBlockFromPane()
+        committedBodyHtml += finalized
+        TranscriptPaneHtmlOps.insertBeforeBodyEnd(pane, finalized)
+        isAgentStreamActive = false
+        streamingPlainText.clear()
+        activeStreamBlockHtml = ""
+    }
+
+    private fun appendNewEntryOnEdt(entryHtml: String) {
+        finalizeAgentStreamOnEdt()
         ensureBody()
         val separator = if (isFirstEntry) "" else TranscriptRenderHelpers.HTML_LINE_BREAK
         isFirstEntry = false
-        insertBeforeBodyEnd(separator + fragment)
-        pane.caretPosition = pane.document.length
+        val delta = separator + entryHtml
+        committedBodyHtml += delta
+        TranscriptPaneHtmlOps.insertBeforeBodyEnd(pane, delta)
+        TranscriptPaneHtmlOps.scrollToEndIfAtBottom(pane)
     }
-
-    // -- Internal helpers ------------------------------------------------------
 
     private fun ensureBody() {
         if (!htmlBodyInitialized) {
-            pane.text = TranscriptRenderHelpers.htmlDocumentStart()
+            TranscriptPaneHtmlOps.initEmptyBody(pane)
             htmlBodyInitialized = true
         }
     }
 
-    private fun insertBeforeBodyEnd(html: String) {
-        val current = pane.text
-        val bodyEnd = current.lastIndexOf("</body>")
-        if (bodyEnd >= 0) {
-            pane.text = current.substring(0, bodyEnd) + html + current.substring(bodyEnd)
+    private fun currentBodyHtml(): String =
+        if (isAgentStreamActive) {
+            val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+            committedBodyHtml + TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
+        } else {
+            committedBodyHtml
         }
+
+    private fun updateActiveStreamBlock() {
+        val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+        val newBlock = TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
+        removeActiveStreamBlockFromPane()
+        activeStreamBlockHtml = newBlock
+        TranscriptPaneHtmlOps.insertBeforeBodyEnd(pane, newBlock)
     }
 
-    private fun userSpan(text: String): String =
-        "<span style=\"color:#569cd6;font-family:monospace;font-size:12px\">$text</span>"
+    private fun removeActiveStreamBlockFromPane() {
+        if (activeStreamBlockHtml.isEmpty()) return
+        if (!TranscriptPaneHtmlOps.removeSuffixBeforeBodyEnd(pane, activeStreamBlockHtml)) {
+            resyncPaneFromState()
+            return
+        }
+        activeStreamBlockHtml = ""
+    }
 
-    private fun neutralSpan(text: String): String =
-        "<span style=\"color:#d4d4d4;font-family:monospace;font-size:12px\">$text</span>"
+    private fun resyncPaneFromState() {
+        val body = currentBodyHtml()
+        TranscriptPaneHtmlOps.replaceBody(pane, body)
+        activeStreamBlockHtml =
+            if (isAgentStreamActive) {
+                val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+                TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
+            } else {
+                ""
+            }
+    }
 }

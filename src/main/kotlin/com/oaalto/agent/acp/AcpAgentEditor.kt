@@ -59,18 +59,20 @@ class AcpAgentEditor(
             background = JBColor.PanelBackground
             border = JBUI.Borders.empty(8)
         }
-    private val transcript = TranscriptHtmlAppender(transcriptPane)
+    private val transcript = TranscriptHtmlAppender(transcriptPane, ::runOnEdt)
     private val permissionPromptPanel = PermissionPromptPanel()
     private val authPromptPanel = AuthPromptPanel()
     private val shellPaneHost = ShellPaneHost(project, this)
     private val promptInputBar =
         PromptInputBar { text ->
+            transcript.finalizeAgentStream()
             transcript.appendLine("")
             transcript.appendLine("> $text")
             transcript.appendLine("")
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
                     logger.warn("Failed to send ACP prompt", throwable)
+                    transcript.finalizeAgentStream()
                     transcript.appendHtml(
                         TranscriptRenderHelpers.formatErrorHtml(
                             throwable.message ?: throwable.javaClass.simpleName,
@@ -83,7 +85,11 @@ class AcpAgentEditor(
     private val sessionListener =
         object : AcpSessionListener {
             override fun onTranscriptAppend(text: String) {
-                transcript.appendText(text)
+                transcript.startOrContinueAgentStream(text)
+            }
+
+            override fun onFinalizeAgentStream() {
+                transcript.finalizeAgentStream()
             }
 
             override fun onTranscriptHtml(fragment: String) {
