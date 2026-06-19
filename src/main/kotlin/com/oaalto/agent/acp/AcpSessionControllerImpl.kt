@@ -253,7 +253,7 @@ class AcpSessionControllerImpl(
                         TranscriptRenderer.renderEventText(update)?.let(listener::onTranscriptAppend)
                     }
                     else -> {
-                        TranscriptRenderer.renderUpdate(update).forEach(listener::onTranscriptLine)
+                        TranscriptRenderer.renderUpdate(update).forEach(listener::onTranscriptHtml)
                     }
                 }
             }
@@ -266,7 +266,7 @@ class AcpSessionControllerImpl(
             var line = reader.readLine()
             while (line != null) {
                 if (line.isNotBlank()) {
-                    listener.onTranscriptLine("[stderr] $line")
+                    listener.onTranscriptPlainLine("[stderr] $line")
                 }
                 line = reader.readLine()
             }

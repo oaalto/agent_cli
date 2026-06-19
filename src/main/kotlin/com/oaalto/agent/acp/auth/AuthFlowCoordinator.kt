@@ -93,7 +93,7 @@ class AuthFlowCoordinator(
         runCatching {
             client.authenticate(methodId)
         }.map { Unit }.onFailure { throwable ->
-            listener.onTranscriptLine(
+            listener.onTranscriptPlainLine(
                 TranscriptRenderer.formatAuthFailure(
                     throwable.message ?: "Authentication failed.",
                 ),

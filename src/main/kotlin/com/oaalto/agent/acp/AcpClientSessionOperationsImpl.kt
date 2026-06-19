@@ -44,7 +44,7 @@ class AcpClientSessionOperationsImpl(
         notification: SessionUpdate,
         _meta: JsonElement?,
     ) {
-        TranscriptRenderer.renderUpdate(notification).forEach(listener::onTranscriptLine)
+        TranscriptRenderer.renderUpdate(notification).forEach(listener::onTranscriptHtml)
     }
 
     override suspend fun fsReadTextFile(
@@ -112,7 +112,7 @@ class AcpClientSessionOperationsImpl(
                 env = envPairs,
             )
         val session = terminalSessionRegistry.register(widget)
-        listener.onTranscriptLine(
+        listener.onTranscriptPlainLine(
             TranscriptRenderer.formatTerminalCreate(
                 ShellPaneHost.formatCommandLabel(command, args),
                 session.terminalId,

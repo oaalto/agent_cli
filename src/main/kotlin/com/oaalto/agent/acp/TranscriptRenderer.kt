@@ -34,6 +34,8 @@ object TranscriptRenderer {
 
     fun formatPermissionDenied(title: String): String = "[permission denied] $title"
 
+    // -- Plain-text helpers ----------------------------------------------------
+
     internal fun formatToolStatus(
         title: String,
         kind: ToolKind?,

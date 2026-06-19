@@ -12,6 +12,7 @@ complexity:
     ignoreOverridden: true
     thresholdInFiles: 15
     thresholdInClasses: 15
+    thresholdInObjects: 12
 
 style:
   ReturnCount:

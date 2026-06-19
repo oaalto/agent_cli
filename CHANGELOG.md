@@ -2,7 +2,19 @@
 
 ## 2026-06-19
 
+### Added
+
+- **ACP transcript HTML rendering PRD** (`docs/prd/acp-transcript-html-rendering.md`, `docs/issues/acp-transcript-step1-html-rendering.md`): PRD and issue for Step 1 of output rendering — replace `JBTextArea` with HTML `JEditorPane` for color-coded source differentiation. made by: Olli Aalto. made with: Claude. model: claude-sonnet-4-20250514
+
 ### Changed
+
+- **ACP transcript HTML rendering** (`acp/TranscriptUpdateRenderer.kt`, `acp/TranscriptRenderer.kt`, `acp/AcpAgentEditor.kt`): Replace `JBTextArea` with `JEditorPane` (text/html); `TranscriptUpdateRenderer` produces color-coded HTML `<span>` fragments; `TranscriptRenderer` adds HTML helpers (`formatToolStatusHtml`, `formatErrorHtml`, `htmlDocumentStart`); `escapeHtml` prevents injection; extract `launchAndConnect` to keep `LongMethod` under threshold; add `thresholdInObjects`/`thresholdInClasses` to detekt config for new function count. made by: Olli Aalto. made with: pi (worker). model: 
+
+- **ACP transcript HTML rendering tests** (`acp/TranscriptRendererTest.kt`): Add HTML fragment output tests for all `SessionUpdate` subtypes, HTML escaping, and HTML helper methods; update chronological order test for HTML output. made by: Olli Aalto. made with: pi (worker). model:
+
+- **ACP roadmap status** (`docs/acp-output-rendering-roadmap.md`): Add status header linking to Step 1 PRD. made by: Olli Aalto. made with: Claude. model: claude-sonnet-4-20250514
+
+- **ACP transcript HTML helper extraction** (`acp/TranscriptHtmlAppender.kt`, `acp/TranscriptRenderHelpers.kt`, `acp/TranscriptRenderer.kt`, `acp/AcpAgentEditor.kt`): Extract HTML append logic from `AcpAgentEditor` into `TranscriptHtmlAppender` and HTML formatting helpers from `TranscriptRenderer` into `TranscriptRenderHelpers`; restore original detekt `thresholdInClasses` (15) and use `thresholdInObjects: 12` instead of the previous `16`/`17` bumps. made by: Olli Aalto. made with: pi (worker). model:
 
 - **ACP transcript line/stream separation and user echo** (`acp/AcpAgentEditor.kt`): Show "Connecting..." message before `sessionController.connect()`; make `appendTranscriptLine` append a trailing newline so subsequent streaming chunks don't merge onto the same line; insert a blank line before echoing the user prompt as `&gt; ` so the input is visually separated in the output. made by: Olli Aalto.
 

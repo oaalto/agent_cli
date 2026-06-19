@@ -14,7 +14,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.acp.auth.AuthPromptResult
@@ -37,10 +36,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.awt.BorderLayout
-import java.awt.Font
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import javax.swing.JComponent
+import javax.swing.JEditorPane
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import kotlin.coroutines.resume
@@ -54,29 +53,26 @@ class AcpAgentEditor(
     private val propertyChangeSupport = PropertyChangeSupport(this)
     private val userData = UserDataHolderBase()
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val transcriptArea =
-        JBTextArea().apply {
+    private val transcriptPane =
+        JEditorPane("text/html", "").apply {
             isEditable = false
-            lineWrap = true
-            wrapStyleWord = true
-            font = Font(Font.MONOSPACED, Font.PLAIN, JBUI.scale(12))
             background = JBColor.PanelBackground
-            foreground = JBColor.foreground()
             border = JBUI.Borders.empty(8)
         }
+    private val transcript = TranscriptHtmlAppender(transcriptPane)
     private val permissionPromptPanel = PermissionPromptPanel()
     private val authPromptPanel = AuthPromptPanel()
     private val shellPaneHost = ShellPaneHost(project, this)
     private val promptInputBar =
         PromptInputBar { text ->
-            appendTranscriptLine("")
-            appendTranscriptLine("> $text")
-            appendTranscriptLine("")
+            transcript.appendLine("")
+            transcript.appendLine("> $text")
+            transcript.appendLine("")
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
                     logger.warn("Failed to send ACP prompt", throwable)
-                    appendTranscriptLine(
-                        TranscriptRenderer.formatError(
+                    transcript.appendHtml(
+                        TranscriptRenderHelpers.formatErrorHtml(
                             throwable.message ?: throwable.javaClass.simpleName,
                         ),
                     )
@@ -87,15 +83,19 @@ class AcpAgentEditor(
     private val sessionListener =
         object : AcpSessionListener {
             override fun onTranscriptAppend(text: String) {
-                appendTranscriptText(text)
+                transcript.appendText(text)
             }
 
-            override fun onTranscriptLine(line: String) {
-                appendTranscriptLine(line)
+            override fun onTranscriptHtml(fragment: String) {
+                transcript.appendHtml(fragment)
+            }
+
+            override fun onTranscriptPlainLine(line: String) {
+                transcript.appendLine(line)
             }
 
             override fun onError(message: String) {
-                appendTranscriptLine(TranscriptRenderer.formatError(message))
+                transcript.appendHtml(TranscriptRenderHelpers.formatErrorHtml(message))
                 runOnEdt { promptInputBar.setEnabled(false) }
             }
         }
@@ -148,7 +148,7 @@ class AcpAgentEditor(
     init {
         rootPanel.add(
             AcpEditorLayout.buildRootPanel(
-                transcriptArea = transcriptArea,
+                transcriptArea = transcriptPane,
                 permissionPromptPanel = permissionPromptPanel,
                 authPromptPanel = authPromptPanel,
                 promptInputBar = promptInputBar,
@@ -214,68 +214,71 @@ class AcpAgentEditor(
     private fun startSession() {
         val configuration = AgentSettingsState.getInstance().getConfigurationById(file.configurationId)
         if (configuration == null) {
-            appendTranscriptLine(TranscriptRenderer.formatError("Agent configuration was removed or is unavailable."))
+            transcript.appendHtml(
+                TranscriptRenderHelpers.formatErrorHtml("Agent configuration was removed or is unavailable."),
+            )
             promptInputBar.setEnabled(false)
             return
         }
 
         coroutineScope.launch {
-            val launchPlan =
-                AcpProcessLauncher
-                    .buildLaunchPlan(
-                        projectContext = project.toAgentProjectContext(),
-                        configuration = configuration,
-                        launchContext = file.launchContext,
-                    ).getOrElse { throwable ->
-                        appendTranscriptLine(
-                            TranscriptRenderer.formatError(
-                                throwable.message ?: "Failed to build launch command.",
-                            ),
-                        )
-                        runOnEdt { promptInputBar.setEnabled(false) }
-                        return@launch
-                    }
-
-            appendTranscriptLine("Connecting to ${configuration.name}...")
-            runCatching {
-                val scopeRoot =
-                    SessionScopeResolver.hostScopeRoot(
-                        sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
-                        projectBasePath = project.basePath,
-                        workingDirectoryOverride = file.launchContext.workingDirectoryOverride,
-                    )
-                val editorContext =
-                    AcpEditorContext(
-                        project = project,
-                        configurationId = file.configurationId,
-                        launchContext = file.launchContext,
-                        scopeRoot = scopeRoot,
-                        listener = sessionListener,
-                        shellPaneHost = shellPaneHost,
-                        permissionPromptUi = permissionPromptUi,
-                        authPromptUi = authPromptUi,
-                    )
-                sessionController.connect(launchPlan, editorContext)
-                openSessionFromResumePlan(launchPlan.sessionWorkingDirectory)
-                appendTranscriptLine("Connected to ${configuration.name}.")
-                runOnEdt {
-                    promptInputBar.setEnabled(true)
-                    promptInputBar.requestFocus()
-                }
-            }.onFailure { throwable ->
-                logger.warn("Failed to start ACP session", throwable)
-                appendTranscriptLine(
-                    TranscriptRenderer.formatError(throwable.message ?: throwable.javaClass.simpleName),
-                )
-                runOnEdt { promptInputBar.setEnabled(false) }
-            }
+            launchAndConnect(configuration)
         }
     }
 
-    private fun appendTranscriptText(text: String) {
-        runOnEdt {
-            transcriptArea.append(TranscriptRenderer.normalizeTranscriptText(text))
-            transcriptArea.caretPosition = transcriptArea.document.length
+    private suspend fun launchAndConnect(configuration: Any?) {
+        @Suppress("UNCHECKED_CAST")
+        val typedConfig = configuration as AgentSettingsState.AgentCliConfiguration
+        val launchPlan =
+            AcpProcessLauncher
+                .buildLaunchPlan(
+                    projectContext = project.toAgentProjectContext(),
+                    configuration = typedConfig,
+                    launchContext = file.launchContext,
+                ).getOrElse { throwable ->
+                    transcript.appendHtml(
+                        TranscriptRenderHelpers.formatErrorHtml(
+                            throwable.message ?: "Failed to build launch command.",
+                        ),
+                    )
+                    runOnEdt { promptInputBar.setEnabled(false) }
+                    return
+                }
+
+        transcript.appendLine("Connecting to ${typedConfig.name}...")
+        runCatching {
+            val scopeRoot =
+                SessionScopeResolver.hostScopeRoot(
+                    sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
+                    projectBasePath = project.basePath,
+                    workingDirectoryOverride = file.launchContext.workingDirectoryOverride,
+                )
+            val editorContext =
+                AcpEditorContext(
+                    project = project,
+                    configurationId = file.configurationId,
+                    launchContext = file.launchContext,
+                    scopeRoot = scopeRoot,
+                    listener = sessionListener,
+                    shellPaneHost = shellPaneHost,
+                    permissionPromptUi = permissionPromptUi,
+                    authPromptUi = authPromptUi,
+                )
+            sessionController.connect(launchPlan, editorContext)
+            openSessionFromResumePlan(launchPlan.sessionWorkingDirectory)
+            transcript.appendLine("Connected to ${typedConfig.name}.")
+            runOnEdt {
+                promptInputBar.setEnabled(true)
+                promptInputBar.requestFocus()
+            }
+        }.onFailure { throwable ->
+            logger.warn("Failed to start ACP session", throwable)
+            transcript.appendHtml(
+                TranscriptRenderHelpers.formatErrorHtml(
+                    throwable.message ?: throwable.javaClass.simpleName,
+                ),
+            )
+            runOnEdt { promptInputBar.setEnabled(false) }
         }
     }
 
@@ -287,7 +290,7 @@ class AcpAgentEditor(
                     persistBoundSessionId(plan.sessionId)
                 }.onFailure { throwable ->
                     logger.warn("ACP session load failed for ${plan.sessionId}", throwable)
-                    appendTranscriptLine(
+                    transcript.appendLine(
                         "Stored session is unavailable (${throwable.message ?: "load failed"}). " +
                             "Choose a session to resume or start fresh.",
                     )
@@ -298,7 +301,7 @@ class AcpAgentEditor(
                 if (plan.candidates.isNotEmpty()) {
                     pickSessionFromCandidates(plan.candidates)
                 } else {
-                    appendTranscriptLine(
+                    transcript.appendLine(
                         "No stored ACP session for this worktree. Choose a session to resume or start fresh.",
                     )
                     pickSessionOrStartFresh(sessionWorkingDirectory)
@@ -318,8 +321,8 @@ class AcpAgentEditor(
                 sessionController.listSessions(sessionWorkingDirectory)
             }.getOrElse { throwable ->
                 logger.warn("ACP listSessions failed", throwable)
-                appendTranscriptLine(
-                    TranscriptRenderer.formatError(
+                transcript.appendHtml(
+                    TranscriptRenderHelpers.formatErrorHtml(
                         throwable.message ?: "Failed to list sessions",
                     ),
                 )
@@ -332,7 +335,7 @@ class AcpAgentEditor(
         if (candidates.isEmpty()) {
             sessionController.newSession()
             persistCurrentSessionId()
-            appendTranscriptLine("Started a new ACP session.")
+            transcript.appendLine("Started a new ACP session.")
             return
         }
         val selectedId =
@@ -342,17 +345,17 @@ class AcpAgentEditor(
         if (selectedId == null) {
             sessionController.newSession()
             persistCurrentSessionId()
-            appendTranscriptLine("Started a new ACP session.")
+            transcript.appendLine("Started a new ACP session.")
             return
         }
         runCatching {
             sessionController.loadSession(selectedId)
             persistBoundSessionId(selectedId)
-            appendTranscriptLine("Resumed session $selectedId.")
+            transcript.appendLine("Resumed session $selectedId.")
         }.onFailure { throwable ->
             logger.warn("ACP session load failed for picker selection $selectedId", throwable)
-            appendTranscriptLine(
-                TranscriptRenderer.formatError(
+            transcript.appendHtml(
+                TranscriptRenderHelpers.formatErrorHtml(
                     throwable.message ?: "Failed to load selected session",
                 ),
             )
@@ -369,19 +372,6 @@ class AcpAgentEditor(
     private fun persistBoundSessionId(sessionId: String) {
         val recordId = file.launchContext.worktreeId ?: return
         AgentWorktreeStateService.getInstance().setAcpSessionId(recordId, sessionId)
-    }
-
-    private fun appendTranscriptLine(line: String) {
-        runOnEdt {
-            val prefix =
-                if (transcriptArea.text.isNotEmpty() && !transcriptArea.text.endsWith("\n")) {
-                    "\n"
-                } else {
-                    ""
-                }
-            transcriptArea.append(prefix + TranscriptRenderer.normalizeTranscriptText(line) + "\n")
-            transcriptArea.caretPosition = transcriptArea.document.length
-        }
     }
 
     private fun runOnEdt(action: () -> Unit) {
