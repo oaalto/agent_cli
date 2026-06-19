@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-06-19
+
+### Changed
+
+- **ACP transcript line/stream separation and user echo** (`acp/AcpAgentEditor.kt`): Show "Connecting..." message before `sessionController.connect()`; make `appendTranscriptLine` append a trailing newline so subsequent streaming chunks don't merge onto the same line; insert a blank line before echoing the user prompt as `&gt; ` so the input is visually separated in the output. made by: Olli Aalto.
+
 ## 2026-06-17
 
 ### Fixed

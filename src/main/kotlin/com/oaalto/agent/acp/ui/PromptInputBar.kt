@@ -6,7 +6,6 @@ import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.JComponent
-import javax.swing.JLabel
 import javax.swing.JPanel
 
 class PromptInputBar(
@@ -29,7 +28,6 @@ class PromptInputBar(
     private val panel =
         JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(8, 12, 8, 12)
-            add(JLabel("Prompt"), BorderLayout.WEST)
             add(inputField, BorderLayout.CENTER)
         }
 

@@ -69,6 +69,9 @@ class AcpAgentEditor(
     private val shellPaneHost = ShellPaneHost(project, this)
     private val promptInputBar =
         PromptInputBar { text ->
+            appendTranscriptLine("")
+            appendTranscriptLine("> $text")
+            appendTranscriptLine("")
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
                     logger.warn("Failed to send ACP prompt", throwable)
@@ -233,6 +236,7 @@ class AcpAgentEditor(
                         return@launch
                     }
 
+            appendTranscriptLine("Connecting to ${configuration.name}...")
             runCatching {
                 val scopeRoot =
                     SessionScopeResolver.hostScopeRoot(
@@ -369,10 +373,13 @@ class AcpAgentEditor(
 
     private fun appendTranscriptLine(line: String) {
         runOnEdt {
-            if (transcriptArea.text.isNotEmpty()) {
-                transcriptArea.append("\n")
-            }
-            transcriptArea.append(TranscriptRenderer.normalizeTranscriptText(line))
+            val prefix =
+                if (transcriptArea.text.isNotEmpty() && !transcriptArea.text.endsWith("\n")) {
+                    "\n"
+                } else {
+                    ""
+                }
+            transcriptArea.append(prefix + TranscriptRenderer.normalizeTranscriptText(line) + "\n")
             transcriptArea.caretPosition = transcriptArea.document.length
         }
     }
