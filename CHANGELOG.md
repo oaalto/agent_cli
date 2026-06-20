@@ -4,13 +4,19 @@
 
 ### Added
 
+- **ACP transcript collapsible tool cards PRD** (`docs/prd/acp-transcript-collapsible-tool-cards.md`, `docs/issues/acp-transcript-step5-collapsible-tool-cards.md`): PRD and `ready-for-agent` issue for roadmap Step 5 — structured Swing transcript with `TranscriptModel`, in-place tool cards, and collapsed Step 4 result bodies. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **ACP transcript tool output content PRD** (`docs/prd/acp-transcript-tool-output-content.md`, `docs/issues/acp-transcript-step4-tool-output-content.md`): PRD and `ready-for-agent` issue for roadmap Step 4 — render `ToolCallContent` text, diffs, and terminal references below badge headers on completed/failed tools. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ### Changed
 
+- **ACP transcript collapsible tool cards (Step 5)** (`acp/TranscriptModel.kt`, `acp/TranscriptPanel.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptViewController.kt`, `acp/TranscriptSessionUpdateMapper.kt`, `acp/AcpAgentEditor.kt`, tests): Replace monolithic HTML transcript with structured Swing panel — one collapsible card per `toolCallId`, in-place badge updates, collapsed Step 4 result bodies, and preserved agent streaming cursor. made by: Olli Aalto. made with: Cursor. model: Composer
+
 - **ACP transcript tool output content (Step 4)** (`acp/TranscriptToolCallContentRenderer.kt`, `acp/TranscriptToolCallDiffRenderer.kt`, `acp/TranscriptUpdateRenderer.kt`, `acp/TranscriptRenderer.kt`, tests): Render `ToolCallContent` bodies (text, diff, terminal, resources) below completed/failed tool badges; extract line diff to `TranscriptToolCallDiffRenderer` for detekt/ktlint. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ### Fixed
+
+- **ACP transcript Step 5 review fixes** (`acp/StructuredUpdate.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/auth/AuthFlowCoordinator.kt`, tests): Restore distinct auth-failure copy, wrap long text rows, resize expanded tool bodies, and update streaming rows in place. made by: Olli Aalto. made with: Cursor. model: Composer
 
 - **ACP transcript line diff accuracy** (`acp/TranscriptToolCallDiffRenderer.kt`, tests): Replace greedy line walk with LCS-backed matching so middle insertions and replacements no longer mis-report unchanged lines as remove-then-add pairs. made by: Olli Aalto. made with: Cursor. model: Composer
 
@@ -18,7 +24,7 @@
 
 ### Documentation
 
-- **ACP output rendering roadmap** (`docs/acp-output-rendering-roadmap.md`): Link Step 4 PRD for tool output content rendering (text results, diffs, terminal references below badge headers). made by: Olli Aalto. made with: Cursor. model: Composer
+- **ACP output rendering roadmap** (`docs/acp-output-rendering-roadmap.md`): Link Step 4 PRD for tool output content rendering; link Step 5 PRD for collapsible tool call cards and structured transcript model. made by: Olli Aalto. made with: Cursor. model: Composer
 
 ## 2026-06-19
 

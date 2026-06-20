@@ -10,6 +10,9 @@ package com.oaalto.agent.acp
  * unicode character so that JEditorPane does not strip it during round-trips.
  */
 internal object TranscriptStreamingCursor {
+    /** Literal cursor glyph for Swing labels. */
+    const val CURSOR_CHAR: String = "\u258A"
+
     /** HTML entity for U+258A (▊) — survives JEditorPane HTML round-trip. */
     const val CURSOR_HTML: String = "&#9612;"
 

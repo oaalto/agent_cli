@@ -174,9 +174,8 @@ class AcpPromptEventDispatcherTest {
     }
 
     @Test
-    fun `tool call finalizes before html append`() {
+    fun `tool call finalizes before structured tool update`() {
         val listener = RecordingListener()
-        listener.streamingActive = true
 
         AcpPromptEventDispatcher.dispatchSessionUpdate(
             SessionUpdate.ToolCall(
@@ -189,7 +188,7 @@ class AcpPromptEventDispatcherTest {
         )
 
         assertEquals(1, listener.finalizeCount)
-        assertTrue(listener.htmlFragments.isNotEmpty())
+        assertTrue(listener.toolUpdates.any { it.title == "read file" })
     }
 
     @Test
@@ -202,7 +201,7 @@ class AcpPromptEventDispatcherTest {
     }
 
     @Test
-    fun `chunk then tool sequence leaves no cursor in listener contract`() {
+    fun `chunk then tool sequence produces append finalize and tool update`() {
         val listener = RecordingListener()
 
         AcpPromptEventDispatcher.dispatchSessionUpdate(
@@ -222,29 +221,24 @@ class AcpPromptEventDispatcherTest {
 
         assertEquals(listOf("Thinking"), listener.appendedChunks)
         assertEquals(2, listener.finalizeCount)
-        assertTrue(listener.htmlFragments.any { it.contains("read README.md") })
+        assertTrue(listener.toolUpdates.any { it.title == "read README.md" })
     }
 
     private class RecordingListener : AcpSessionListener {
-        val appendedChunks = mutableListOf<String>()
-        val htmlFragments = mutableListOf<String>()
-        var finalizeCount = 0
-        var streamingActive = false
+        val updates = mutableListOf<StructuredUpdate>()
 
-        override fun onTranscriptAppend(text: String) {
-            appendedChunks += text
+        val appendedChunks: List<String>
+            get() = updates.filterIsInstance<StructuredUpdate.AppendAgentText>().map { it.text }
+
+        val finalizeCount: Int
+            get() = updates.count { it is StructuredUpdate.FinalizeAgentStream }
+
+        val toolUpdates: List<StructuredUpdate.StartOrUpdateToolCall>
+            get() = updates.filterIsInstance<StructuredUpdate.StartOrUpdateToolCall>()
+
+        override fun onStructuredUpdate(update: StructuredUpdate) {
+            updates += update
         }
-
-        override fun onFinalizeAgentStream() {
-            finalizeCount++
-            streamingActive = false
-        }
-
-        override fun onTranscriptHtml(fragment: String) {
-            htmlFragments += fragment
-        }
-
-        override fun onTranscriptPlainLine(line: String) = Unit
 
         override fun onError(message: String) = Unit
     }

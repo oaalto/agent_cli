@@ -7,7 +7,7 @@ import com.agentclientprotocol.client.Client
 import com.agentclientprotocol.model.AuthMethod
 import com.agentclientprotocol.model.AuthMethodId
 import com.oaalto.agent.acp.AcpSessionListener
-import com.oaalto.agent.acp.TranscriptRenderer
+import com.oaalto.agent.acp.StructuredUpdate
 import com.oaalto.agent.acp.ui.ShellPaneHost
 
 class AuthFlowCoordinator(
@@ -93,8 +93,8 @@ class AuthFlowCoordinator(
         runCatching {
             client.authenticate(methodId)
         }.map { Unit }.onFailure { throwable ->
-            listener.onTranscriptPlainLine(
-                TranscriptRenderer.formatAuthFailure(
+            listener.onStructuredUpdate(
+                StructuredUpdate.AppendAuthFailure(
                     throwable.message ?: "Authentication failed.",
                 ),
             )

@@ -47,10 +47,10 @@ internal object TranscriptRenderHelpers {
         status: ToolCallStatus?,
     ): String {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
-        val badgeColor = badgeColorFor(status)
+        val badgeColor = TranscriptBadgeStyle.colorHex(status)
         val escapedTitle = TranscriptUpdateRenderer.escapeHtml(title)
         val escapedKind = TranscriptUpdateRenderer.escapeHtml(kindLabel)
-        val badgeLabel = badgeLabelFor(status, escapedKind)
+        val badgeLabel = TranscriptBadgeStyle.label(status, escapedKind)
         val outerStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         val badgeStyle = "background-color:$badgeColor;color:#ffffff;padding:1px 4px;border-radius:3px"
         val titleStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
@@ -105,22 +105,4 @@ internal object TranscriptRenderHelpers {
                 "[permission denied] $escaped</span>"
         )
     }
-
-    private fun badgeColorFor(status: ToolCallStatus?): String =
-        when (status) {
-            ToolCallStatus.IN_PROGRESS -> "#d4a017"
-            ToolCallStatus.COMPLETED -> "#2d8a4e"
-            ToolCallStatus.FAILED -> "#c43c3c"
-            else -> "#666666"
-        }
-
-    internal fun badgeLabelFor(
-        status: ToolCallStatus?,
-        escapedKind: String,
-    ): String =
-        when (status) {
-            ToolCallStatus.COMPLETED -> "✓ $escapedKind"
-            ToolCallStatus.FAILED -> "✗ $escapedKind"
-            else -> escapedKind
-        }
 }

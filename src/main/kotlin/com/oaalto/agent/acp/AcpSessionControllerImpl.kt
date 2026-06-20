@@ -212,7 +212,7 @@ class AcpSessionControllerImpl(
         if (trimmed.isEmpty()) return
 
         promptJob?.cancel()
-        listener.onFinalizeAgentStream()
+        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
         promptJob =
             scope.launch {
                 runCatching {
@@ -221,7 +221,7 @@ class AcpSessionControllerImpl(
                     }
                 }.onFailure { throwable ->
                     logger.warn("ACP prompt failed", throwable)
-                    listener.onFinalizeAgentStream()
+                    listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
                     listener.onError(throwable.message ?: throwable.javaClass.simpleName)
                 }
             }
@@ -229,13 +229,13 @@ class AcpSessionControllerImpl(
     }
 
     override suspend fun cancelPrompt() {
-        listener.onFinalizeAgentStream()
+        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
         promptJob?.cancel()
         session?.cancel()
     }
 
     override fun dispose() {
-        listener.onFinalizeAgentStream()
+        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
         promptJob?.cancel()
         editorContext?.terminalSessionRegistry?.clear()
         editorContext?.shellPaneHost?.clear()
@@ -260,7 +260,7 @@ class AcpSessionControllerImpl(
             var line = reader.readLine()
             while (line != null) {
                 if (line.isNotBlank()) {
-                    listener.onTranscriptPlainLine("[stderr] $line")
+                    listener.onStructuredUpdate(StructuredUpdate.AppendPlainLine("[stderr] $line"))
                 }
                 line = reader.readLine()
             }

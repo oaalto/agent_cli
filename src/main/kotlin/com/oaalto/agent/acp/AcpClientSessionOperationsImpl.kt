@@ -112,10 +112,12 @@ class AcpClientSessionOperationsImpl(
                 env = envPairs,
             )
         val session = terminalSessionRegistry.register(widget)
-        listener.onTranscriptPlainLine(
-            TranscriptRenderer.formatTerminalCreate(
-                ShellPaneHost.formatCommandLabel(command, args),
-                session.terminalId,
+        listener.onStructuredUpdate(
+            StructuredUpdate.AppendPlainLine(
+                TranscriptRenderer.formatTerminalCreate(
+                    ShellPaneHost.formatCommandLabel(command, args),
+                    session.terminalId,
+                ),
             ),
         )
         return CreateTerminalResponse(terminalId = session.terminalId)

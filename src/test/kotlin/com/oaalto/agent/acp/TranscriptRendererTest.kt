@@ -362,11 +362,11 @@ class TranscriptRendererTest {
     fun `badgeLabelFor preserves escaped html in kind label`() {
         assertEquals(
             "✓ &lt;script&gt;",
-            TranscriptRenderHelpers.badgeLabelFor(ToolCallStatus.COMPLETED, "&lt;script&gt;"),
+            TranscriptBadgeStyle.label(ToolCallStatus.COMPLETED, "&lt;script&gt;"),
         )
         assertEquals(
             "✗ a &amp; b",
-            TranscriptRenderHelpers.badgeLabelFor(ToolCallStatus.FAILED, "a &amp; b"),
+            TranscriptBadgeStyle.label(ToolCallStatus.FAILED, "a &amp; b"),
         )
     }
 
