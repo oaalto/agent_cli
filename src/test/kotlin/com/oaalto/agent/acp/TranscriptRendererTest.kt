@@ -4,6 +4,7 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.SessionUpdate
+import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallId
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
@@ -48,13 +49,14 @@ class TranscriptRendererTest {
                     title = "read README.md",
                     kind = ToolKind.READ,
                     status = ToolCallStatus.COMPLETED,
+                    content = listOf(ToolCallContent.Content(ContentBlock.Text("# README\ncontent"))),
                 ),
                 SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("Done")),
             )
 
         val fragments = updates.flatMap(TranscriptRenderer::renderUpdate)
 
-        assertEquals(4, fragments.size)
+        assertEquals(5, fragments.size)
         assertTrue(fragments[0].contains("<span"))
         assertTrue(fragments[0].contains("Thinking"))
         assertTrue(fragments[1].contains("<span"))
@@ -63,8 +65,10 @@ class TranscriptRendererTest {
         assertTrue(fragments[2].contains("<span"))
         assertTrue(fragments[2].contains("background-color:#2d8a4e"))
         assertLegacyToolStatusFormatAbsent(fragments[2])
-        assertTrue(fragments[3].contains("<span"))
-        assertTrue(fragments[3].contains("Done"))
+        assertTrue(fragments[3].contains("<pre"))
+        assertTrue(fragments[3].contains("# README"))
+        assertTrue(fragments[4].contains("<span"))
+        assertTrue(fragments[4].contains("Done"))
     }
 
     // -- HTML output tests -----------------------------------------------------

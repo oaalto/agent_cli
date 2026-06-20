@@ -43,22 +43,38 @@ internal object TranscriptUpdateRenderer {
         )
 
     private fun renderToolCall(update: SessionUpdate.ToolCall): List<String> =
-        listOf(
-            TranscriptRenderHelpers.formatToolStatusHtml(
-                title = update.title,
-                kind = update.kind,
-                status = update.status,
-            ),
-        )
+        buildList {
+            add(
+                TranscriptRenderHelpers.formatToolStatusHtml(
+                    title = update.title,
+                    kind = update.kind,
+                    status = update.status,
+                ),
+            )
+            addAll(
+                TranscriptToolCallContentRenderer.renderContentFragments(
+                    content = update.content,
+                    status = update.status,
+                ),
+            )
+        }
 
     private fun renderToolCallUpdate(update: SessionUpdate.ToolCallUpdate): List<String> =
-        listOf(
-            TranscriptRenderHelpers.formatToolStatusHtml(
-                title = update.title ?: update.toolCallId.value,
-                kind = update.kind,
-                status = update.status,
-            ),
-        )
+        buildList {
+            add(
+                TranscriptRenderHelpers.formatToolStatusHtml(
+                    title = update.title ?: update.toolCallId.value,
+                    kind = update.kind,
+                    status = update.status,
+                ),
+            )
+            addAll(
+                TranscriptToolCallContentRenderer.renderContentFragments(
+                    content = update.content,
+                    status = update.status,
+                ),
+            )
+        }
 
     // -- HTML segment helpers -------------------------------------------------
 

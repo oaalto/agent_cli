@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-20
+
+### Added
+
+- **ACP transcript tool output content PRD** (`docs/prd/acp-transcript-tool-output-content.md`, `docs/issues/acp-transcript-step4-tool-output-content.md`): PRD and `ready-for-agent` issue for roadmap Step 4 — render `ToolCallContent` text, diffs, and terminal references below badge headers on completed/failed tools. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Changed
+
+- **ACP transcript tool output content (Step 4)** (`acp/TranscriptToolCallContentRenderer.kt`, `acp/TranscriptToolCallDiffRenderer.kt`, `acp/TranscriptUpdateRenderer.kt`, `acp/TranscriptRenderer.kt`, tests): Render `ToolCallContent` bodies (text, diff, terminal, resources) below completed/failed tool badges; extract line diff to `TranscriptToolCallDiffRenderer` for detekt/ktlint. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Fixed
+
+- **ACP transcript line diff accuracy** (`acp/TranscriptToolCallDiffRenderer.kt`, tests): Replace greedy line walk with LCS-backed matching so middle insertions and replacements no longer mis-report unchanged lines as remove-then-add pairs. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP transcript empty oldText diff** (`acp/TranscriptToolCallDiffRenderer.kt`, tests): Normalize empty `oldText` the same as empty `newText` so new-file diffs do not emit a spurious red removal line. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Documentation
+
+- **ACP output rendering roadmap** (`docs/acp-output-rendering-roadmap.md`): Link Step 4 PRD for tool output content rendering (text results, diffs, terminal references below badge headers). made by: Olli Aalto. made with: Cursor. model: Composer
+
 ## 2026-06-19
 
 ### Added

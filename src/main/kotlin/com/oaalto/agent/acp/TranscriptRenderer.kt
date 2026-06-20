@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.SessionUpdate
+import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 
@@ -9,6 +10,11 @@ object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
 
     fun renderUpdate(update: SessionUpdate): List<String> = TranscriptUpdateRenderer.render(update)
+
+    fun renderToolCallContentFragments(
+        content: List<ToolCallContent>?,
+        status: ToolCallStatus?,
+    ): List<String> = TranscriptToolCallContentRenderer.renderContentFragments(content, status)
 
     fun renderEventText(update: SessionUpdate): String? =
         when (update) {

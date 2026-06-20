@@ -1,6 +1,6 @@
 # ACP Client Transcript Output: Implementation Roadmap
 
-**Status:** Active — Step 1 PRD (`docs/prd/acp-transcript-html-rendering.md`); Step 2 PRD (`docs/prd/acp-transcript-tool-status-badges.md`); Step 3 PRD (`docs/prd/acp-transcript-streaming-cursor.md`).
+**Status:** Active — Step 1 PRD (`docs/prd/acp-transcript-html-rendering.md`); Step 2 PRD (`docs/prd/acp-transcript-tool-status-badges.md`); Step 3 PRD (`docs/prd/acp-transcript-streaming-cursor.md`); Step 4 PRD (`docs/prd/acp-transcript-tool-output-content.md`).
 
 **Target:** `AcpAgentEditor` / `AcpSessionControllerImpl` (ACP Client launch mode of the Agent CLI plugin)
 **Goal:** Replace the plain-text `JBTextArea` transcript with structured rendering of agent output (text, tool calls, tool results, thinking, etc.)
