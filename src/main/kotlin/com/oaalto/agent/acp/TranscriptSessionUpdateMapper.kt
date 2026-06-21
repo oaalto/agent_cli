@@ -40,8 +40,8 @@ internal object TranscriptSessionUpdateMapper {
             title = update.title,
             kind = update.kind,
             status = update.status,
-            contentFragments =
-                TranscriptRenderer.renderToolCallContentFragments(
+            bodyParts =
+                TranscriptRenderer.renderToolCallBodyParts(
                     content = update.content,
                     status = update.status,
                 ),
@@ -53,8 +53,8 @@ internal object TranscriptSessionUpdateMapper {
             title = update.title ?: update.toolCallId.value,
             kind = update.kind,
             status = update.status,
-            contentFragments =
-                TranscriptRenderer.renderToolCallContentFragments(
+            bodyParts =
+                TranscriptRenderer.renderToolCallBodyParts(
                     content = update.content,
                     status = update.status,
                 ),

@@ -49,7 +49,7 @@ internal class TranscriptHtmlAppender(
 
     fun appendLine(line: String) {
         onEdt {
-            val escaped = TranscriptUpdateRenderer.escapeHtml(line)
+            val escaped = TranscriptRenderHelpers.escapeHtml(line)
             val entry =
                 if (line.startsWith("> ")) {
                     TranscriptRenderHelpers.userPromptSpan(escaped)
@@ -81,7 +81,7 @@ internal class TranscriptHtmlAppender(
 
     private fun finalizeAgentStreamOnEdt() {
         if (!isAgentStreamActive) return
-        val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+        val escaped = TranscriptRenderHelpers.escapeHtml(streamingPlainText.toString())
         val finalized = TranscriptStreamingCursor.finalizedBlockHtml(escaped, streamLineSeparator)
         removeActiveStreamBlockFromPane()
         committedBodyHtml += finalized
@@ -111,14 +111,14 @@ internal class TranscriptHtmlAppender(
 
     private fun currentBodyHtml(): String =
         if (isAgentStreamActive) {
-            val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+            val escaped = TranscriptRenderHelpers.escapeHtml(streamingPlainText.toString())
             committedBodyHtml + TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
         } else {
             committedBodyHtml
         }
 
     private fun updateActiveStreamBlock() {
-        val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+        val escaped = TranscriptRenderHelpers.escapeHtml(streamingPlainText.toString())
         val newBlock = TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
         removeActiveStreamBlockFromPane()
         activeStreamBlockHtml = newBlock
@@ -139,7 +139,7 @@ internal class TranscriptHtmlAppender(
         TranscriptPaneHtmlOps.replaceBody(pane, body)
         activeStreamBlockHtml =
             if (isAgentStreamActive) {
-                val escaped = TranscriptUpdateRenderer.escapeHtml(streamingPlainText.toString())
+                val escaped = TranscriptRenderHelpers.escapeHtml(streamingPlainText.toString())
                 TranscriptStreamingCursor.streamBlockHtml(escaped, streamLineSeparator)
             } else {
                 ""

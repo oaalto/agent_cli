@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-21
+
+### Added
+
+- **ACP transcript syntax highlighting (Step 6)** (`acp/TextSegment.kt`, `acp/TranscriptBodyPart.kt`, `acp/TranscriptFenceLanguageResolver.kt`, `acp/TranscriptCodeBlockViewFactory.kt`, `acp/TranscriptToolCallTextBodyRenderer.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptToolCallContentRenderer.kt`, `acp/TranscriptPanel.kt`, `acp/TranscriptViewController.kt`, tests): Fenced-code segmentation and EditorFactory-backed syntax highlighting in finalized agent text and completed/failed tool card bodies; mixed HTML and embedded code components in collapsible tool panels. made by: Olli Aalto. made with: Cursor. model: Composer
+
+- **ACP transcript syntax highlighting PRD** (`docs/prd/acp-transcript-syntax-highlighting.md`, `docs/issues/acp-transcript-step6-syntax-highlighting.md`): PRD and `ready-for-agent` issue for roadmap Step 6 — fenced-code segmentation and language-aware highlighting in agent text and tool card bodies (Koog preferred, EditorFactory fallback). made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Changed
+
+- **ACP transcript syntax highlighting hardening** (`acp/TranscriptTextTruncation.kt`, `acp/TranscriptRenderHelpers.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/TranscriptPanel.kt`, `acp/TranscriptViewController.kt`, `acp/AcpAgentEditor.kt`, tests): Lazy-build tool card bodies only when expanded; truncate and cap highlighted agent code blocks; dispose EditorFactory editors on editor close and row removal; remove unused `TranscriptUpdateRenderer` HTML update path. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Fixed
+
+- **ACP transcript syntax highlighting review fixes** (`acp/TranscriptBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptViewController.kt`, tests): Update streaming agent rows in place instead of rebuilding every chunk; skip tool-card body rebuild when `bodyParts` are unchanged; align overflow code-block styling with tool `<pre>` bodies; dispose transcript editors synchronously on editor close. made by: Olli Aalto. made with: Cursor. model: Composer
+
+### Documentation
+
+- **ACP output rendering roadmap** (`docs/acp-output-rendering-roadmap.md`): Link Step 6 PRD for syntax-highlighted code blocks. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ## 2026-06-20
 
 ### Added

@@ -11,7 +11,7 @@ internal object TranscriptToolCallDiffRenderer {
         diff: ToolCallContent.Diff,
         preStyle: String,
     ): String {
-        val escapedPath = TranscriptUpdateRenderer.escapeHtml(diff.path)
+        val escapedPath = TranscriptRenderHelpers.escapeHtml(diff.path)
         val body =
             buildString {
                 append("<span style=\"$DIFF_PATH_STYLE\">$escapedPath</span>\n")
@@ -138,6 +138,6 @@ internal object TranscriptToolCallDiffRenderer {
         prefix: String,
         line: String,
     ) {
-        append("<span style=\"$colorStyle\">$prefix ${TranscriptUpdateRenderer.escapeHtml(line)}</span>\n")
+        append("<span style=\"$colorStyle\">$prefix ${TranscriptRenderHelpers.escapeHtml(line)}</span>\n")
     }
 }

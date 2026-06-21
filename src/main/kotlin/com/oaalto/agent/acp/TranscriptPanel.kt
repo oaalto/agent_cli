@@ -1,19 +1,20 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.Component
-import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 
 /** Vertical structured transcript container with incremental block sync. */
 internal class TranscriptPanel(
+    private val blockViewFactory: TranscriptBlockViewFactory,
     private val onToolToggle: (toolCallId: String) -> Unit,
 ) : JPanel() {
     private val column =
         JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            layout = javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS)
             isOpaque = false
             alignmentX = Component.LEFT_ALIGNMENT
         }
@@ -38,16 +39,19 @@ internal class TranscriptPanel(
             seenIds += block.blockId
             val existing = componentsByBlockId[block.blockId]
             if (existing == null) {
-                val created = TranscriptBlockViewFactory.create(block, onToolToggle)
+                val created = blockViewFactory.create(block, onToolToggle)
                 componentsByBlockId[block.blockId] = created
                 insertAt(index, created)
             } else {
-                TranscriptBlockViewFactory.update(existing, block)
+                blockViewFactory.update(existing, block)
                 ensureOrder(index, existing)
             }
         }
         componentsByBlockId.keys.filter { it !in seenIds }.forEach { id ->
-            componentsByBlockId.remove(id)?.let { column.remove(it) }
+            componentsByBlockId.remove(id)?.let { removed ->
+                blockViewFactory.disposeRow(removed)
+                column.remove(removed)
+            }
         }
         column.revalidate()
         column.repaint()
@@ -61,6 +65,14 @@ internal class TranscriptPanel(
         if (atBottom) {
             bar.value = bar.maximum
         }
+    }
+
+    fun disposeAll() {
+        componentsByBlockId.values.forEach(blockViewFactory::disposeRow)
+        componentsByBlockId.clear()
+        column.removeAll()
+        column.revalidate()
+        column.repaint()
     }
 
     private fun insertAt(
@@ -92,5 +104,16 @@ internal class TranscriptPanel(
 
     companion object {
         private const val SCROLL_BOTTOM_THRESHOLD = 4
+
+        fun create(
+            project: Project,
+            onToolToggle: (toolCallId: String) -> Unit,
+            codeBlockViewFactory: TranscriptCodeBlockViewFactory =
+                EditorFactoryTranscriptCodeBlockViewFactory(project),
+        ): TranscriptPanel =
+            TranscriptPanel(
+                blockViewFactory = TranscriptBlockViewFactory(codeBlockViewFactory),
+                onToolToggle = onToolToggle,
+            )
     }
 }

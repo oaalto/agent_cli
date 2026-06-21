@@ -1,20 +1,27 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 /** EDT-safe bridge between [TranscriptModel] and [TranscriptPanel]. */
 internal class TranscriptViewController(
+    project: Project,
     private val runOnEdt: ((() -> Unit) -> Unit)? = null,
+    codeBlockViewFactory: TranscriptCodeBlockViewFactory = EditorFactoryTranscriptCodeBlockViewFactory(project),
 ) {
     private val model = TranscriptModel()
     private val transcriptPanel: TranscriptPanel =
-        TranscriptPanel { toolCallId ->
-            applyOnEdt {
-                model.toggleToolExpansion(toolCallId)
-                transcriptPanel.sync(model.blocks())
-            }
-        }
+        TranscriptPanel.create(
+            project = project,
+            onToolToggle = { toolCallId ->
+                applyOnEdt {
+                    model.toggleToolExpansion(toolCallId)
+                    transcriptPanel.sync(model.blocks())
+                }
+            },
+            codeBlockViewFactory = codeBlockViewFactory,
+        )
 
     val component: JComponent get() = transcriptPanel.component
 
@@ -39,6 +46,15 @@ internal class TranscriptViewController(
 
     fun finalizeAgentStream() {
         apply(StructuredUpdate.FinalizeAgentStream)
+    }
+
+    fun dispose() {
+        val action = { transcriptPanel.disposeAll() }
+        if (SwingUtilities.isEventDispatchThread()) {
+            action()
+        } else {
+            SwingUtilities.invokeAndWait(action)
+        }
     }
 
     internal fun blocksForTest(): List<TranscriptBlock> = model.blocks()

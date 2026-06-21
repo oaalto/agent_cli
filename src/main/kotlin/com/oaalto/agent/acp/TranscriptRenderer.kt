@@ -9,7 +9,10 @@ import com.agentclientprotocol.model.ToolKind
 object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
 
-    fun renderUpdate(update: SessionUpdate): List<String> = TranscriptUpdateRenderer.render(update)
+    internal fun renderToolCallBodyParts(
+        content: List<ToolCallContent>?,
+        status: ToolCallStatus?,
+    ): List<TranscriptBodyPart> = TranscriptToolCallContentRenderer.renderBodyParts(content, status)
 
     fun renderToolCallContentFragments(
         content: List<ToolCallContent>?,

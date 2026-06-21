@@ -4,13 +4,11 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.EmbeddedResourceResource
-import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.model.ToolCallContent
-import com.agentclientprotocol.model.ToolCallId
 import com.agentclientprotocol.model.ToolCallStatus
-import com.agentclientprotocol.model.ToolKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class TranscriptToolCallContentRendererTest {
@@ -430,58 +428,60 @@ class TranscriptToolCallContentRendererTest {
     }
 
     @Test
-    fun `renderUpdate appends header then content for completed tool call`() {
-        val fragments =
-            TranscriptRenderer.renderUpdate(
-                SessionUpdate.ToolCall(
-                    toolCallId = ToolCallId("1"),
-                    title = "read file",
-                    kind = ToolKind.READ,
-                    status = ToolCallStatus.COMPLETED,
-                    content = listOf(ToolCallContent.Content(ContentBlock.Text("file body"))),
-                ),
+    fun `fenced kotlin tool text emits highlighted code body part`() {
+        val parts =
+            TranscriptToolCallContentRenderer.renderBodyParts(
+                content =
+                    listOf(
+                        ToolCallContent.Content(
+                            ContentBlock.Text("```kotlin\nfun main()\n```"),
+                        ),
+                    ),
+                status = ToolCallStatus.COMPLETED,
             )
 
-        assertEquals(2, fragments.size)
-        assertTrue(fragments[0].contains("background-color:#2d8a4e"))
-        assertTrue(fragments[0].contains("read file"))
-        assertTrue(fragments[1].contains("<pre"))
-        assertTrue(fragments[1].contains("file body"))
+        assertEquals(1, parts.size)
+        val code = assertIs<TranscriptBodyPart.Code>(parts.single())
+        assertEquals("kotlin", code.languageId)
+        assertEquals("fun main()", code.code)
     }
 
     @Test
-    fun `renderUpdate appends content on completed tool call update`() {
-        val fragments =
-            TranscriptRenderer.renderUpdate(
-                SessionUpdate.ToolCallUpdate(
-                    toolCallId = ToolCallId("1"),
-                    title = "run cmd",
-                    kind = ToolKind.EXECUTE,
-                    status = ToolCallStatus.COMPLETED,
-                    content = listOf(ToolCallContent.Content(ContentBlock.Text("stdout"))),
-                ),
+    fun `plain log text still emits html pre body part`() {
+        val parts =
+            TranscriptToolCallContentRenderer.renderBodyParts(
+                content = listOf(ToolCallContent.Content(ContentBlock.Text("error output"))),
+                status = ToolCallStatus.FAILED,
             )
 
-        assertEquals(2, fragments.size)
-        assertTrue(fragments[0].contains("✓"))
-        assertTrue(fragments[1].contains("stdout"))
+        assertEquals(1, parts.size)
+        val html = assertIs<TranscriptBodyPart.Html>(parts.single())
+        assertTrue(html.fragment.contains("<pre"))
+        assertTrue(html.fragment.contains("error output"))
     }
 
     @Test
-    fun `renderUpdate in progress tool call emits header only`() {
-        val fragments =
-            TranscriptRenderer.renderUpdate(
-                SessionUpdate.ToolCall(
-                    toolCallId = ToolCallId("1"),
-                    title = "read file",
-                    kind = ToolKind.READ,
-                    status = ToolCallStatus.IN_PROGRESS,
-                    content = listOf(ToolCallContent.Content(ContentBlock.Text("partial"))),
-                ),
+    fun `mixed diff and fenced text preserves both renderers`() {
+        val parts =
+            TranscriptToolCallContentRenderer.renderBodyParts(
+                content =
+                    listOf(
+                        ToolCallContent.Diff(
+                            path = "Foo.kt",
+                            newText = "new",
+                            oldText = "old",
+                        ),
+                        ToolCallContent.Content(
+                            ContentBlock.Text("```json\n{\"ok\":true}\n```"),
+                        ),
+                    ),
+                status = ToolCallStatus.COMPLETED,
             )
 
-        assertEquals(1, fragments.size)
-        assertTrue(fragments[0].contains("background-color:#d4a017"))
-        assertTrue(!fragments[0].contains("<pre"))
+        assertEquals(2, parts.size)
+        val diff = assertIs<TranscriptBodyPart.Html>(parts[0])
+        assertTrue(diff.fragment.contains("color:#c43c3c"))
+        val code = assertIs<TranscriptBodyPart.Code>(parts[1])
+        assertEquals("json", code.languageId)
     }
 }

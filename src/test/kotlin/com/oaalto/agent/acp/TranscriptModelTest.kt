@@ -29,7 +29,7 @@ class TranscriptModelTest {
                 title = "read README.md",
                 kind = ToolKind.READ,
                 status = ToolCallStatus.COMPLETED,
-                contentFragments = listOf("<pre>content</pre>"),
+                bodyParts = listOf(TranscriptBodyPart.Html("<pre>content</pre>")),
             ),
         )
 
@@ -38,7 +38,7 @@ class TranscriptModelTest {
         val tool = assertIs<TranscriptBlock.ToolCallBlock>(blocks.single())
         assertEquals("1", tool.toolCallId)
         assertEquals(ToolCallStatus.COMPLETED, tool.status)
-        assertEquals(listOf("<pre>content</pre>"), tool.contentFragments)
+        assertEquals(listOf(TranscriptBodyPart.Html("<pre>content</pre>")), tool.bodyParts)
         assertFalse(tool.expanded)
     }
 
@@ -120,7 +120,7 @@ class TranscriptModelTest {
                 title = "read",
                 kind = ToolKind.READ,
                 status = ToolCallStatus.COMPLETED,
-                contentFragments = listOf("<pre>body</pre>"),
+                bodyParts = listOf(TranscriptBodyPart.Html("<pre>body</pre>")),
             ),
         )
         model.toggleToolExpansion("1")
@@ -130,14 +130,14 @@ class TranscriptModelTest {
                 title = "read",
                 kind = ToolKind.READ,
                 status = ToolCallStatus.FAILED,
-                contentFragments = listOf("<pre>error</pre>"),
+                bodyParts = listOf(TranscriptBodyPart.Html("<pre>error</pre>")),
             ),
         )
 
         val tool = assertIs<TranscriptBlock.ToolCallBlock>(model.blocks().single())
         assertTrue(tool.expanded)
         assertEquals(ToolCallStatus.FAILED, tool.status)
-        assertEquals(2, tool.contentFragments.size)
+        assertEquals(2, tool.bodyParts.size)
     }
 
     @Test

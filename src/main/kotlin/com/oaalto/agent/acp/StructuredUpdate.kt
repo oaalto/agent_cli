@@ -37,6 +37,6 @@ sealed class StructuredUpdate {
         val title: String,
         val kind: ToolKind?,
         val status: ToolCallStatus?,
-        val contentFragments: List<String> = emptyList(),
+        val bodyParts: List<TranscriptBodyPart> = emptyList(),
     ) : StructuredUpdate()
 }

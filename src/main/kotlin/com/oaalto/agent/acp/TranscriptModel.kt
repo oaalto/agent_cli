@@ -65,18 +65,18 @@ internal class TranscriptModel {
         val existingIndex = toolBlockIndexById[update.toolCallId]
         if (existingIndex != null) {
             val existing = blocks.getOrNull(existingIndex) as? TranscriptBlock.ToolCallBlock ?: return
-            val mergedFragments =
-                if (update.contentFragments.isEmpty()) {
-                    existing.contentFragments
+            val mergedBodyParts =
+                if (update.bodyParts.isEmpty()) {
+                    existing.bodyParts
                 } else {
-                    existing.contentFragments + update.contentFragments
+                    existing.bodyParts + update.bodyParts
                 }
             blocks[existingIndex] =
                 existing.copy(
                     title = update.title,
                     kind = update.kind ?: existing.kind,
                     status = update.status ?: existing.status,
-                    contentFragments = mergedFragments,
+                    bodyParts = mergedBodyParts,
                 )
             return
         }
@@ -87,7 +87,7 @@ internal class TranscriptModel {
                 title = update.title,
                 kind = update.kind,
                 status = update.status,
-                contentFragments = update.contentFragments,
+                bodyParts = update.bodyParts,
             )
         toolBlockIndexById[update.toolCallId] = blocks.size
         appendBlock(block)

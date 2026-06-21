@@ -36,7 +36,7 @@ class TranscriptStreamingCursorTest {
 
     @Test
     fun `escaped special characters remain safe in stream block`() {
-        val escaped = TranscriptUpdateRenderer.escapeHtml("<a & b>")
+        val escaped = TranscriptRenderHelpers.escapeHtml("<a & b>")
         val block = TranscriptStreamingCursor.streamBlockHtml(escaped, "")
 
         assertTrue(block.contains("&lt;a &amp; b&gt;"))

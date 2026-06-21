@@ -15,15 +15,21 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JComponent
 import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JPanel
 
+private const val BODY_PART_GAP = 4
+
 /**
- * Collapsible tool-call card: badge header + optional HTML body (Step 4 content).
+ * Collapsible tool-call card: badge header + optional mixed HTML / highlighted code body.
  */
 internal class CollapsibleToolPanel(
     private val onToggle: (toolCallId: String) -> Unit,
+    private val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
 ) : JPanel(BorderLayout()) {
     private val headerPanel =
         JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(4), 0)).apply {
@@ -51,14 +57,18 @@ internal class CollapsibleToolPanel(
                     Color(TranscriptPalette.MUTED_CHEVRON_LIGHT_RGB),
                 )
         }
-    private val bodyPane =
-        JEditorPane("text/html", "").apply {
-            isEditable = false
+    private val bodyContainer =
+        JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
             isOpaque = false
-            border = JBUI.Borders.emptyLeft(20)
+            border = JBUI.Borders.empty()
+            alignmentX = LEFT_ALIGNMENT
         }
     private var boundToolCallId: String = ""
     private var expandable = false
+    private var boundBodyParts: List<TranscriptBodyPart>? = null
+    private var bodyBuilt = false
+    private val disposableCodeComponents = mutableListOf<JComponent>()
 
     init {
         border =
@@ -81,8 +91,8 @@ internal class CollapsibleToolPanel(
         headerPanel.add(titleLabel)
         headerPanel.add(chevronLabel)
         add(headerPanel, BorderLayout.NORTH)
-        add(bodyPane, BorderLayout.CENTER)
-        bodyPane.isVisible = false
+        add(bodyContainer, BorderLayout.CENTER)
+        bodyContainer.isVisible = false
 
         val toggleListener =
             object : MouseAdapter() {
@@ -105,8 +115,8 @@ internal class CollapsibleToolPanel(
         addComponentListener(
             object : ComponentAdapter() {
                 override fun componentResized(event: ComponentEvent) {
-                    if (bodyPane.isVisible) {
-                        adjustBodyPaneHeight()
+                    if (bodyContainer.isVisible) {
+                        adjustBodyHeight()
                     }
                 }
             },
@@ -133,32 +143,106 @@ internal class CollapsibleToolPanel(
 
         expandable = block.hasBodyContent
         if (expandable) {
-            headerPanel.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-            chevronLabel.text = if (block.expanded) "▼" else "▶"
-            bodyPane.text = bodyHtml(block.contentFragments)
-            bodyPane.isVisible = block.expanded
-            if (block.expanded) {
-                adjustBodyPaneHeight()
-            } else {
-                bodyPane.preferredSize = Dimension(0, 0)
-            }
+            bindExpandableBody(block)
         } else {
-            headerPanel.cursor = Cursor.getDefaultCursor()
-            chevronLabel.text = ""
-            bodyPane.text = ""
-            bodyPane.isVisible = false
-            bodyPane.preferredSize = Dimension(0, 0)
+            bindNonExpandableBody()
         }
         revalidate()
         repaint()
     }
 
-    private fun adjustBodyPaneHeight() {
+    private fun bindExpandableBody(block: TranscriptBlock.ToolCallBlock) {
+        headerPanel.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        chevronLabel.text = if (block.expanded) "▼" else "▶"
+        if (block.expanded) {
+            ensureExpandedBody(block.bodyParts)
+            bodyContainer.isVisible = true
+            adjustBodyHeight()
+        } else {
+            clearBodyIfBuilt()
+            bodyContainer.isVisible = false
+            bodyContainer.preferredSize = Dimension(0, 0)
+        }
+    }
+
+    private fun bindNonExpandableBody() {
+        headerPanel.cursor = Cursor.getDefaultCursor()
+        chevronLabel.text = ""
+        clearBodyIfBuilt()
+        bodyContainer.isVisible = false
+        bodyContainer.preferredSize = Dimension(0, 0)
+    }
+
+    private fun ensureExpandedBody(parts: List<TranscriptBodyPart>) {
+        if (!bodyBuilt || boundBodyParts != parts) {
+            rebuildBody(parts)
+            boundBodyParts = parts
+            bodyBuilt = true
+        }
+    }
+
+    private fun clearBodyIfBuilt() {
+        if (!bodyBuilt) return
+        clearBody()
+        boundBodyParts = null
+        bodyBuilt = false
+    }
+
+    fun disposeCodeComponents() {
+        disposableCodeComponents.forEach(codeBlockViewFactory::dispose)
+        disposableCodeComponents.clear()
+    }
+
+    private fun rebuildBody(parts: List<TranscriptBodyPart>) {
+        clearBody()
+        parts.forEach { part ->
+            when (part) {
+                is TranscriptBodyPart.Html -> bodyContainer.add(createHtmlPart(part.fragment))
+                is TranscriptBodyPart.Code -> {
+                    val codeComponent =
+                        codeBlockViewFactory.createReadOnlyCodeBlock(part.languageId, part.code).also {
+                            it.alignmentX = LEFT_ALIGNMENT
+                            it.maximumSize = Dimension(Int.MAX_VALUE, it.preferredSize.height)
+                        }
+                    disposableCodeComponents += codeComponent
+                    bodyContainer.add(codeComponent)
+                }
+            }
+            bodyContainer.add(Box.createVerticalStrut(JBUI.scale(BODY_PART_GAP)))
+        }
+    }
+
+    private fun createHtmlPart(fragment: String): JEditorPane =
+        JEditorPane("text/html", bodyHtml(listOf(fragment))).apply {
+            isEditable = false
+            isOpaque = false
+            border = JBUI.Borders.empty()
+            alignmentX = LEFT_ALIGNMENT
+            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+        }
+
+    private fun clearBody() {
+        disposeCodeComponents()
+        bodyContainer.removeAll()
+    }
+
+    private fun adjustBodyHeight() {
         val width = width - insets.left - insets.right
         if (width <= 0) return
-        bodyPane.setSize(width, Int.MAX_VALUE)
-        val height = bodyPane.preferredSize.height
-        bodyPane.preferredSize = Dimension(width, height)
+        bodyContainer.components.forEach { child ->
+            if (child is JEditorPane) {
+                child.setSize(width, Int.MAX_VALUE)
+                val height = child.preferredSize.height
+                child.preferredSize = Dimension(width, height)
+                child.maximumSize = Dimension(Int.MAX_VALUE, height)
+            } else if (child is JComponent) {
+                child.setSize(width, child.preferredSize.height)
+                child.maximumSize = Dimension(Int.MAX_VALUE, child.preferredSize.height)
+            }
+        }
+        bodyContainer.setSize(width, Int.MAX_VALUE)
+        val height = bodyContainer.preferredSize.height
+        bodyContainer.preferredSize = Dimension(width, height)
         revalidate()
     }
 

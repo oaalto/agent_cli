@@ -13,6 +13,13 @@ internal object TranscriptRenderHelpers {
     private const val FONT_FAMILY = "monospace"
     private const val FONT_SIZE = "12px"
 
+    fun escapeHtml(text: String): String =
+        text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+
     /** `<br>` separator for use between HTML entries. */
     internal const val HTML_LINE_BREAK: String = "<br>"
 
@@ -48,8 +55,8 @@ internal object TranscriptRenderHelpers {
     ): String {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
         val badgeColor = TranscriptBadgeStyle.colorHex(status)
-        val escapedTitle = TranscriptUpdateRenderer.escapeHtml(title)
-        val escapedKind = TranscriptUpdateRenderer.escapeHtml(kindLabel)
+        val escapedTitle = escapeHtml(title)
+        val escapedKind = escapeHtml(kindLabel)
         val badgeLabel = TranscriptBadgeStyle.label(status, escapedKind)
         val outerStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         val badgeStyle = "background-color:$badgeColor;color:#ffffff;padding:1px 4px;border-radius:3px"
@@ -66,7 +73,7 @@ internal object TranscriptRenderHelpers {
      * Returns an HTML `<span>` for an error message (red foreground).
      */
     fun formatErrorHtml(message: String): String {
-        val escaped = TranscriptUpdateRenderer.escapeHtml(message)
+        val escaped = escapeHtml(message)
         val style = "color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return "<span style=\"$style\">Error: $escaped</span>"
     }
@@ -75,7 +82,7 @@ internal object TranscriptRenderHelpers {
      * Returns an HTML `<span>` for an auth failure message.
      */
     fun formatAuthFailureHtml(message: String): String {
-        val escaped = TranscriptUpdateRenderer.escapeHtml(message)
+        val escaped = escapeHtml(message)
         val style = "color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return "<span style=\"$style\">Auth failed: $escaped</span>"
     }
@@ -87,8 +94,8 @@ internal object TranscriptRenderHelpers {
         command: String,
         terminalId: String,
     ): String {
-        val escapedCmd = TranscriptUpdateRenderer.escapeHtml(command)
-        val escapedId = TranscriptUpdateRenderer.escapeHtml(terminalId)
+        val escapedCmd = escapeHtml(command)
+        val escapedId = escapeHtml(terminalId)
         return (
             "<span style=\"color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
                 "[terminal] $escapedCmd (id=$escapedId)</span>"
@@ -99,7 +106,7 @@ internal object TranscriptRenderHelpers {
      * Returns an HTML `<span>` for a permission-denied line.
      */
     fun formatPermissionDeniedHtml(title: String): String {
-        val escaped = TranscriptUpdateRenderer.escapeHtml(title)
+        val escaped = escapeHtml(title)
         return (
             "<span style=\"color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
                 "[permission denied] $escaped</span>"

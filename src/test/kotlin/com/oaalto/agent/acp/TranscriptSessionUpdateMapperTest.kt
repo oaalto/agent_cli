@@ -41,7 +41,11 @@ class TranscriptSessionUpdateMapperTest {
         val mapped = assertIs<StructuredUpdate.StartOrUpdateToolCall>(updates.single())
         assertEquals("1", mapped.toolCallId)
         assertEquals(ToolCallStatus.COMPLETED, mapped.status)
-        assertTrue(mapped.contentFragments.any { it.contains("# README") })
+        assertTrue(
+            mapped.bodyParts.any {
+                it is TranscriptBodyPart.Html && it.fragment.contains("# README")
+            },
+        )
     }
 
     @Test
@@ -58,7 +62,7 @@ class TranscriptSessionUpdateMapperTest {
             )
 
         val mapped = assertIs<StructuredUpdate.StartOrUpdateToolCall>(updates.single())
-        assertTrue(mapped.contentFragments.isEmpty())
+        assertTrue(mapped.bodyParts.isEmpty())
     }
 
     @Test
@@ -102,7 +106,11 @@ class TranscriptSessionUpdateMapperTest {
         val tool = assertIs<TranscriptBlock.ToolCallBlock>(blocks[1])
         assertEquals("1", tool.toolCallId)
         assertEquals(ToolCallStatus.COMPLETED, tool.status)
-        assertTrue(tool.contentFragments.any { it.contains("# README") })
+        assertTrue(
+            tool.bodyParts.any {
+                it is TranscriptBodyPart.Html && it.fragment.contains("# README")
+            },
+        )
         assertIs<TranscriptBlock.FinalAgentText>(blocks[2])
     }
 }

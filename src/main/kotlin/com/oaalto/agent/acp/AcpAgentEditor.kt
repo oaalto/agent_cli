@@ -53,7 +53,7 @@ class AcpAgentEditor(
     private val propertyChangeSupport = PropertyChangeSupport(this)
     private val userData = UserDataHolderBase()
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val transcriptViewController = TranscriptViewController(::runOnEdt)
+    private val transcriptViewController = TranscriptViewController(project, ::runOnEdt)
     private val permissionPromptPanel = PermissionPromptPanel()
     private val authPromptPanel = AuthPromptPanel()
     private val shellPaneHost = ShellPaneHost(project, this)
@@ -194,6 +194,7 @@ class AcpAgentEditor(
     override fun dispose() {
         permissionPromptPanel.cancelPending()
         authPromptPanel.cancelPending()
+        transcriptViewController.dispose()
         coroutineScope.launch {
             runCatching { sessionController.cancelPrompt() }
         }

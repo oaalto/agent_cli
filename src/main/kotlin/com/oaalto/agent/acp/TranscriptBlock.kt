@@ -49,10 +49,10 @@ internal sealed class TranscriptBlock {
         val title: String,
         val kind: ToolKind?,
         val status: ToolCallStatus?,
-        val contentFragments: List<String>,
+        val bodyParts: List<TranscriptBodyPart>,
         val expanded: Boolean = false,
     ) : TranscriptBlock() {
         val hasBodyContent: Boolean
-            get() = contentFragments.isNotEmpty()
+            get() = bodyParts.isNotEmpty()
     }
 }
