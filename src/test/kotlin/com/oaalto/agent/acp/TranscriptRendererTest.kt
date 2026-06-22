@@ -1,11 +1,14 @@
 package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ContentBlock
+import com.agentclientprotocol.model.Cost
 import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class TranscriptRendererTest {
@@ -258,5 +261,44 @@ class TranscriptRendererTest {
             !legacyTrailingStatusPattern.containsMatchIn(html),
             "expected no legacy trailing status label, got: $html",
         )
+    }
+
+    // -- Session update mapping ------------------------------------------------
+
+    @Test
+    fun `session update usage maps to structured usage`() {
+        val updates =
+            TranscriptSessionUpdateMapper.mapUpdate(
+                SessionUpdate.UsageUpdate(
+                    used = 1234,
+                    size = 128000,
+                    cost = null,
+                ),
+            )
+
+        assertEquals(1, updates.size)
+        val mapped = assertIs<StructuredUpdate.Usage>(updates.single())
+        assertEquals(1234, mapped.used)
+        assertEquals(128000, mapped.size)
+        assertNull(mapped.cost)
+    }
+
+    @Test
+    fun `session update usage with cost maps to structured usage with cost`() {
+        val updates =
+            TranscriptSessionUpdateMapper.mapUpdate(
+                SessionUpdate.UsageUpdate(
+                    used = 5000,
+                    size = 128000,
+                    cost = Cost(amount = 0.0234, currency = "USD"),
+                ),
+            )
+
+        assertEquals(1, updates.size)
+        val mapped = assertIs<StructuredUpdate.Usage>(updates.single())
+        assertEquals(5000, mapped.used)
+        assertEquals(128000, mapped.size)
+        assertEquals(0.0234, mapped.cost?.amount)
+        assertEquals("USD", mapped.cost?.currency)
     }
 }

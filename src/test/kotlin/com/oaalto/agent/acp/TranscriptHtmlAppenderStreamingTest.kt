@@ -239,5 +239,7 @@ class AcpPromptEventDispatcherTest {
         }
 
         override fun onError(message: String) = Unit
+
+        override fun onUsageUpdate(usage: AccumulatedUsage) = Unit
     }
 }
