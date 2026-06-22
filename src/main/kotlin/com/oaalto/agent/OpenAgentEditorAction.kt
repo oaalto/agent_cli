@@ -37,8 +37,6 @@ class OpenAgentEditorAction : DumbAwareAction() {
     override fun update(event: AnActionEvent) {
         val hasProject = event.getData(CommonDataKeys.PROJECT) != null
         event.presentation.isEnabledAndVisible = hasProject
+        event.presentation.text = templatePresentation.text
     }
-
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun displayTextInToolbar(): Boolean = true
 }

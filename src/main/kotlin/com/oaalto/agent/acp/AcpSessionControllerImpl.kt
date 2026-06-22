@@ -54,7 +54,9 @@ class AcpSessionControllerImpl(
     private var exitJob: Job? = null
     private var sessionReady: CompletableDeferred<Unit> = CompletableDeferred()
 
-    @Suppress("DEPRECATION", "OPT_IN_USAGE")
+    // StdioTransport's Flow-based constructor is private; the deprecated Source/Sink
+    // constructor is the only public option. Tracked: consider forking or upstream change.
+    @Suppress("DEPRECATION")
     override suspend fun connect(
         launchPlan: AcpLaunchPlan,
         editorContext: AcpEditorContext,
@@ -132,7 +134,6 @@ class AcpSessionControllerImpl(
         }
     }
 
-    @OptIn(com.agentclientprotocol.annotations.UnstableApi::class)
     override suspend fun listSessions(cwd: String?): List<SessionSummary> {
         val activeClient = client ?: error("ACP client is not connected")
         return activeClient

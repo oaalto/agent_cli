@@ -215,9 +215,8 @@ class AcpAgentEditor(
         }
     }
 
-    private suspend fun launchAndConnect(configuration: Any?) {
-        @Suppress("UNCHECKED_CAST")
-        val typedConfig = configuration as AgentSettingsState.AgentCliConfiguration
+    private suspend fun launchAndConnect(configuration: AgentSettingsState.AgentCliConfiguration) {
+        val typedConfig = configuration
         val launchPlan =
             AcpProcessLauncher
                 .buildLaunchPlan(

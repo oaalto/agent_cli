@@ -1,5 +1,3 @@
-@file:Suppress("OPT_IN_USAGE")
-
 package com.oaalto.agent.acp.auth
 
 import com.agentclientprotocol.agent.AgentInfo

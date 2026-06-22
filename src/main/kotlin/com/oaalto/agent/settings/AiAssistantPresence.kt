@@ -15,11 +15,9 @@ fun interface AiAssistantPresence {
                 probe(MCP_SERVER_PLUGIN_ID) || probe(AI_ASSISTANT_PLUGIN_ID)
             }
 
-        @Suppress("DEPRECATION")
         val default: AiAssistantPresence =
             fromPluginProbe { pluginId ->
-                val plugin = PluginManagerCore.getPlugin(pluginId)
-                plugin != null && plugin.isEnabled
+                PluginManagerCore.getPluginSet().findEnabledPlugin(pluginId) != null
             }
     }
 }

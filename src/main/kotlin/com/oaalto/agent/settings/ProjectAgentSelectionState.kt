@@ -10,8 +10,11 @@ import com.intellij.openapi.project.Project
 @Service(Service.Level.PROJECT)
 @State(name = "AgentProjectSelectionState", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class ProjectAgentSelectionState(
-    @Suppress("unused") private val project: Project,
+    project: Project,
 ) : PersistentStateComponent<ProjectAgentSelectionState.State> {
+    // Project is retained as service context; basePath is used for diagnostic logging
+    private val projectBasePath: String? = project.basePath
+
     class State {
         var selectedConfigurationId: String? = null
     }
@@ -29,4 +32,7 @@ class ProjectAgentSelectionState(
     fun setSelectedConfigurationId(id: String?) {
         state.selectedConfigurationId = id?.takeIf { it.isNotBlank() }
     }
+
+    /** Returns the project base path for diagnostic purposes. */
+    fun getProjectBasePath(): String? = projectBasePath
 }

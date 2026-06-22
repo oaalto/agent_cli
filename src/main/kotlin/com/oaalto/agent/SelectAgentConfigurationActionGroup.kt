@@ -92,9 +92,6 @@ class SelectAgentConfigurationActionGroup :
         event.presentation.isEnabledAndVisible = project != null
     }
 
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun displayTextInToolbar(): Boolean = true
-
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
