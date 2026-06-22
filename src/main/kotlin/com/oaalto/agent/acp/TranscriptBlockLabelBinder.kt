@@ -4,6 +4,7 @@ import com.intellij.ui.JBColor
 import java.awt.Color
 import javax.swing.JTextPane
 
+@Suppress("CyclomaticComplexMethod")
 internal fun JTextPane.bindTranscriptBlock(block: TranscriptBlock) {
     when (block) {
         is TranscriptBlock.UserEcho -> bindUserEcho(block)
@@ -14,6 +15,7 @@ internal fun JTextPane.bindTranscriptBlock(block: TranscriptBlock) {
         is TranscriptBlock.ErrorLine -> bindErrorLine(block)
         is TranscriptBlock.AuthFailureLine -> bindAuthFailureLine(block)
         is TranscriptBlock.ToolCallBlock -> Unit
+        is TranscriptBlock.PlanBlock -> Unit // PlanBlock is handled by PlanPanel component
     }
 }
 

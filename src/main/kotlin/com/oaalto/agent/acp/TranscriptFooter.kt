@@ -14,7 +14,13 @@ import javax.swing.JPanel
  * Usage label turns orange when `used / size > 0.8` to indicate approaching context limits.
  * Cost label is hidden when no cost data is available.
  */
-internal class TranscriptFooter : JPanel(FlowLayout(FlowLayout.RIGHT, 8, 4)) {
+internal class TranscriptFooter : JPanel(FlowLayout(FlowLayout.RIGHT, HORIZONTAL_GAP, VERTICAL_GAP)) {
+    companion object {
+        private const val HORIZONTAL_GAP = 8
+        private const val VERTICAL_GAP = 4
+        private const val HIGH_USAGE_THRESHOLD = 0.8f
+    }
+
     internal val usageLabel = JLabel()
     internal val costLabel = JLabel()
 
@@ -44,7 +50,7 @@ internal class TranscriptFooter : JPanel(FlowLayout(FlowLayout.RIGHT, 8, 4)) {
 
         // Color shift when exceeding 80% of context window
         usageLabel.foreground =
-            if (size > 0 && used.toFloat() / size > 0.8f) {
+            if (size > 0 && used.toFloat() / size > HIGH_USAGE_THRESHOLD) {
                 JBColor.ORANGE
             } else {
                 JBColor.GRAY

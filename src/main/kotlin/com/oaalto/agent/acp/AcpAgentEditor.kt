@@ -141,16 +141,18 @@ class AcpAgentEditor(
     init {
         rootPanel.add(
             AcpEditorLayout.buildRootPanel(
-                transcriptArea =
-                    transcriptViewController.component.apply {
-                        background = JBColor.PanelBackground
-                        border = JBUI.Borders.empty(AcpUiMetrics.HORIZONTAL_INSET)
-                    },
-                permissionPromptPanel = permissionPromptPanel,
-                authPromptPanel = authPromptPanel,
-                promptInputBar = promptInputBar,
-                shellPaneHost = shellPaneHost,
-                transcriptFooter = transcriptFooter,
+                EditorLayoutComponents(
+                    transcriptArea =
+                        transcriptViewController.component.apply {
+                            background = JBColor.PanelBackground
+                            border = JBUI.Borders.empty(AcpUiMetrics.HORIZONTAL_INSET)
+                        },
+                    permissionPromptPanel = permissionPromptPanel,
+                    authPromptPanel = authPromptPanel,
+                    promptInputBar = promptInputBar,
+                    shellPaneHost = shellPaneHost,
+                    transcriptFooter = transcriptFooter,
+                ),
             ),
             BorderLayout.CENTER,
         )
