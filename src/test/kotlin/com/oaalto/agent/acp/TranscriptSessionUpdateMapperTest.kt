@@ -43,7 +43,7 @@ class TranscriptSessionUpdateMapperTest {
         assertEquals(ToolCallStatus.COMPLETED, mapped.status)
         assertTrue(
             mapped.bodyParts.any {
-                it is TranscriptBodyPart.Html && it.fragment.contains("# README")
+                it is TranscriptBodyPart.Html && it.fragment.contains("README")
             },
         )
     }
@@ -108,7 +108,7 @@ class TranscriptSessionUpdateMapperTest {
         assertEquals(ToolCallStatus.COMPLETED, tool.status)
         assertTrue(
             tool.bodyParts.any {
-                it is TranscriptBodyPart.Html && it.fragment.contains("# README")
+                it is TranscriptBodyPart.Html && it.fragment.contains("README")
             },
         )
         assertIs<TranscriptBlock.FinalAgentText>(blocks[2])

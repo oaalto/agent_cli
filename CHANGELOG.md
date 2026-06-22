@@ -14,6 +14,17 @@
 - **Tool call body rendering** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Uses `TranscriptMarkdownRenderer.likelyContainsMarkdown()` heuristic and renders Markdown blocks to `TranscriptBodyPart.Html`/`Code`. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
 - **Fenced agent text limit test** (`src/test/kotlin/com/oaalto/agent/acp/TranscriptFencedAgentTextLimitsTest.kt`): Updated references from old `segmentFencedCodeBlocks` to new `RenderedBlock.CodeBlock`. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
 
+### Fixed
+
+- **Tool-body highlight cap double-counting** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Removed duplicate counter increment in `blockQuoteToBodyParts` and `renderTextBodyParts` flatMap, ensuring `MAX_HIGHLIGHTED_CODE_BLOCKS` limits are enforced correctly. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Tool-card Markdown inline formatting** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Added `renderStyledInlineHtml` with HTML span rendering for bold, italic, code, link, strikethrough styles in tool card bodies. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **List-item style offset** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt`): Offset styled run indices by list marker length (`${block.listMarker}.length`) so inline formatting aligns correctly in bullet/numbered list items. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Styled runs truncation bounds** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt`): Filter runs to `start < text.length && end <= text.length` after truncation to prevent out-of-range character attributes. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Markdown heuristic coverage** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt`): Extended `likelyContainsMarkdown` with `-`, `>`, `|`, list patterns (`^-\\s+`, `^\\d+\\.\\s+`), blockquote pattern (`^>\\s+`), and table pattern for detecting more Markdown constructs in tool bodies. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Parser fallback style** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt`): Changed `combineStyles` default from `TextStyle.BOLD` to `TextStyle.ITALIC` for unrecognized style combinations, reducing visual intrusion on parser edge cases. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Test assertions for Markdown headings** (`src/test/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapperTest.kt`): Updated assertions to expect heading text without `#` prefix since `TranscriptMarkdownRenderer` parses Markdown headings and strips the marker. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+- **Redundant IMAGE handling** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt`): Removed unreachable `MarkdownElementTypes.IMAGE` check from `handleElse` (already handled in `dispatch` when block). made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+
 ### Removed
 
 - **TextSegment.kt** (`src/main/kotlin/com/oaalto/agent/acp/TextSegment.kt`): Replaced by `TranscriptMarkdownRenderer` Markdown AST parsing. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
