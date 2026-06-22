@@ -126,6 +126,9 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         allWarningsAsErrors.set(true)
+        freeCompilerArgs.addAll(
+            "-opt-in=com.agentclientprotocol.annotations.UnstableApi",
+        )
     }
 }
 

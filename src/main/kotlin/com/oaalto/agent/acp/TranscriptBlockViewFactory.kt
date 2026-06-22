@@ -381,7 +381,7 @@ private class AgentTextRow(
         return JEditorPane(
             "text/html",
             TranscriptRenderHelpers.htmlDocumentStart() +
-                TranscriptToolCallTextBodyRenderer.renderPlainPreBody(displayCode) +
+                TranscriptHtmlBuilder.buildPlainPre(displayCode) +
                 TranscriptRenderHelpers.HTML_DOCUMENT_END,
         ).apply {
             isEditable = false
@@ -569,8 +569,7 @@ private class AgentTextRow(
             pane.addMouseListener(
                 object : MouseAdapter() {
                     override fun mouseClicked(event: MouseEvent) {
-                        @Suppress("DEPRECATION")
-                        val pos = pane.viewToModel(event.point)
+                        val pos = pane.viewToModel2D(event.point)
                         for (run in linkRuns) {
                             if (pos in run.start until run.end) {
                                 TranscriptBlockViewFactory.tryOpenUrl(run.url!!)

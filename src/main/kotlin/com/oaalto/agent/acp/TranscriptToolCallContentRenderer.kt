@@ -75,7 +75,7 @@ internal object TranscriptToolCallContentRenderer {
         }
 
     private fun renderPrePlaceholder(text: String): String =
-        TranscriptToolCallTextBodyRenderer.renderPlainPreBody(text.replace("\n", " "))
+        TranscriptHtmlBuilder.buildPlainPre(text.replace("\n", " "))
 
     private fun renderTerminal(terminal: ToolCallContent.Terminal): String {
         val escapedId = escapeHtml(terminal.terminalId)
@@ -88,7 +88,7 @@ internal object TranscriptToolCallContentRenderer {
     private fun bodyPartToHtmlFragment(part: TranscriptBodyPart): String =
         when (part) {
             is TranscriptBodyPart.Html -> part.fragment
-            is TranscriptBodyPart.Code -> TranscriptToolCallTextBodyRenderer.renderPlainPreBody(part.code)
+            is TranscriptBodyPart.Code -> TranscriptHtmlBuilder.buildPlainPre(part.code)
         }
 
     private fun escapeHtml(text: String): String = TranscriptRenderHelpers.escapeHtml(text)
