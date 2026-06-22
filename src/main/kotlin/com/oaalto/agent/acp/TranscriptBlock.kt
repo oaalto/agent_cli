@@ -55,4 +55,24 @@ internal sealed class TranscriptBlock {
         val hasBodyContent: Boolean
             get() = bodyParts.isNotEmpty()
     }
+
+    /**
+     * A plan block showing numbered entries with status icons.
+     * Plans update in-place by planId; the blockId remains stable per plan.
+     */
+    data class PlanBlock(
+        override val blockId: String,
+        val planId: String,
+        val entries: List<PlanEntry>,
+        val variant: PlanVariant = PlanVariant.Items,
+        val dismissed: Boolean = false,
+    ) : TranscriptBlock() {
+        /** Number of completed entries for progress summary. */
+        val completedCount: Int
+            get() = if (dismissed) 0 else entries.count { it.status == PlanEntryStatus.COMPLETED }
+
+        /** True if all entries are completed. */
+        val isFullyComplete: Boolean
+            get() = !dismissed && entries.isNotEmpty() && entries.all { it.status == PlanEntryStatus.COMPLETED }
+    }
 }

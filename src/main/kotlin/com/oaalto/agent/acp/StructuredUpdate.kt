@@ -47,4 +47,61 @@ sealed class StructuredUpdate {
         val size: Long,
         val cost: Cost?,
     ) : StructuredUpdate()
+
+    /**
+     * Start or update a plan panel with the given ID and entries.
+     * If a plan with this ID exists, it is replaced in-place.
+     */
+    data class StartOrUpdatePlan(
+        val planId: String,
+        val entries: List<PlanEntry>,
+        val variant: PlanVariant = PlanVariant.Items,
+        val dismissed: Boolean = false,
+    ) : StructuredUpdate()
+
+    /**
+     * Remove a plan panel with the given ID.
+     * The plan panel is marked as dismissed in the transcript.
+     */
+    data class RemovePlan(
+        val planId: String,
+        val dismissed: Boolean = true,
+    ) : StructuredUpdate()
+}
+
+/** Plan entry with content, status, and priority. */
+data class PlanEntry(
+    val content: String,
+    val status: PlanEntryStatus,
+    val priority: PlanEntryPriority,
+)
+
+/** Status of a plan entry. */
+enum class PlanEntryStatus {
+    PENDING,
+    IN_PROGRESS,
+    COMPLETED,
+}
+
+/** Priority of a plan entry. */
+enum class PlanEntryPriority {
+    HIGH,
+    MEDIUM,
+    LOW,
+}
+
+/** Variant types for plan updates (mirrors PlanUpdateV2 variants). */
+sealed class PlanVariant {
+    /** Standard plan with list of entries. */
+    data object Items : PlanVariant()
+
+    /** External plan file reference. */
+    data class File(
+        val uri: String,
+    ) : PlanVariant()
+
+    /** Markdown content for the plan. */
+    data class Markdown(
+        val content: String,
+    ) : PlanVariant()
 }

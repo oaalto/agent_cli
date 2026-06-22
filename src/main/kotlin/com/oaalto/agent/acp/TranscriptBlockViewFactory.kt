@@ -3,6 +3,7 @@ package com.oaalto.agent.acp
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.acp.plan.PlanPanel
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -132,6 +133,8 @@ internal class TranscriptBlockViewFactory(
         when (block) {
             is TranscriptBlock.ToolCallBlock ->
                 CollapsibleToolPanel(onToolToggle, codeBlockViewFactory).apply { bind(block) }
+            is TranscriptBlock.PlanBlock ->
+                PlanPanel().apply { bind(block) }
             else -> AgentTextRow(codeBlockViewFactory).apply { bind(block) }
         }
 
@@ -140,21 +143,65 @@ internal class TranscriptBlockViewFactory(
         block: TranscriptBlock,
     ) {
         when {
-            component is CollapsibleToolPanel && block is TranscriptBlock.ToolCallBlock ->
-                component.bind(block)
-            component is AgentTextRow && block !is TranscriptBlock.ToolCallBlock ->
-                component.bind(block)
-            component is CollapsibleToolPanel || block is TranscriptBlock.ToolCallBlock ->
-                log.warn(
-                    "Transcript block/component type mismatch: " +
-                        "component=${component::class.simpleName}, block=${block::class.simpleName}",
+            isToolCallMatch(component, block) ->
+                (component as CollapsibleToolPanel).bind(
+                    block as TranscriptBlock.ToolCallBlock,
                 )
-            else ->
-                log.warn(
-                    "Transcript text row type mismatch: " +
-                        "component=${component::class.simpleName}, block=${block::class.simpleName}",
-                )
+            isPlanMatch(component, block) ->
+                (component as PlanPanel).bind(block as TranscriptBlock.PlanBlock)
+            isTextRowMatch(component, block) -> (component as AgentTextRow).bind(block)
+            isTypeMismatch(component, block) -> logTypeMismatch(component, block)
+            else -> logTextRowMismatch(component, block)
         }
+    }
+
+    private fun isToolCallMatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ): Boolean =
+        component is CollapsibleToolPanel &&
+            block is TranscriptBlock.ToolCallBlock
+
+    private fun isPlanMatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ): Boolean = component is PlanPanel && block is TranscriptBlock.PlanBlock
+
+    private fun isTextRowMatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ): Boolean =
+        component is AgentTextRow &&
+            block !is TranscriptBlock.ToolCallBlock &&
+            block !is TranscriptBlock.PlanBlock
+
+    private fun isTypeMismatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ): Boolean =
+        component is CollapsibleToolPanel ||
+            component is PlanPanel ||
+            block is TranscriptBlock.ToolCallBlock ||
+            block is TranscriptBlock.PlanBlock
+
+    private fun logTypeMismatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ) {
+        log.warn(
+            "Transcript block/component type mismatch: " +
+                "component=${component::class.simpleName}, block=${block::class.simpleName}",
+        )
+    }
+
+    private fun logTextRowMismatch(
+        component: JPanel,
+        block: TranscriptBlock,
+    ) {
+        log.warn(
+            "Transcript text row type mismatch: " +
+                "component=${component::class.simpleName}, block=${block::class.simpleName}",
+        )
     }
 
     fun disposeRow(component: JPanel) {

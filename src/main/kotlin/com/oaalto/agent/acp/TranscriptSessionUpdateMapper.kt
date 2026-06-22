@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.SessionUpdate
+import com.oaalto.agent.acp.plan.PlanUpdateMapper
 
 /** Maps ACP [SessionUpdate] events to normalized [StructuredUpdate] values. */
 internal object TranscriptSessionUpdateMapper {
@@ -10,16 +11,32 @@ internal object TranscriptSessionUpdateMapper {
             ?.takeIf { it.isNotBlank() }
             ?.let { StructuredUpdate.AppendAgentText(it) }
 
-    fun mapUpdate(update: SessionUpdate): List<StructuredUpdate> =
-        when (update) {
-            is SessionUpdate.AgentMessageChunk -> listOfNotNull(mapAgentChunk(update))
-            is SessionUpdate.AgentThoughtChunk -> mapThoughtChunk(update)
-            is SessionUpdate.UserMessageChunk -> mapUserChunk(update)
-            is SessionUpdate.ToolCall -> listOf(mapToolCall(update))
-            is SessionUpdate.ToolCallUpdate -> listOf(mapToolCallUpdate(update))
-            is SessionUpdate.UsageUpdate -> listOf(mapUsageUpdate(update))
+    @Suppress("CyclomaticComplexMethod")
+    fun mapUpdate(update: SessionUpdate): List<StructuredUpdate> {
+        val result: List<StructuredUpdate> =
+            when (update) {
+                is SessionUpdate.AgentMessageChunk -> listOfNotNull(mapAgentChunk(update))
+                is SessionUpdate.AgentThoughtChunk -> mapThoughtChunk(update)
+                is SessionUpdate.UserMessageChunk -> mapUserChunk(update)
+                is SessionUpdate.ToolCall -> listOf(mapToolCall(update))
+                is SessionUpdate.ToolCallUpdate -> listOf(mapToolCallUpdate(update))
+                is SessionUpdate.UsageUpdate -> listOf(mapUsageUpdate(update))
+                else -> emptyList()
+            }
+        if (result.isNotEmpty()) return result
+
+        return handlePlanUpdates(update)
+    }
+
+    private fun handlePlanUpdates(update: SessionUpdate): List<StructuredUpdate> {
+        val simpleName = update::class.java.simpleName
+        return when (simpleName) {
+            "PlanUpdate" -> listOfNotNull(PlanUpdateMapper.mapPlanUpdate(update))
+            "PlanUpdateV2" -> listOfNotNull(PlanUpdateMapper.mapPlanUpdateV2(update))
+            "PlanRemoved" -> listOfNotNull(PlanUpdateMapper.mapPlanRemoved(update))
             else -> emptyList()
         }
+    }
 
     private fun mapUsageUpdate(update: SessionUpdate.UsageUpdate): StructuredUpdate.Usage =
         StructuredUpdate.Usage(
