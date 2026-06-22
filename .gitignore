@@ -28,6 +28,7 @@ Desktop.ini
 ### Local scratch ###
 .tmp-acp-search/
 .tmp-acp-sources/
+.pi/worker-context/
 
 docs/prd
 docs/issues
