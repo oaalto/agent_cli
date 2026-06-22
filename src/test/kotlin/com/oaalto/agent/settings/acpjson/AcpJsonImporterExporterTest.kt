@@ -8,6 +8,19 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+private data class TestConfig(
+    val name: String,
+    val launchMode: LaunchMode = LaunchMode.ACP_CLIENT,
+    val binaryPath: String,
+    val arguments: String = "",
+    val env: Map<String, String> = emptyMap(),
+    val useIdeaMcp: Boolean = false,
+    val useCustomMcp: Boolean = false,
+    val executionTarget: String = AgentSettingsState.ExecutionTarget.LOCAL.name,
+    val wslDistribution: String = "",
+    val useNodeShellWrapper: Boolean = false,
+)
+
 class AcpJsonImporterExporterTest {
     @Test
     fun `exports only acp client configurations`() {
@@ -15,17 +28,21 @@ class AcpJsonImporterExporterTest {
             AcpJsonExporter.export(
                 listOf(
                     configuration(
-                        name = "PTY",
-                        launchMode = LaunchMode.PTY_PASSTHROUGH,
-                        binaryPath = "/bin/pty",
+                        TestConfig(
+                            name = "PTY",
+                            launchMode = LaunchMode.PTY_PASSTHROUGH,
+                            binaryPath = "/bin/pty",
+                        ),
                     ),
                     configuration(
-                        name = "ACP",
-                        launchMode = LaunchMode.ACP_CLIENT,
-                        binaryPath = "/bin/acp",
-                        arguments = "--model fast",
-                        env = mapOf("TOKEN" to "abc"),
-                        useIdeaMcp = true,
+                        TestConfig(
+                            name = "ACP",
+                            launchMode = LaunchMode.ACP_CLIENT,
+                            binaryPath = "/bin/acp",
+                            arguments = "--model fast",
+                            env = mapOf("TOKEN" to "abc"),
+                            useIdeaMcp = true,
+                        ),
                     ),
                 ),
             )
@@ -69,18 +86,18 @@ class AcpJsonImporterExporterTest {
     fun `merge prompts overwrite only selected collisions`() {
         val existing =
             listOf(
-                configuration(name = "Pi", binaryPath = "/old/pi"),
-                configuration(name = "Other", binaryPath = "/other"),
+                configuration(TestConfig(name = "Pi", binaryPath = "/old/pi")),
+                configuration(TestConfig(name = "Other", binaryPath = "/other")),
             )
         val drafts =
             listOf(
                 AcpJsonImportDraft(
                     name = "Pi",
-                    configuration = configuration(name = "Pi", binaryPath = "/new/pi"),
+                    configuration = configuration(TestConfig(name = "Pi", binaryPath = "/new/pi")),
                 ),
                 AcpJsonImportDraft(
                     name = "Fresh",
-                    configuration = configuration(name = "Fresh", binaryPath = "/fresh"),
+                    configuration = configuration(TestConfig(name = "Fresh", binaryPath = "/fresh")),
                 ),
             )
 
@@ -112,11 +129,13 @@ class AcpJsonImporterExporterTest {
             AcpJsonExporter.export(
                 listOf(
                     configuration(
-                        name = "WSL",
-                        binaryPath = "pi",
-                        executionTarget = AgentSettingsState.ExecutionTarget.WSL.name,
-                        wslDistribution = "Ubuntu",
-                        useNodeShellWrapper = true,
+                        TestConfig(
+                            name = "WSL",
+                            binaryPath = "pi",
+                            executionTarget = AgentSettingsState.ExecutionTarget.WSL.name,
+                            wslDistribution = "Ubuntu",
+                            useNodeShellWrapper = true,
+                        ),
                     ),
                 ),
             )
@@ -152,29 +171,17 @@ class AcpJsonImporterExporterTest {
         assertTrue(configuration.useNodeShellWrapper)
     }
 
-    @Suppress("LongParameterList")
-    private fun configuration(
-        name: String,
-        launchMode: LaunchMode = LaunchMode.ACP_CLIENT,
-        binaryPath: String,
-        arguments: String = "",
-        env: Map<String, String> = emptyMap(),
-        useIdeaMcp: Boolean = false,
-        useCustomMcp: Boolean = false,
-        executionTarget: String = AgentSettingsState.ExecutionTarget.LOCAL.name,
-        wslDistribution: String = "",
-        useNodeShellWrapper: Boolean = false,
-    ): AgentSettingsState.AgentCliConfiguration =
+    private fun configuration(config: TestConfig): AgentSettingsState.AgentCliConfiguration =
         AgentSettingsState.AgentCliConfiguration().apply {
-            this.name = name
-            this.launchMode = launchMode.name
-            this.binaryPath = binaryPath
-            this.arguments = arguments
-            this.environmentVariables = LinkedHashMap(env)
-            this.useIdeaMcp = useIdeaMcp
-            this.useCustomMcp = useCustomMcp
-            this.executionTarget = executionTarget
-            this.wslDistribution = wslDistribution
-            this.useNodeShellWrapper = useNodeShellWrapper
+            name = config.name
+            launchMode = config.launchMode.name
+            binaryPath = config.binaryPath
+            arguments = config.arguments
+            environmentVariables = LinkedHashMap(config.env)
+            useIdeaMcp = config.useIdeaMcp
+            useCustomMcp = config.useCustomMcp
+            executionTarget = config.executionTarget
+            wslDistribution = config.wslDistribution
+            useNodeShellWrapper = config.useNodeShellWrapper
         }
 }
