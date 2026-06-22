@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-06-22
+
+### Added
+
+- **Zero-suppression policy in agent rules** (`.agents/rules/warning-hygiene.md`, `.agents/rules/workflow-gates.md`): Enforce that no `@Suppress` annotations are permitted anywhere in the codebase; pre-commit hook blocks commits containing them. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+- **ACP transcript Markdown rendering (Step 7)** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Implement Markdown AST → `RenderedBlock` mapping using IntelliJ's `org.intellij.markdown` parser with GFM flavour descriptor. Agent text and tool card body content now renders via full Markdown parsing instead of the retired `segmentFencedCodeBlocks`/`TextSegment` approach. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+- **TranscriptMarkdownRenderer tests** (`src/test/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRendererTest.kt`): Coverage for inline formatting (bold, italic, code, link, strikethrough), headings, fenced code blocks, GFM tables, blockquotes, lists, thematic breaks, images, malformed input, and `likelyContainsMarkdown` heuristic. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+
+### Changed
+
+- **Agent text rendering** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt`): `AgentTextRow` now parses `FinalAgentText` through `TranscriptMarkdownRenderer`; code blocks use existing `TranscriptCodeBlockViewFactory`, headings/links via `JTextPane` `StyledDocument`, tables via `JEditorPane` HTML, blockquotes via bordered indentation, inline styles via `StyleConstants`. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+- **Tool call body rendering** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Uses `TranscriptMarkdownRenderer.likelyContainsMarkdown()` heuristic and renders Markdown blocks to `TranscriptBodyPart.Html`/`Code`. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+- **Fenced agent text limit test** (`src/test/kotlin/com/oaalto/agent/acp/TranscriptFencedAgentTextLimitsTest.kt`): Updated references from old `segmentFencedCodeBlocks` to new `RenderedBlock.CodeBlock`. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+
+### Removed
+
+- **TextSegment.kt** (`src/main/kotlin/com/oaalto/agent/acp/TextSegment.kt`): Replaced by `TranscriptMarkdownRenderer` Markdown AST parsing. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+- **TextSegmentTest.kt** (`src/test/kotlin/com/oaalto/agent/acp/TextSegmentTest.kt`): Removed with retired `TextSegment` API. made by: Olli Aalto. made with: pi. model: claude-sonnet-4-20250514
+
+### Documentation
+
+- **ACP output rendering roadmap** (`docs/acp-output-rendering-roadmap.md`): Link Step 7 PRD for Markdown rendering. made by: Olli Aalto. made with: Cursor. model: Composer
+
 ## 2026-06-21
 
 ### Added

@@ -40,6 +40,10 @@ For plugin compatibility with target IDE builds, also run before release-oriente
 - **Pre-commit** (`scripts/pre-commit`): wiki-lint (staged) and `ktlintCheck` only — run `./gradlew qualityGate` before push when code changed beyond formatting.
 - **Qodana** (`.github/workflows/qodana.yml`): supplementary JetBrains analysis; not part of `qualityGate`.
 
+## Zero-Suppression Enforcement
+
+**No `@Suppress` annotations are permitted.** The pre-commit hook in `scripts/pre-commit` scans staged files for `@Suppress` and blocks the commit. See `warning-hygiene.md` for full policy and migration rules.
+
 ## Fail-Fast Policy
 
 - If any gate fails, fix issues at that gate before proceeding.

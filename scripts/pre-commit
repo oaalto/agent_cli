@@ -1,6 +1,19 @@
 #!/usr/bin/env sh
 set -e
 
+# --- @Suppress check ---
+# Block commits that contain @Suppress annotations (detekt/ktlint suppression).
+SUPPRESS_FILES=$(git diff --cached --name-only --diff-filter=ACM | \
+  xargs grep -ln '@Suppress' 2>/dev/null || true)
+
+if [ -n "$SUPPRESS_FILES" ]; then
+  echo "PRE-COMMIT BLOCKED: @Suppress annotations found in staged files:"
+  echo "$SUPPRESS_FILES" | sed 's/^/  /'
+  echo ""
+  echo "Remove @Suppress annotations before committing, or use --no-verify to skip."
+  exit 1
+fi
+
 echo "Running wiki-lint (pre-commit)..."
 if ! npm run wiki-lint; then
   echo "Pre-commit: wiki-lint failed. Fix the issues or run 'npm run wiki-lint' to see details."
