@@ -27,6 +27,8 @@
 
 ### Fixed
 
+- **Agent dropdown displays icon instead of selected agent name** (`src/main/kotlin/com/oaalto/agent/SelectAgentConfigurationActionGroup.kt`): Restored `displayTextInToolbar()` method that was incorrectly removed in style cleanup commit `4ae3109`; the method is required to show the currently selected agent name in the toolbar instead of an icon-only button. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
+
 - **Detekt and ktlint compliance for plan visualization** (`src/main/kotlin/com/oaalto/agent/acp/AcpEditorLayout.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt`): Fixed `LongParameterList` in `buildRootPanel` by introducing `EditorLayoutComponents` data class; reduced `CyclomaticComplexMethod` in `TranscriptBlockViewFactory.update` by extracting helper methods (`isToolCallMatch`, `isPlanMatch`, `isTextRowMatch`, `isTypeMismatch`, `logTypeMismatch`, `logTextRowMismatch`); replaced magic numbers in `TranscriptFooter` with named constants (`HORIZONTAL_GAP`, `VERTICAL_GAP`, `HIGH_USAGE_THRESHOLD`). made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
 
 - **Tool-body highlight cap double-counting** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptToolCallTextBodyRenderer.kt`): Removed duplicate counter increment in `blockQuoteToBodyParts` and `renderTextBodyParts` flatMap, ensuring `MAX_HIGHLIGHTED_CODE_BLOCKS` limits are enforced correctly. made by: Olli Aalto. made with: Cursor. model: kimi-k2.5
