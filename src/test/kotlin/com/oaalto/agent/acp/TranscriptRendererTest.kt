@@ -71,19 +71,23 @@ class TranscriptRendererTest {
     // -- HTML helper methods ---------------------------------------------------
 
     @Test
-    fun `formatErrorHtml returns red span with escaped message`() {
+    fun `formatErrorHtml returns error-colored span with escaped message`() {
         val html = TranscriptRenderHelpers.formatErrorHtml("something <broken>")
 
-        assertTrue(html.contains("color:#f44747"))
+        // Check for color attribute with hex value (dynamic color from provider)
+        assertTrue(html.contains(Regex("color:#[0-9a-f]{6}")), "Expected hex color in style attribute")
         assertTrue(html.contains("&lt;broken&gt;"))
+        assertTrue(html.contains("Error:"))
     }
 
     @Test
-    fun `formatAuthFailureHtml returns red span`() {
+    fun `formatAuthFailureHtml returns error-colored span`() {
         val html = TranscriptRenderHelpers.formatAuthFailureHtml("token expired")
 
-        assertTrue(html.contains("color:#f44747"))
+        // Check for color attribute with hex value (dynamic color from provider)
+        assertTrue(html.contains(Regex("color:#[0-9a-f]{6}")), "Expected hex color in style attribute")
         assertTrue(html.contains("token expired"))
+        assertTrue(html.contains("Auth failed:"))
     }
 
     @Test

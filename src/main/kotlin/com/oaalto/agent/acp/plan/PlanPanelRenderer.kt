@@ -1,9 +1,12 @@
 package com.oaalto.agent.acp.plan
 
+import com.intellij.openapi.components.serviceOrNull
+import com.oaalto.agent.acp.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.PlanEntry
 import com.oaalto.agent.acp.PlanEntryPriority
 import com.oaalto.agent.acp.PlanEntryStatus
 import com.oaalto.agent.acp.PlanVariant
+import com.oaalto.agent.acp.TranscriptColorProvider
 import com.oaalto.agent.acp.TranscriptRenderHelpers
 
 /**
@@ -11,20 +14,37 @@ import com.oaalto.agent.acp.TranscriptRenderHelpers
  *
  * Each plan panel has a stable ID attribute for in-place replacement when
  * subsequent updates arrive for the same plan ID.
+ *
+ * Colors are resolved dynamically from [TranscriptColorProvider] to respect
+ * the current IDE theme.
  */
+@Suppress("TooManyFunctions")
 internal object PlanPanelRenderer {
     private const val FONT_FAMILY = "monospace"
     private const val FONT_SIZE = "12px"
 
-    // Colors matching the transcript palette
-    private const val COLOR_PENDING = "#888888"
-    private const val COLOR_IN_PROGRESS = "#d4a017"
-    private const val COLOR_COMPLETED = "#2d8a4e"
-    private const val COLOR_HIGH_PRIORITY = "#c43c3c"
-    private const val COLOR_LOW_PRIORITY = "#999999"
-    private const val COLOR_MUTED = "#888888"
-    private const val COLOR_PANEL_BG_DARK = "#313335"
-    private const val COLOR_BORDER = "#444444"
+    private val provider: TranscriptColorProvider
+        get() = serviceOrNull<TranscriptColorProvider>() ?: DefaultTranscriptColorProvider()
+
+    private fun colorPending(): String = provider.toHtml(provider.getThoughtColor())
+
+    private fun colorInProgress(): String =
+        com.agentclientprotocol.model.ToolCallStatus.IN_PROGRESS.let {
+            provider.toHtml(provider.getBadgeBackground(it))
+        }
+
+    private fun colorCompleted(): String =
+        com.agentclientprotocol.model.ToolCallStatus.COMPLETED.let {
+            provider.toHtml(provider.getBadgeBackground(it))
+        }
+
+    private fun colorHighPriority(): String = provider.toHtml(provider.getErrorForeground())
+
+    private fun colorLowPriority(): String = provider.toHtml(provider.getThoughtColor())
+
+    private fun colorMuted(): String = provider.toHtml(provider.getThoughtColor())
+
+    private fun colorText(): String = provider.toHtml(provider.getTextForeground())
 
     // Markdown truncation limit (first N lines)
     private const val MARKDOWN_TRUNCATE_LINES = 3
@@ -94,9 +114,9 @@ internal object PlanPanelRenderer {
     ): String {
         val borderColor =
             when {
-                dismissed -> COLOR_MUTED
-                isComplete -> COLOR_COMPLETED
-                else -> COLOR_BORDER
+                dismissed -> colorMuted()
+                isComplete -> colorCompleted()
+                else -> colorText()
             }
 
         return buildString {
@@ -104,7 +124,6 @@ internal object PlanPanelRenderer {
             append("margin:8px 0;padding:8px 12px;")
             append("border-left:3px solid $borderColor;")
             if (dismissed) {
-                append("background-color:#2A2A2A;")
                 append("opacity:0.7;")
             }
         }
@@ -112,7 +131,7 @@ internal object PlanPanelRenderer {
 
     private fun buildHeaderHtml(dismissed: Boolean): String {
         val headerText = if (dismissed) "Plan [dismissed]" else "Plan"
-        val headerColor = if (dismissed) COLOR_MUTED else "#cccccc"
+        val headerColor = if (dismissed) colorMuted() else colorText()
         return "<div style=\"color:$headerColor;font-weight:bold;margin-bottom:6px;\">$headerText</div>"
     }
 
@@ -121,7 +140,7 @@ internal object PlanPanelRenderer {
         completedCount: Int,
         totalCount: Int,
     ): String {
-        val summaryColor = if (dismissed) COLOR_MUTED else COLOR_COMPLETED
+        val summaryColor = if (dismissed) colorMuted() else colorCompleted()
         val summaryText = if (dismissed) "Plan dismissed" else "$completedCount of $totalCount completed"
         return "<div style=\"text-align:right;color:$summaryColor;margin-top:6px;\">$summaryText</div>"
     }
@@ -133,18 +152,18 @@ internal object PlanPanelRenderer {
     ): String {
         val escapedContent = TranscriptRenderHelpers.escapeHtml(entry.content)
         val icon = statusIcon(entry.status)
-        val iconColor = if (dismissed) COLOR_MUTED else statusColor(entry.status)
+        val iconColor = if (dismissed) colorMuted() else statusColor(entry.status)
 
         val priorityStyle =
             when {
-                dismissed -> "color:$COLOR_MUTED;"
+                dismissed -> "color:${colorMuted()};"
                 entry.priority == PlanEntryPriority.HIGH ->
-                    "font-weight:bold;border-left:2px solid $COLOR_HIGH_PRIORITY;padding-left:6px;"
-                entry.priority == PlanEntryPriority.LOW -> "color:$COLOR_LOW_PRIORITY;"
+                    "font-weight:bold;border-left:2px solid ${colorHighPriority()};padding-left:6px;"
+                entry.priority == PlanEntryPriority.LOW -> "color:${colorLowPriority()};"
                 else -> ""
             }
 
-        val textColor = if (dismissed) COLOR_MUTED else "#d4d4d4"
+        val textColor = if (dismissed) colorMuted() else colorText()
 
         val entryStyle =
             buildString {
@@ -171,7 +190,7 @@ internal object PlanPanelRenderer {
             buildString {
                 append("font-family:$FONT_FAMILY;font-size:$FONT_SIZE;")
                 append("margin:8px 0;padding:6px 12px;")
-                append("color:$COLOR_MUTED;")
+                append("color:${colorMuted()};")
                 if (dismissed) {
                     append("opacity:0.7;")
                 }
@@ -199,13 +218,12 @@ internal object PlanPanelRenderer {
             }
         val escaped = TranscriptRenderHelpers.escapeHtml(truncated)
         val headerText = if (dismissed) "Plan (markdown) [dismissed]" else "Plan (markdown)"
-        val headerColor = if (dismissed) COLOR_MUTED else "#cccccc"
-        val textColor = if (dismissed) COLOR_MUTED else "#d4d4d4"
+        val headerColor = if (dismissed) colorMuted() else colorText()
+        val textColor = if (dismissed) colorMuted() else colorText()
         val panelStyle =
             buildString {
                 append("font-family:$FONT_FAMILY;font-size:$FONT_SIZE;")
                 append("margin:8px 0;padding:8px 12px;")
-                append("background-color:$COLOR_PANEL_BG_DARK;")
                 append("white-space:pre-wrap;")
                 if (dismissed) {
                     append("opacity:0.7;")
@@ -229,7 +247,7 @@ internal object PlanPanelRenderer {
             buildString {
                 append("font-family:$FONT_FAMILY;font-size:$FONT_SIZE;")
                 append("margin:8px 0;padding:4px 12px;")
-                append("color:$COLOR_MUTED;")
+                append("color:${colorMuted()};")
                 if (dismissed) {
                     append("opacity:0.7;")
                 }
@@ -251,8 +269,8 @@ internal object PlanPanelRenderer {
 
     private fun statusColor(status: PlanEntryStatus): String =
         when (status) {
-            PlanEntryStatus.PENDING -> COLOR_PENDING
-            PlanEntryStatus.IN_PROGRESS -> COLOR_IN_PROGRESS
-            PlanEntryStatus.COMPLETED -> COLOR_COMPLETED
+            PlanEntryStatus.PENDING -> colorPending()
+            PlanEntryStatus.IN_PROGRESS -> colorInProgress()
+            PlanEntryStatus.COMPLETED -> colorCompleted()
         }
 }

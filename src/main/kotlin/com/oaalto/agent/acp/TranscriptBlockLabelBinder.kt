@@ -1,71 +1,82 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.ui.JBColor
-import java.awt.Color
 import javax.swing.JTextPane
 
 @Suppress("CyclomaticComplexMethod")
 internal fun JTextPane.bindTranscriptBlock(block: TranscriptBlock) {
+    val colorProvider = serviceOrNull<TranscriptColorProvider>()
     when (block) {
-        is TranscriptBlock.UserEcho -> bindUserEcho(block)
-        is TranscriptBlock.Thought -> bindThought(block)
-        is TranscriptBlock.StreamingAgentText -> bindStreamingAgent(block)
-        is TranscriptBlock.FinalAgentText -> bindFinalAgent(block)
-        is TranscriptBlock.PlainLine -> bindPlainLine(block)
-        is TranscriptBlock.ErrorLine -> bindErrorLine(block)
-        is TranscriptBlock.AuthFailureLine -> bindAuthFailureLine(block)
+        is TranscriptBlock.UserEcho -> bindUserEcho(block, colorProvider)
+        is TranscriptBlock.Thought -> bindThought(block, colorProvider)
+        is TranscriptBlock.StreamingAgentText -> bindStreamingAgent(block, colorProvider)
+        is TranscriptBlock.FinalAgentText -> bindFinalAgent(block, colorProvider)
+        is TranscriptBlock.PlainLine -> bindPlainLine(block, colorProvider)
+        is TranscriptBlock.ErrorLine -> bindErrorLine(block, colorProvider)
+        is TranscriptBlock.AuthFailureLine -> bindAuthFailureLine(block, colorProvider)
         is TranscriptBlock.ToolCallBlock -> Unit
         is TranscriptBlock.PlanBlock -> Unit // PlanBlock is handled by PlanPanel component
     }
 }
 
-private fun JTextPane.bindUserEcho(block: TranscriptBlock.UserEcho) {
-    foreground = Color(TranscriptPalette.USER_ECHO_RGB)
+private fun JTextPane.bindUserEcho(
+    block: TranscriptBlock.UserEcho,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getUserEchoColor() ?: JBColor.BLUE
     text = "> ${block.text}"
 }
 
-private fun JTextPane.bindThought(block: TranscriptBlock.Thought) {
-    foreground = Color(TranscriptPalette.THOUGHT_RGB)
+private fun JTextPane.bindThought(
+    block: TranscriptBlock.Thought,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getThoughtColor() ?: JBColor.GRAY
     text = "[thought] ${block.text}"
 }
 
-private fun JTextPane.bindStreamingAgent(block: TranscriptBlock.StreamingAgentText) {
-    foreground =
-        JBColor(
-            Color(TranscriptPalette.AGENT_TEXT_DARK_RGB),
-            Color(TranscriptPalette.AGENT_TEXT_LIGHT_RGB),
-        )
+private fun JTextPane.bindStreamingAgent(
+    block: TranscriptBlock.StreamingAgentText,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getTextForeground() ?: JBColor.foreground()
     text = block.text + TranscriptStreamingCursor.CURSOR_CHAR
 }
 
-private fun JTextPane.bindFinalAgent(block: TranscriptBlock.FinalAgentText) {
-    foreground =
-        JBColor(
-            Color(TranscriptPalette.AGENT_TEXT_DARK_RGB),
-            Color(TranscriptPalette.AGENT_TEXT_LIGHT_RGB),
-        )
+private fun JTextPane.bindFinalAgent(
+    block: TranscriptBlock.FinalAgentText,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getTextForeground() ?: JBColor.foreground()
     text = block.text
 }
 
-private fun JTextPane.bindPlainLine(block: TranscriptBlock.PlainLine) {
+private fun JTextPane.bindPlainLine(
+    block: TranscriptBlock.PlainLine,
+    provider: TranscriptColorProvider?,
+) {
     foreground =
         if (block.isUserPrompt) {
-            Color(TranscriptPalette.USER_ECHO_RGB)
+            provider?.getUserEchoColor() ?: JBColor.BLUE
         } else {
-            JBColor(
-                Color(TranscriptPalette.AGENT_TEXT_DARK_RGB),
-                Color(TranscriptPalette.AGENT_TEXT_LIGHT_RGB),
-            )
+            provider?.getTextForeground() ?: JBColor.foreground()
         }
     text = block.text
 }
 
-private fun JTextPane.bindErrorLine(block: TranscriptBlock.ErrorLine) {
-    foreground = Color(TranscriptPalette.ERROR_RGB)
+private fun JTextPane.bindErrorLine(
+    block: TranscriptBlock.ErrorLine,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getErrorForeground() ?: JBColor.RED
     text = TranscriptRenderer.formatError(block.message)
 }
 
-private fun JTextPane.bindAuthFailureLine(block: TranscriptBlock.AuthFailureLine) {
-    foreground = Color(TranscriptPalette.ERROR_RGB)
+private fun JTextPane.bindAuthFailureLine(
+    block: TranscriptBlock.AuthFailureLine,
+    provider: TranscriptColorProvider?,
+) {
+    foreground = provider?.getErrorForeground() ?: JBColor.RED
     text = TranscriptRenderer.formatAuthFailure(block.message)
 }

@@ -1,10 +1,10 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -31,14 +31,13 @@ internal class CollapsibleToolPanel(
     private val onToggle: (toolCallId: String) -> Unit,
     private val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
 ) : JPanel(BorderLayout()) {
+    private val colorProvider: TranscriptColorProvider
+        get() = serviceOrNull<TranscriptColorProvider>() ?: DefaultTranscriptColorProvider()
+
     private val headerPanel =
         JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(4), 0)).apply {
             isOpaque = true
-            background =
-                JBColor(
-                    Color(TranscriptPalette.CARD_HEADER_DARK_RGB),
-                    Color(TranscriptPalette.CARD_HEADER_LIGHT_RGB),
-                )
+            background = JBColor.PanelBackground
             border = JBUI.Borders.empty(4, 6)
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             isFocusable = true
@@ -51,11 +50,7 @@ internal class CollapsibleToolPanel(
     private val titleLabel = JLabel()
     private val chevronLabel =
         JLabel().apply {
-            foreground =
-                JBColor(
-                    Color(TranscriptPalette.MUTED_CHEVRON_DARK_RGB),
-                    Color(TranscriptPalette.MUTED_CHEVRON_LIGHT_RGB),
-                )
+            foreground = JBColor.GRAY
         }
     private val bodyContainer =
         JPanel().apply {
@@ -73,19 +68,10 @@ internal class CollapsibleToolPanel(
     init {
         border =
             BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(
-                    JBColor(
-                        Color(TranscriptPalette.CARD_BORDER_DARK_RGB),
-                        Color(TranscriptPalette.CARD_BORDER_LIGHT_RGB),
-                    ),
-                ),
+                BorderFactory.createLineBorder(JBColor.border()),
                 JBUI.Borders.empty(0, 0, AcpUiMetrics.COMPACT_INSET, 0),
             )
-        background =
-            JBColor(
-                Color(TranscriptPalette.CARD_BACKGROUND_DARK_RGB),
-                Color(TranscriptPalette.CARD_BACKGROUND_LIGHT_RGB),
-            )
+        background = JBColor.PanelBackground
         isOpaque = true
         headerPanel.add(badgeLabel)
         headerPanel.add(titleLabel)
@@ -132,14 +118,10 @@ internal class CollapsibleToolPanel(
                 ?.replace('_', ' ') ?: "tool"
         val badgeText = TranscriptBadgeStyle.label(block.status, kindLabel)
         badgeLabel.text = badgeText
-        badgeLabel.background = Color.decode(TranscriptBadgeStyle.colorHex(block.status))
-        badgeLabel.foreground = Color.WHITE
+        badgeLabel.background = colorProvider.getBadgeBackground(block.status)
+        badgeLabel.foreground = colorProvider.getBadgeForeground(block.status)
         titleLabel.text = block.title
-        titleLabel.foreground =
-            JBColor(
-                Color(TranscriptPalette.TOOL_TITLE_DARK_RGB),
-                Color(TranscriptPalette.TOOL_TITLE_LIGHT_RGB),
-            )
+        titleLabel.foreground = colorProvider.getTextForeground()
 
         expandable = block.hasBodyContent
         if (expandable) {

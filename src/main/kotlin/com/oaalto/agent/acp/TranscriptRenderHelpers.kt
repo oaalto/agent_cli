@@ -2,16 +2,27 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
+import com.intellij.openapi.components.serviceOrNull
 
 /**
  * HTML formatting helpers for transcript rendering.
  *
  * Each method returns a self-contained inline `<span>` fragment. Fragments
  * should be separated by [HTML_LINE_BREAK] when displayed as distinct lines.
+ *
+ * Colors are resolved dynamically from [TranscriptColorProvider] to respect
+ * the current IDE theme.
  */
 internal object TranscriptRenderHelpers {
     private const val FONT_FAMILY = "monospace"
     private const val FONT_SIZE = "12px"
+
+    private val fallbackProvider: TranscriptColorProvider by lazy {
+        // Fallback provider for tests or when service is unavailable
+        DefaultTranscriptColorProvider()
+    }
+
+    private fun getProvider(): TranscriptColorProvider = serviceOrNull<TranscriptColorProvider>() ?: fallbackProvider
 
     fun escapeHtml(text: String): String =
         text
@@ -26,9 +37,17 @@ internal object TranscriptRenderHelpers {
     /** Closing tags for the HTML document. */
     internal const val HTML_DOCUMENT_END: String = "</body></html>"
 
-    fun userPromptSpan(escapedText: String): String = coloredSpan("#569cd6", escapedText)
+    fun userPromptSpan(escapedText: String): String {
+        val provider = getProvider()
+        val color = provider.toHtml(provider.getUserEchoColor())
+        return coloredSpan(color, escapedText)
+    }
 
-    fun plainLineSpan(escapedText: String): String = coloredSpan("#d4d4d4", escapedText)
+    fun plainLineSpan(escapedText: String): String {
+        val provider = getProvider()
+        val color = provider.toHtml(provider.getTextForeground())
+        return coloredSpan(color, escapedText)
+    }
 
     private fun coloredSpan(
         color: String,
@@ -55,12 +74,15 @@ internal object TranscriptRenderHelpers {
     ): String {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
         val badgeColor = TranscriptBadgeStyle.colorHex(status)
+        val badgeFgColor = TranscriptBadgeStyle.foregroundColorHex(status)
         val escapedTitle = escapeHtml(title)
         val escapedKind = escapeHtml(kindLabel)
         val badgeLabel = TranscriptBadgeStyle.label(status, escapedKind)
-        val outerStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
-        val badgeStyle = "background-color:$badgeColor;color:#ffffff;padding:1px 4px;border-radius:3px"
-        val titleStyle = "color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val provider = getProvider()
+        val textColor = provider.toHtml(provider.getTextForeground())
+        val outerStyle = "color:$textColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val badgeStyle = "background-color:$badgeColor;color:$badgeFgColor;padding:1px 4px;border-radius:3px"
+        val titleStyle = "color:$textColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return (
             "<span style=\"$outerStyle\">" +
                 "<span style=\"$badgeStyle\">$badgeLabel</span> " +
@@ -74,7 +96,9 @@ internal object TranscriptRenderHelpers {
      */
     fun formatErrorHtml(message: String): String {
         val escaped = escapeHtml(message)
-        val style = "color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val provider = getProvider()
+        val errorColor = provider.toHtml(provider.getErrorForeground())
+        val style = "color:$errorColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return "<span style=\"$style\">Error: $escaped</span>"
     }
 
@@ -83,7 +107,9 @@ internal object TranscriptRenderHelpers {
      */
     fun formatAuthFailureHtml(message: String): String {
         val escaped = escapeHtml(message)
-        val style = "color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val provider = getProvider()
+        val errorColor = provider.toHtml(provider.getErrorForeground())
+        val style = "color:$errorColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         return "<span style=\"$style\">Auth failed: $escaped</span>"
     }
 
@@ -96,8 +122,10 @@ internal object TranscriptRenderHelpers {
     ): String {
         val escapedCmd = escapeHtml(command)
         val escapedId = escapeHtml(terminalId)
+        val provider = getProvider()
+        val textColor = provider.toHtml(provider.getTextForeground())
         return (
-            "<span style=\"color:#cccccc;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
+            "<span style=\"color:$textColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
                 "[terminal] $escapedCmd (id=$escapedId)</span>"
         )
     }
@@ -107,8 +135,10 @@ internal object TranscriptRenderHelpers {
      */
     fun formatPermissionDeniedHtml(title: String): String {
         val escaped = escapeHtml(title)
+        val provider = getProvider()
+        val errorColor = provider.toHtml(provider.getErrorForeground())
         return (
-            "<span style=\"color:#f44747;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
+            "<span style=\"color:$errorColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">" +
                 "[permission denied] $escaped</span>"
         )
     }

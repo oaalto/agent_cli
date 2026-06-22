@@ -1,11 +1,12 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.ui.JBColor
+import com.intellij.openapi.editor.colors.EditorColors
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.acp.plan.PlanPanel
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Component
 import java.awt.Desktop
 import java.awt.Dimension
@@ -42,12 +43,10 @@ private const val THEMATIC_BREAK_HORIZONTAL_INSET = 8
 private const val MIN_HEADING_LEVEL = 1
 private const val MAX_HEADING_LEVEL = 6
 private val HEADING_SIZES = mapOf(1 to 18, 2 to 16, 3 to 14, 4 to 13, 5 to 12, 6 to 12)
-private const val CODE_BG_DARK_RGB = 0x2D2D2D
-private const val CODE_BG_LIGHT_RGB = 0xF0F0F0
-private const val CODE_TEXT_DARK_RGB = 0xCE9178
-private const val CODE_TEXT_LIGHT_RGB = 0x8B4513
-private const val LINK_DARK_RGB = 0x569CD6
-private const val LINK_LIGHT_RGB = 0x1A70C8
+
+/** Lazily accessed color provider for theme-aware colors */
+private val colorProvider: TranscriptColorProvider
+    get() = serviceOrNull<TranscriptColorProvider>() ?: DefaultTranscriptColorProvider()
 
 private fun pickStyle(styles: List<TextStyle>): TextStyle =
     if (styles.contains(TextStyle.CODE)) {
@@ -100,21 +99,17 @@ private fun applyStyleToRun(
         }
         TextStyle.CODE -> {
             StyleConstants.setFontFamily(runStyle, MONO_FAMILY)
-            StyleConstants.setBackground(
-                runStyle,
-                JBColor(Color(CODE_BG_DARK_RGB), Color(CODE_BG_LIGHT_RGB)),
-            )
-            StyleConstants.setForeground(
-                runStyle,
-                JBColor(Color(CODE_TEXT_DARK_RGB), Color(CODE_TEXT_LIGHT_RGB)),
-            )
+            val scheme = EditorColorsManager.getInstance().globalScheme
+            val editorBackground =
+                scheme.getColor(EditorColors.CARET_ROW_COLOR)
+                    ?: scheme.defaultBackground
+            val editorForeground = scheme.defaultForeground
+            StyleConstants.setBackground(runStyle, editorBackground)
+            StyleConstants.setForeground(runStyle, editorForeground)
         }
         TextStyle.LINK -> {
             StyleConstants.setUnderline(runStyle, true)
-            StyleConstants.setForeground(
-                runStyle,
-                JBColor(Color(LINK_DARK_RGB), Color(LINK_LIGHT_RGB)),
-            )
+            StyleConstants.setForeground(runStyle, colorProvider.getLinkForeground())
         }
         TextStyle.STRIKETHROUGH -> StyleConstants.setStrikeThrough(runStyle, true)
     }
@@ -452,11 +447,7 @@ private class AgentTextRow(
                 this.border = border ?: EmptyBorder(0, 0, 0, 0)
                 this.font =
                     font ?: Font(MONO_FAMILY, Font.PLAIN, FONT_SIZE)
-                foreground =
-                    JBColor(
-                        Color(TranscriptPalette.AGENT_TEXT_DARK_RGB),
-                        Color(TranscriptPalette.AGENT_TEXT_LIGHT_RGB),
-                    )
+                foreground = colorProvider.getTextForeground()
             }
         pane.text = text
         // Filter runs to only those within truncated text bounds
@@ -471,11 +462,7 @@ private class AgentTextRow(
         return JLabel(displayText).apply {
             isOpaque = false
             font = Font(MONO_FAMILY, Font.ITALIC, FONT_SIZE)
-            foreground =
-                JBColor(
-                    Color(TranscriptPalette.THOUGHT_RGB),
-                    Color(TranscriptPalette.THOUGHT_RGB),
-                )
+            foreground = colorProvider.getThoughtColor()
             border = JBUI.Borders.emptyLeft(LIST_LEFT_INSET)
             if (url.isNotEmpty()) {
                 toolTipText = url
@@ -533,11 +520,7 @@ private class AgentTextRow(
         val leftBorderLine =
             JLabel().apply {
                 isOpaque = true
-                background =
-                    JBColor(
-                        Color(TranscriptPalette.THOUGHT_RGB),
-                        Color(TranscriptPalette.THOUGHT_RGB),
-                    )
+                background = colorProvider.getThoughtColor()
                 preferredSize = Dimension(BLOCKQUOTE_LEFT_THICKNESS, 1)
                 minimumSize = Dimension(BLOCKQUOTE_LEFT_THICKNESS, 1)
                 maximumSize = Dimension(BLOCKQUOTE_LEFT_THICKNESS, Int.MAX_VALUE)

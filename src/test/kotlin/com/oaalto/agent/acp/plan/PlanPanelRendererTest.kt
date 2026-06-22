@@ -109,7 +109,7 @@ class PlanPanelRendererTest {
     }
 
     @Test
-    fun `renders all completed summary in green`() {
+    fun `renders all completed summary with success color`() {
         val entries =
             listOf(
                 PlanEntry("Task 1", PlanEntryStatus.COMPLETED, PlanEntryPriority.MEDIUM),
@@ -119,7 +119,8 @@ class PlanPanelRendererTest {
         val html = PlanPanelRenderer.render("plan-1", entries)
 
         assertContains(html, "2 of 2 completed")
-        assertContains(html, "#2d8a4e")
+        // Check for hex color pattern (dynamic color from provider)
+        assertTrue(html.contains(Regex("color:#[0-9a-f]{6}")), "Expected hex color in style attribute")
     }
 
     @Test

@@ -1,11 +1,15 @@
 package com.oaalto.agent.acp.plan
 
+import com.agentclientprotocol.model.ToolCallStatus
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.acp.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.PlanEntry
 import com.oaalto.agent.acp.PlanEntryPriority
 import com.oaalto.agent.acp.PlanEntryStatus
 import com.oaalto.agent.acp.TranscriptBlock
+import com.oaalto.agent.acp.TranscriptColorProvider
 import com.oaalto.agent.acp.TranscriptRenderHelpers
 import java.awt.BorderLayout
 import java.awt.Color
@@ -17,6 +21,10 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
+
+/** Lazily accessed color provider for theme-aware colors */
+private val colorProvider: TranscriptColorProvider
+    get() = serviceOrNull<TranscriptColorProvider>() ?: DefaultTranscriptColorProvider()
 
 internal class PlanPanel : JPanel(BorderLayout()) {
     private val contentColumn =
@@ -31,7 +39,7 @@ internal class PlanPanel : JPanel(BorderLayout()) {
 
     init {
         isOpaque = true
-        background = JBColor(BG_COLOR_DARK, BG_COLOR_LIGHT)
+        background = colorProvider.getPanelBackground()
         border =
             JBUI.Borders.compound(
                 BorderFactory.createEmptyBorder(PADDING_LARGE, PADDING_XLARGE, PADDING_LARGE, PADDING_XLARGE),
@@ -40,7 +48,7 @@ internal class PlanPanel : JPanel(BorderLayout()) {
                     LEFT_BORDER_THICKNESS,
                     BORDER_WIDTH,
                     BORDER_WIDTH,
-                    JBColor(BORDER_COLOR_DARK, BORDER_COLOR_LIGHT),
+                    JBColor.border(),
                 ),
             )
         alignmentX = Component.LEFT_ALIGNMENT
@@ -70,9 +78,9 @@ internal class PlanPanel : JPanel(BorderLayout()) {
 
         // Apply dismissed styling if plan is dismissed
         if (block.dismissed) {
-            background = JBColor(BG_COLOR_DIMMED_DARK, BG_COLOR_DIMMED_LIGHT)
+            background = JBColor.PanelBackground
         } else {
-            background = JBColor(BG_COLOR_DARK, BG_COLOR_LIGHT)
+            background = colorProvider.getPanelBackground()
         }
 
         val headerText = if (block.dismissed) "$HEADER_TEXT $DISMISSED_INDICATOR" else HEADER_TEXT
@@ -81,9 +89,9 @@ internal class PlanPanel : JPanel(BorderLayout()) {
                 font = Font(FONT_FAMILY, Font.BOLD, FONT_SIZE)
                 foreground =
                     if (block.dismissed) {
-                        JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT)
+                        colorProvider.getThoughtColor()
                     } else {
-                        JBColor(HEADER_TEXT_DARK, HEADER_TEXT_LIGHT)
+                        colorProvider.getTextForeground()
                     }
                 alignmentX = Component.LEFT_ALIGNMENT
             }
@@ -111,9 +119,9 @@ internal class PlanPanel : JPanel(BorderLayout()) {
 
         val summaryColor =
             when {
-                block.dismissed -> JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT)
-                isComplete -> JBColor(COMPLETED_COLOR, COMPLETED_COLOR)
-                else -> JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT)
+                block.dismissed -> colorProvider.getThoughtColor()
+                isComplete -> colorProvider.getBadgeBackground(com.agentclientprotocol.model.ToolCallStatus.COMPLETED)
+                else -> colorProvider.getThoughtColor()
             }
 
         val summaryText =
@@ -168,7 +176,7 @@ internal class PlanPanel : JPanel(BorderLayout()) {
         dismissed: Boolean = false,
     ): JLabel {
         val icon = statusIcon(status)
-        val iconColor = if (dismissed) JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT) else statusColor(status)
+        val iconColor = if (dismissed) colorProvider.getThoughtColor() else statusColor(status)
 
         return JLabel(icon).apply {
             font = Font(FONT_FAMILY, Font.PLAIN, FONT_SIZE)
@@ -184,7 +192,7 @@ internal class PlanPanel : JPanel(BorderLayout()) {
         val contentText = "$number. ${TranscriptRenderHelpers.escapeHtml(entry.content)}"
         val textColor =
             if (dismissed) {
-                JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT)
+                colorProvider.getThoughtColor()
             } else {
                 priorityTextColor(entry.priority)
             }
@@ -224,7 +232,7 @@ internal class PlanPanel : JPanel(BorderLayout()) {
                     HIGH_PRIORITY_BORDER_THICKNESS,
                     BORDER_WIDTH,
                     BORDER_WIDTH,
-                    JBColor(HIGH_PRIORITY_COLOR, HIGH_PRIORITY_COLOR),
+                    colorProvider.getErrorForeground(),
                 )
             leftPanel.border = BorderFactory.createEmptyBorder(BORDER_WIDTH, PADDING_MEDIUM, BORDER_WIDTH, BORDER_WIDTH)
         }
@@ -235,11 +243,11 @@ internal class PlanPanel : JPanel(BorderLayout()) {
         return Font(FONT_FAMILY, style, FONT_SIZE)
     }
 
-    private fun priorityTextColor(priority: PlanEntryPriority): JBColor =
+    private fun priorityTextColor(priority: PlanEntryPriority): Color =
         when (priority) {
-            PlanEntryPriority.HIGH -> JBColor(TEXT_DARK, TEXT_LIGHT)
-            PlanEntryPriority.MEDIUM -> JBColor(TEXT_DARK, TEXT_LIGHT)
-            PlanEntryPriority.LOW -> JBColor(MUTED_TEXT_DARK, MUTED_TEXT_LIGHT)
+            PlanEntryPriority.HIGH -> colorProvider.getTextForeground()
+            PlanEntryPriority.MEDIUM -> colorProvider.getTextForeground()
+            PlanEntryPriority.LOW -> colorProvider.getThoughtColor()
         }
 
     private fun statusIcon(status: PlanEntryStatus): String =
@@ -249,11 +257,11 @@ internal class PlanPanel : JPanel(BorderLayout()) {
             PlanEntryStatus.COMPLETED -> COMPLETED_ICON
         }
 
-    private fun statusColor(status: PlanEntryStatus): JBColor =
+    private fun statusColor(status: PlanEntryStatus): Color =
         when (status) {
-            PlanEntryStatus.PENDING -> JBColor(PENDING_COLOR, PENDING_COLOR)
-            PlanEntryStatus.IN_PROGRESS -> JBColor(IN_PROGRESS_COLOR, IN_PROGRESS_COLOR)
-            PlanEntryStatus.COMPLETED -> JBColor(COMPLETED_COLOR, COMPLETED_COLOR)
+            PlanEntryStatus.PENDING -> colorProvider.getThoughtColor()
+            PlanEntryStatus.IN_PROGRESS -> colorProvider.getBadgeBackground(ToolCallStatus.IN_PROGRESS)
+            PlanEntryStatus.COMPLETED -> colorProvider.getBadgeBackground(ToolCallStatus.COMPLETED)
         }
 
     companion object {
@@ -279,22 +287,5 @@ internal class PlanPanel : JPanel(BorderLayout()) {
         private const val PENDING_ICON = "[ ]"
         private const val IN_PROGRESS_ICON = "[→]"
         private const val COMPLETED_ICON = "[✓]"
-
-        private val BG_COLOR_DARK = Color(0x313335)
-        private val BG_COLOR_LIGHT = Color(0xF5F5F5)
-        private val BG_COLOR_DIMMED_DARK = Color(0x2A2B2D)
-        private val BG_COLOR_DIMMED_LIGHT = Color(0xE8E8E8)
-        private val BORDER_COLOR_DARK = Color(0x444444)
-        private val BORDER_COLOR_LIGHT = Color(0xCCCCCC)
-        private val HEADER_TEXT_DARK = Color(0xCCCCCC)
-        private val HEADER_TEXT_LIGHT = Color(0x333333)
-        private val TEXT_DARK = Color(0xD4D4D4)
-        private val TEXT_LIGHT = Color(0x333333)
-        private val MUTED_TEXT_DARK = Color(0x888888)
-        private val MUTED_TEXT_LIGHT = Color(0x666666)
-        private val PENDING_COLOR = Color(0x888888)
-        private val IN_PROGRESS_COLOR = Color(0xd4a017)
-        private val COMPLETED_COLOR = Color(0x2d8a4e)
-        private val HIGH_PRIORITY_COLOR = Color(0xc43c3c)
     }
 }

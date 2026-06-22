@@ -1,6 +1,55 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.components.serviceOrNull
+import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
+import com.intellij.openapi.editor.colors.EditorColors
+import com.intellij.openapi.editor.colors.EditorColorsManager
+import java.util.Locale
+
 internal object TranscriptHtmlBuilder {
+    private val fallbackProvider: TranscriptColorProvider by lazy { DefaultTranscriptColorProvider() }
+
+    private fun getProvider(): TranscriptColorProvider = serviceOrNull<TranscriptColorProvider>() ?: fallbackProvider
+
+    /**
+     * Returns theme-aware CSS style for inline code elements.
+     *
+     * Uses the IDE's editor color scheme when available, falling back to
+     * the TranscriptColorProvider colors. This ensures code blocks respect
+     * the current editor theme and update dynamically when the theme changes.
+     */
+    private fun codeBlockStyle(): String {
+        val provider = getProvider()
+        val scheme =
+            try {
+                EditorColorsManager.getInstance().globalScheme
+            } catch (_: Exception) {
+                null
+            }
+
+        val backgroundColor =
+            if (scheme != null) {
+                scheme.getColor(EditorColors.CARET_ROW_COLOR)
+                    ?: scheme.defaultBackground
+            } else {
+                provider.getPanelBackground()
+            }
+        val foregroundColor =
+            if (scheme != null) {
+                scheme.getAttributes(DefaultLanguageHighlighterColors.STRING)?.foregroundColor
+                    ?: scheme.defaultForeground
+            } else {
+                provider.getTextForeground()
+            }
+
+        return String.format(
+            Locale.US,
+            "background:%s;padding:1px 4px;border-radius:2px;color:%s",
+            provider.toHtml(backgroundColor),
+            provider.toHtml(foregroundColor),
+        )
+    }
+
     private const val PRE_STYLE =
         "margin-left:20px;color:#999999;border-left:2px solid #444444;" +
             "padding-left:8px;font-family:monospace;font-size:12px;white-space:pre-wrap"
@@ -71,8 +120,7 @@ internal object TranscriptHtmlBuilder {
             TextStyle.BOLD -> "<strong>$escaped</strong>"
             TextStyle.ITALIC -> "<em>$escaped</em>"
             TextStyle.BOLD_ITALIC -> "<strong><em>$escaped</em></strong>"
-            TextStyle.CODE ->
-                "<code style='background:#2D2D2D;padding:1px 4px;border-radius:2px;color:#CE9178'>$escaped</code>"
+            TextStyle.CODE -> "<code style=\"${codeBlockStyle()}\">$escaped</code>"
             TextStyle.LINK -> "<span style='color:#569CD6;text-decoration:underline'>$escaped</span>"
             TextStyle.STRIKETHROUGH -> "<s>$escaped</s>"
             null -> escaped
