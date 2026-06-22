@@ -5,4 +5,7 @@ interface AcpSessionListener {
     fun onStructuredUpdate(update: StructuredUpdate)
 
     fun onError(message: String)
+
+    /** Called when accumulated usage statistics are updated. */
+    fun onUsageUpdate(usage: AccumulatedUsage)
 }

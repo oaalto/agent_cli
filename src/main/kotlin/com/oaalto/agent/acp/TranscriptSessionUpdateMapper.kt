@@ -17,8 +17,16 @@ internal object TranscriptSessionUpdateMapper {
             is SessionUpdate.UserMessageChunk -> mapUserChunk(update)
             is SessionUpdate.ToolCall -> listOf(mapToolCall(update))
             is SessionUpdate.ToolCallUpdate -> listOf(mapToolCallUpdate(update))
+            is SessionUpdate.UsageUpdate -> listOf(mapUsageUpdate(update))
             else -> emptyList()
         }
+
+    private fun mapUsageUpdate(update: SessionUpdate.UsageUpdate): StructuredUpdate.Usage =
+        StructuredUpdate.Usage(
+            used = update.used,
+            size = update.size,
+            cost = update.cost,
+        )
 
     private fun mapThoughtChunk(update: SessionUpdate.AgentThoughtChunk): List<StructuredUpdate> =
         listOfNotNull(

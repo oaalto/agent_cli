@@ -21,6 +21,7 @@ internal object AcpEditorLayout {
         authPromptPanel: AuthPromptPanel,
         promptInputBar: PromptInputBar,
         shellPaneHost: ShellPaneHost,
+        transcriptFooter: JComponent,
     ): JPanel {
         val transcriptColumn =
             JPanel(BorderLayout()).apply {
@@ -40,6 +41,7 @@ internal object AcpEditorLayout {
             }
         return JPanel(BorderLayout()).apply {
             add(mainSplitter, BorderLayout.CENTER)
+            add(transcriptFooter, BorderLayout.SOUTH)
             border = JBUI.Borders.empty()
         }
     }

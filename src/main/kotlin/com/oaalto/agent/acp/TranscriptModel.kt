@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.Cost
+
 /**
  * Ordered transcript blocks with tool deduplication and per-card expansion state.
  */
@@ -7,6 +9,12 @@ internal class TranscriptModel {
     private val blocks = mutableListOf<TranscriptBlock>()
     private val toolBlockIndexById = mutableMapOf<String, Int>()
     private var nextBlockId = 0
+    private var accumulated: AccumulatedUsage? = null
+    private var usageListener: ((AccumulatedUsage) -> Unit)? = null
+
+    fun setUsageListener(listener: (AccumulatedUsage) -> Unit) {
+        usageListener = listener
+    }
 
     fun blocks(): List<TranscriptBlock> = blocks.toList()
 
@@ -14,22 +22,40 @@ internal class TranscriptModel {
         when (update) {
             is StructuredUpdate.AppendAgentText -> appendAgentText(update.text)
             StructuredUpdate.FinalizeAgentStream -> finalizeAgentStream()
-            is StructuredUpdate.AppendUserEcho -> appendBlock(TranscriptBlock.UserEcho(allocBlockId(), update.text))
-            is StructuredUpdate.AppendThought -> appendBlock(TranscriptBlock.Thought(allocBlockId(), update.text))
-            is StructuredUpdate.AppendPlainLine ->
-                appendBlock(
-                    TranscriptBlock.PlainLine(
-                        blockId = allocBlockId(),
-                        text = update.line,
-                        isUserPrompt = update.isUserPrompt,
-                    ),
-                )
+            is StructuredUpdate.AppendPlainLine -> appendPlainLine(update)
+            is StructuredUpdate.StartOrUpdateToolCall -> startOrUpdateToolCall(update)
+            is StructuredUpdate.Usage -> handleUsageUpdate(update)
+            else -> handleSimpleAppend(update)
+        }
+    }
+
+    private fun handleSimpleAppend(update: StructuredUpdate) {
+        when (update) {
+            is StructuredUpdate.AppendUserEcho ->
+                appendBlock(TranscriptBlock.UserEcho(allocBlockId(), update.text))
+            is StructuredUpdate.AppendThought ->
+                appendBlock(TranscriptBlock.Thought(allocBlockId(), update.text))
             is StructuredUpdate.AppendError ->
                 appendBlock(TranscriptBlock.ErrorLine(allocBlockId(), update.message))
             is StructuredUpdate.AppendAuthFailure ->
                 appendBlock(TranscriptBlock.AuthFailureLine(allocBlockId(), update.message))
-            is StructuredUpdate.StartOrUpdateToolCall -> startOrUpdateToolCall(update)
+            else -> Unit
         }
+    }
+
+    private fun appendPlainLine(update: StructuredUpdate.AppendPlainLine) {
+        appendBlock(
+            TranscriptBlock.PlainLine(
+                blockId = allocBlockId(),
+                text = update.line,
+                isUserPrompt = update.isUserPrompt,
+            ),
+        )
+    }
+
+    private fun handleUsageUpdate(update: StructuredUpdate.Usage) {
+        accumulated = calculateAccumulatedUsage(update)
+        notifyUsageUpdate(accumulated!!)
     }
 
     fun toggleToolExpansion(toolCallId: String) {
@@ -100,5 +126,50 @@ internal class TranscriptModel {
     private fun allocBlockId(): String {
         nextBlockId += 1
         return "block-$nextBlockId"
+    }
+
+    private fun calculateAccumulatedUsage(update: StructuredUpdate.Usage): AccumulatedUsage {
+        val current = accumulated
+        val newUsed = (current?.totalUsed ?: 0) + update.used
+        val newCost = calculateAccumulatedCost(current?.totalCost, update.cost)
+        return AccumulatedUsage(
+            totalUsed = newUsed,
+            contextSize = update.size,
+            totalCost = newCost,
+        )
+    }
+
+    private fun calculateAccumulatedCost(
+        currentCost: Cost?,
+        updateCost: Cost?,
+    ): Cost? {
+        if (updateCost == null) {
+            // Cost becomes null when update has no cost
+            return null
+        }
+        if (currentCost == null) {
+            // Use new cost when there was no previous cost (normalized to uppercase)
+            return Cost(
+                amount = updateCost.amount,
+                currency = updateCost.currency.uppercase(),
+            )
+        }
+        // Currencies match case-insensitively: accumulate and use normalized currency
+        // Currencies differ: use new cost with normalized currency
+        return if (currentCost.currency.equals(updateCost.currency, ignoreCase = true)) {
+            Cost(
+                amount = currentCost.amount + updateCost.amount,
+                currency = updateCost.currency.uppercase(),
+            )
+        } else {
+            Cost(
+                amount = updateCost.amount,
+                currency = updateCost.currency.uppercase(),
+            )
+        }
+    }
+
+    private fun notifyUsageUpdate(usage: AccumulatedUsage) {
+        usageListener?.invoke(usage)
     }
 }

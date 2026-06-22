@@ -73,6 +73,7 @@ class AcpAgentEditor(
                 }
             }
         }
+    private val transcriptFooter = TranscriptFooter()
     private val rootPanel = JPanel(BorderLayout())
     private val sessionListener =
         object : AcpSessionListener {
@@ -83,6 +84,12 @@ class AcpAgentEditor(
             override fun onError(message: String) {
                 transcriptViewController.appendError(message)
                 runOnEdt { promptInputBar.setEnabled(false) }
+            }
+
+            override fun onUsageUpdate(usage: AccumulatedUsage) {
+                runOnEdt {
+                    transcriptFooter.updateUsage(usage.totalUsed, usage.contextSize, usage.totalCost)
+                }
             }
         }
     private val permissionPromptUi =
@@ -143,6 +150,7 @@ class AcpAgentEditor(
                 authPromptPanel = authPromptPanel,
                 promptInputBar = promptInputBar,
                 shellPaneHost = shellPaneHost,
+                transcriptFooter = transcriptFooter,
             ),
             BorderLayout.CENTER,
         )

@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.Cost
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 
@@ -38,5 +39,12 @@ sealed class StructuredUpdate {
         val kind: ToolKind?,
         val status: ToolCallStatus?,
         val bodyParts: List<TranscriptBodyPart> = emptyList(),
+    ) : StructuredUpdate()
+
+    /** Token usage and optional cost from an ACP UsageUpdate event. */
+    data class Usage(
+        val used: Long,
+        val size: Long,
+        val cost: Cost?,
     ) : StructuredUpdate()
 }
