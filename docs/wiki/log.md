@@ -24,3 +24,11 @@
 - Updated: —
 - Sources: `docs/adr/0001-custom-acp-client-in-plugin.md`, `docs/adr/0002-kotlin-acp-sdk.md`, `CONTEXT.md`
 - Notes: Design decisions captured as ADRs; wiki subsystem pages not updated until implementation lands.
+
+## [2026-06-24] ingest | Path-map required wiki pages
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md)
+- Updated: [Architecture decisions map](subsystems/architecture.md)
+- Updated: [Engineering Wiki Index](index.md)
+- Sources: `CONTEXT.md`, `docs/adr/0001-custom-acp-client-in-plugin.md`, `docs/adr/0002-kotlin-acp-sdk.md`, `docs/adr/0003-per-project-agent-selection.md`
+- Notes: Created required path-map pages so `scripts/wiki-lint.mjs` passes in CI.

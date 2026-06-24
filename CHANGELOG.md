@@ -2,6 +2,10 @@
 
 ## 2026-06-24
 
+### Documentation
+
+- **Wiki path-map pages** (`docs/wiki/concepts/context.md`, `docs/wiki/subsystems/architecture.md`, `docs/wiki/index.md`, `docs/wiki/log.md`): Ingest required wiki pages from `CONTEXT.md` and ADRs so `scripts/wiki-lint.mjs` passes in CI. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Fixed
 
 - **ACP slash commands** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt`, `src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt`): Handle ACP `available_commands_update` notifications and wire slash-command autocomplete into the ACP prompt bar so users can discover and submit `/command` prompts per the ACP protocol. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

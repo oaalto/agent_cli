@@ -2,11 +2,13 @@
 
 ## Concepts
 
-- [Agent CLI overview](../concepts/agent-cli-overview.md)
+- [Agent CLI overview](concepts/agent-cli-overview.md)
+- [Domain context & ACP transcript model](concepts/context.md)
 
 ## Subsystems
 
-- [Worktree subsystem](../subsystems/worktree.md)
+- [Architecture decisions map](subsystems/architecture.md)
+- [Worktree subsystem](subsystems/worktree.md)
 
 ## Workflows
 
