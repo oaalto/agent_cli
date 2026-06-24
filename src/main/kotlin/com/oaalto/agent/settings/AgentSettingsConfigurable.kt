@@ -97,7 +97,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             }
             refreshDetailPanel()
         }
-        return rootPanel!!
+        return requireNotNull(rootPanel)
     }
 
     private fun wireDetailPanelControls(bindings: DetailPanelBindings) {
@@ -153,15 +153,15 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                 null
             } else {
                 DetailPanelBindings(
-                    model = tableModel!!,
-                    table = table!!,
-                    ideaMcp = ideaMcpCheckbox!!,
-                    customMcp = customMcpCheckbox!!,
-                    envTable = environmentTable!!,
-                    envModel = environmentTableModel!!,
-                    mcpScopeHint = mcpScopeHintLabel!!,
-                    mcpPluginsHint = mcpHintLabel!!,
-                    envHint = envHintLabel!!,
+                    model = tableModel as AgentConfigsTableModel,
+                    table = table as JBTable,
+                    ideaMcp = ideaMcpCheckbox as JCheckBox,
+                    customMcp = customMcpCheckbox as JCheckBox,
+                    envTable = environmentTable as JBTable,
+                    envModel = environmentTableModel as EnvironmentVariablesTableModel,
+                    mcpScopeHint = mcpScopeHintLabel as JBLabel,
+                    mcpPluginsHint = mcpHintLabel as JBLabel,
+                    envHint = envHintLabel as JBLabel,
                 )
             }
         }

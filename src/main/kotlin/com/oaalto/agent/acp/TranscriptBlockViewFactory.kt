@@ -602,7 +602,7 @@ private class AgentTextRow(
                         val pos = pane.viewToModel2D(event.point)
                         for (run in linkRuns) {
                             if (pos in run.start until run.end) {
-                                TranscriptBlockViewFactory.tryOpenUrl(run.url!!)
+                                run.url?.let(TranscriptBlockViewFactory::tryOpenUrl)
                                 break
                             }
                         }

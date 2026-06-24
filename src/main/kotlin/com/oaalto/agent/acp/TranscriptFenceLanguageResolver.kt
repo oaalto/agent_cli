@@ -29,7 +29,6 @@ internal object TranscriptFenceLanguageResolver {
 
     fun resolveFileType(languageId: String?): FileType {
         val extension = normalizeExtension(languageId) ?: return PlainTextFileType.INSTANCE
-        val resolved = FileTypeManager.getInstance().getFileTypeByExtension(extension)
-        return resolved ?: PlainTextFileType.INSTANCE
+        return FileTypeManager.getInstance().getFileTypeByExtension(extension)
     }
 }

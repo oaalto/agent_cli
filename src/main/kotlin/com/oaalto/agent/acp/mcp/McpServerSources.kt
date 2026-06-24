@@ -130,7 +130,7 @@ private object UserMcpConfigPaths {
             configRoot.resolve("options/llm.mcpServers.xml").normalize(),
             home.resolve("Library/Application Support/JetBrains/AIAssistant/mcp.json"),
             home.resolve(".config/JetBrains/AIAssistant/mcp.json"),
-            Path.of(System.getenv("APPDATA") ?: "").resolve("JetBrains/AIAssistant/mcp.json"),
+            Path.of(System.getenv("APPDATA").orEmpty()).resolve("JetBrains/AIAssistant/mcp.json"),
         ).filter { path -> path.toString().isNotBlank() && Files.isRegularFile(path) }
     }
 }

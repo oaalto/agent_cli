@@ -68,6 +68,7 @@ intellijPlatform {
 
 detekt {
     buildUponDefaultConfig = true
+    allRules = false
     config.setFrom(files("$rootDir/detekt.yml"))
 }
 
@@ -93,7 +94,7 @@ tasks {
         dependsOn("compileKotlin")
     }
     named("test") {
-        dependsOn("ktlintCheck", "detekt")
+        dependsOn("ktlintCheck", "detekt", "detektMain", "detektTest")
         finalizedBy("jacocoTestReport")
     }
 
@@ -113,12 +114,13 @@ tasks {
 
     register("qualityGate") {
         group = "verification"
-        description = "Runs format, compile, lint, static analysis, tests, and coverage report."
-        dependsOn("test", "jacocoTestReport")
+        description =
+            "Runs format, compile, lint, static analysis (detekt with type resolution), tests, and coverage report."
+        dependsOn("test", "jacocoTestReport", "detektMain", "detektTest")
     }
 
     named("check") {
-        dependsOn("ktlintCheck", "detekt")
+        dependsOn("ktlintCheck", "detekt", "detektMain", "detektTest")
     }
 }
 

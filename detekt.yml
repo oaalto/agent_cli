@@ -1,6 +1,16 @@
 build:
   maxIssues: 0
 
+config:
+  validation: true
+  warningsAsErrors: true
+
+coroutines:
+  InjectDispatcher:
+    active: false
+  RedundantSuspendModifier:
+    active: true
+
 complexity:
   CyclomaticComplexMethod:
     active: true
@@ -8,6 +18,13 @@ complexity:
   CognitiveComplexMethod:
     active: true
     threshold: 12
+  LongMethod:
+    active: true
+    threshold: 60
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 7
   TooManyFunctions:
     ignoreOverridden: true
     thresholdInFiles: 15
@@ -20,6 +37,26 @@ exceptions:
     ignoredExceptionTypes:
       - NoSuchMethodException
       - ClassNotFoundException
+  TooGenericExceptionCaught:
+    active: true
+  TooGenericExceptionThrown:
+    active: true
+
+naming:
+  MatchingDeclarationName:
+    active: true
+
+performance:
+  SpreadOperator:
+    active: true
+
+potential-bugs:
+  UnreachableCode:
+    active: true
+  UnsafeCallOnNullableType:
+    active: true
+  DoubleMutabilityForCollection:
+    active: false
 
 style:
   ReturnCount:
@@ -39,3 +76,9 @@ style:
     ignoreHashCodeFunction: true
   MaxLineLength:
     active: false
+  UseOrEmpty:
+    active: true
+  UnusedPrivateMember:
+    active: true
+  UnusedPrivateClass:
+    active: true

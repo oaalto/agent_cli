@@ -249,7 +249,7 @@ class AcpSessionControllerImpl(
         scope.cancel()
     }
 
-    private suspend fun handlePromptEvent(event: Event) {
+    private fun handlePromptEvent(event: Event) {
         when (event) {
             is Event.SessionUpdateEvent -> AcpPromptEventDispatcher.dispatchSessionUpdate(event.update, listener)
             is Event.PromptResponseEvent -> AcpPromptEventDispatcher.dispatchPromptCompleted(listener)

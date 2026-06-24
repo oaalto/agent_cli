@@ -45,7 +45,7 @@ internal class TranscriptFooter : JPanel(FlowLayout(FlowLayout.RIGHT, HORIZONTAL
         cost: Cost?,
     ) {
         usageLabel.text = "${formatTokenCount(used)} / ${formatTokenCount(size)} tokens"
-        costLabel.text = cost?.let { formatCost(it) } ?: ""
+        costLabel.text = cost?.let { formatCost(it) }.orEmpty()
         costLabel.isVisible = cost != null
 
         // Color shift when exceeding 80% of context window

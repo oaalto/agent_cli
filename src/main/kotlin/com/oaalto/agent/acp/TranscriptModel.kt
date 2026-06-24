@@ -58,8 +58,9 @@ internal class TranscriptModel {
     }
 
     private fun handleUsageUpdate(update: StructuredUpdate.Usage) {
-        accumulated = accumulateUsage(update)
-        usageListener?.invoke(accumulated!!)
+        val snapshot = accumulateUsage(update)
+        accumulated = snapshot
+        usageListener?.invoke(snapshot)
     }
 
     fun toggleToolExpansion(toolCallId: String) {

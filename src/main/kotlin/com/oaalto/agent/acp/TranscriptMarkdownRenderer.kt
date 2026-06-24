@@ -643,7 +643,7 @@ internal object TranscriptMarkdownRenderer {
         ): String {
             for (child in imageNode.children) {
                 if (child.type === MarkdownElementTypes.INLINE_LINK) {
-                    return resolveLinkUrl(child, source) ?: ""
+                    return resolveLinkUrl(child, source).orEmpty()
                 }
             }
             return ""

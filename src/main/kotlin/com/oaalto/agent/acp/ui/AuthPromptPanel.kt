@@ -77,7 +77,7 @@ class AuthPromptPanel {
         buttonsPanel.add(continueButton())
         buttonsPanel.add(cancelButton())
         show()
-        return pending!!
+        return resetDeferred()
     }
 
     fun suspendForOAuth(
@@ -109,7 +109,7 @@ class AuthPromptPanel {
         buttonsPanel.add(continueButton())
         buttonsPanel.add(cancelButton())
         show()
-        return pending!!
+        return resetDeferred()
     }
 
     fun suspendForTerminalAuth(
@@ -128,16 +128,18 @@ class AuthPromptPanel {
         buttonsPanel.add(continueButton())
         buttonsPanel.add(cancelButton())
         show()
-        return pending!!
+        return resetDeferred()
     }
 
     fun cancelPending() {
         complete(AuthPromptResult.Cancelled)
     }
 
-    private fun resetDeferred() {
+    private fun resetDeferred(): CompletableDeferred<AuthPromptResult> {
         pending?.complete(AuthPromptResult.Cancelled)
-        pending = CompletableDeferred()
+        val deferred = CompletableDeferred<AuthPromptResult>()
+        pending = deferred
+        return deferred
     }
 
     private fun continueButton(): JButton =

@@ -323,7 +323,7 @@ class TranscriptMarkdownRendererTest {
         assertEquals("struck text", text.text)
         val run = text.runs.firstOrNull { it.style == TextStyle.STRIKETHROUGH }
         assertTrue(run != null)
-        assertEquals(0, run!!.start)
+        assertEquals(0, requireNotNull(run).start)
         assertEquals(6, run.end)
     }
 

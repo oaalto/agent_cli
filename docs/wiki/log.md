@@ -32,3 +32,9 @@
 - Updated: [Engineering Wiki Index](index.md)
 - Sources: `CONTEXT.md`, `docs/adr/0001-custom-acp-client-in-plugin.md`, `docs/adr/0002-kotlin-acp-sdk.md`, `docs/adr/0003-per-project-agent-selection.md`
 - Notes: Created required path-map pages so `scripts/wiki-lint.mjs` passes in CI.
+
+## [2026-06-24] update | Replace Qodana with expanded detekt
+
+- Updated: [Quality gate & release workflow](workflows/quality-gate.md)
+- Sources: `build.gradle.kts`, `detekt.yml`, `.agents/rules/workflow-gates.md`
+- Notes: Removed Qodana workflow; detekt type-resolution tasks are now the primary CI static-analysis gate.

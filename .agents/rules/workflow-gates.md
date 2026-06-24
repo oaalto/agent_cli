@@ -11,11 +11,12 @@ Apply validation in this order and stop on failure:
    - Kotlin uses `allWarningsAsErrors`; fix or narrowly suppress warnings before proceeding.
    - Project toolchain targets JDK 21.
 3. **Static analysis / lint**
-   - Run `./gradlew ktlintCheck detekt`.
+   - Run `./gradlew ktlintCheck detekt detektMain detektTest`.
+   - `detektMain` and `detektTest` run type-resolution analysis and are the primary static-analysis gate (replacing Qodana).
    - Treat findings as blocking unless project policy explicitly marks them non-blocking.
 4. **Tests**
    - Run `./gradlew test`.
-   - `test` depends on `ktlintCheck` and `detekt`.
+   - `test` depends on `ktlintCheck`, `detekt`, `detektMain`, and `detektTest`.
    - JaCoCo reports are generated via `jacocoTestReport`; coverage thresholds are not enforced yet because IntelliJ Platform sandbox tests do not attach the JaCoCo agent.
 
 ## Canonical local command
@@ -26,7 +27,7 @@ Prefer the ordered Gradle task:
 ./gradlew qualityGate
 ```
 
-This runs format → compile → ktlint → detekt → tests → JaCoCo report.
+This runs format → compile → ktlint → detekt (including type-resolution main/test) → tests → JaCoCo report.
 
 For plugin compatibility with target IDE builds, also run before release-oriented work:
 
@@ -38,7 +39,6 @@ For plugin compatibility with target IDE builds, also run before release-oriente
 
 - **CI** (`.github/workflows/build-plugin.yml`): `node scripts/wiki-lint.mjs`, then `./gradlew qualityGate verifyPlugin`, then artifact build.
 - **Pre-commit** (`scripts/pre-commit`): wiki-lint (staged) and `ktlintCheck` only — run `./gradlew qualityGate` before push when code changed beyond formatting.
-- **Qodana** (`.github/workflows/qodana.yml`): supplementary JetBrains analysis; not part of `qualityGate`.
 
 ## Zero-Suppression Enforcement
 
