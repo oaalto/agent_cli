@@ -64,8 +64,17 @@ internal object AgentWorktreePathMapper {
     }
 
     fun normalizePathKey(path: String): String {
+        val trimmed = path.trim()
+        if (trimmed.isBlank()) return trimmed
+
+        val windowsStylePath = trimmed.replace('/', '\\')
+        val isWslUncPath =
+            wslUncPrefixes.any { prefix ->
+                windowsStylePath.startsWith(prefix, ignoreCase = true)
+            }
+
         var value =
-            normalizePath(path)
+            (if (isWslUncPath) trimmed else normalizePath(trimmed))
                 .replace('\\', '/')
                 .lowercase(Locale.ROOT)
         if (value.startsWith("//wsl$/")) {

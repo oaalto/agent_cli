@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **CI test portability** (`src/test/kotlin/com/oaalto/agent/acp/AcpProcessLauncherTest.kt`, `src/main/kotlin/com/oaalto/agent/worktree/AgentWorktreePathMapper.kt`): Use temp directories instead of hardcoded Windows paths in launch-plan tests; skip host `Path` normalization for WSL UNC keys so Linux CI matches path-mapper expectations. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP slash commands** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt`, `src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt`): Handle ACP `available_commands_update` notifications and wire slash-command autocomplete into the ACP prompt bar so users can discover and submit `/command` prompts per the ACP protocol. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP slash command popup sizing** (`src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`): Cap the command picker at five visible rows, match popup width to the prompt field, and show it above the input so long command lists no longer dominate the layout. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

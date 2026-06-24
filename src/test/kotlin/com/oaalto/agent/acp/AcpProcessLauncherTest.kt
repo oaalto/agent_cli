@@ -3,6 +3,7 @@ package com.oaalto.agent.acp
 import com.oaalto.agent.AgentLaunchContext
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
+import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,26 +12,30 @@ import kotlin.test.assertTrue
 class AcpProcessLauncherTest {
     @Test
     fun `builds local launch command without resume flags`() {
+        val projectDir = Files.createTempDirectory("acp-launch-project").toFile()
+        projectDir.deleteOnExit()
+        val binaryPath = "agent"
+
         val configuration =
             AgentSettingsState.AgentCliConfiguration().apply {
                 name = "Pi"
-                binaryPath = "C:\\bin\\agent.exe"
+                this.binaryPath = binaryPath
                 arguments = "--continue --model fast"
-                workingDirectory = "C:\\dev\\agent_cli"
+                workingDirectory = projectDir.absolutePath
                 executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name
             }
 
         val plan =
             AcpProcessLauncher
                 .buildLaunchPlan(
-                    projectContext = AgentProjectContext(basePath = "C:\\dev\\agent_cli"),
+                    projectContext = AgentProjectContext(basePath = projectDir.absolutePath),
                     configuration = configuration,
                     launchContext = AgentLaunchContext(additionalArguments = listOf("--continue")),
                 ).getOrThrow()
 
-        assertEquals(listOf("C:\\bin\\agent.exe", "acp", "--model", "fast"), plan.command)
-        assertEquals("C:\\dev\\agent_cli", plan.processWorkingDirectory)
-        assertEquals("C:\\dev\\agent_cli", plan.sessionWorkingDirectory)
+        assertEquals(listOf(binaryPath, "acp", "--model", "fast"), plan.command)
+        assertEquals(projectDir.absolutePath, plan.processWorkingDirectory)
+        assertEquals(projectDir.absolutePath, plan.sessionWorkingDirectory)
     }
 
     @Test
@@ -75,11 +80,17 @@ class AcpProcessLauncherTest {
 
     @Test
     fun `passes configured environment variables and leaves mcp empty when toggles are off`() {
+        val hostBasePath =
+            Files
+                .createTempDirectory("acp-launch-env")
+                .toFile()
+                .also { it.deleteOnExit() }
+                .absolutePath
         val configuration =
             AgentSettingsState.AgentCliConfiguration().apply {
                 name = "ACP"
-                binaryPath = "C:\\bin\\agent.exe"
-                workingDirectory = System.getProperty("user.home")
+                binaryPath = "agent"
+                workingDirectory = hostBasePath
                 executionTarget = AgentSettingsState.ExecutionTarget.LOCAL.name
                 environmentVariables = linkedMapOf("API_KEY" to "secret")
             }
@@ -87,7 +98,7 @@ class AcpProcessLauncherTest {
         val plan =
             AcpProcessLauncher
                 .buildLaunchPlan(
-                    projectContext = AgentProjectContext(basePath = System.getProperty("user.home")),
+                    projectContext = AgentProjectContext(basePath = hostBasePath),
                     configuration = configuration,
                     launchContext = AgentLaunchContext(),
                 ).getOrThrow()
