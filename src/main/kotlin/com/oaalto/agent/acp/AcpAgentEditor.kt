@@ -78,7 +78,11 @@ class AcpAgentEditor(
     private val sessionListener =
         object : AcpSessionListener {
             override fun onStructuredUpdate(update: StructuredUpdate) {
-                transcriptViewController.apply(update)
+                when (update) {
+                    is StructuredUpdate.AvailableCommands ->
+                        runOnEdt { promptInputBar.setAvailableCommands(update.commands) }
+                    else -> transcriptViewController.apply(update)
+                }
             }
 
             override fun onError(message: String) {

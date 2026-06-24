@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-06-24
+
+### Fixed
+
+- **ACP slash commands** (`src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt`, `src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt`): Handle ACP `available_commands_update` notifications and wire slash-command autocomplete into the ACP prompt bar so users can discover and submit `/command` prompts per the ACP protocol. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP slash command popup sizing** (`src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`): Cap the command picker at five visible rows, match popup width to the prompt field, and show it above the input so long command lists no longer dominate the layout. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP slash command popup focus** (`src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`): Keep typing focus in the prompt field while the command picker is open; Up/Down adjust the highlighted command and filtering updates the list in place. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-06-22
 
 ### Added

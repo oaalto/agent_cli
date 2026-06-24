@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.AvailableCommand
+import com.agentclientprotocol.model.AvailableCommandInput
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.Cost
 import com.agentclientprotocol.model.SessionUpdate
@@ -149,5 +151,34 @@ class TranscriptSessionUpdateMapperTest {
         assertEquals(128000, mapped.size)
         assertEquals(0.0234, mapped.cost?.amount)
         assertEquals("USD", mapped.cost?.currency)
+    }
+
+    @Test
+    fun `maps available commands update to structured commands`() {
+        val updates =
+            TranscriptSessionUpdateMapper.mapUpdate(
+                SessionUpdate.AvailableCommandsUpdate(
+                    availableCommands =
+                        listOf(
+                            AvailableCommand(
+                                name = "web",
+                                description = "Search the web",
+                                input = AvailableCommandInput.Unstructured(hint = "query"),
+                            ),
+                            AvailableCommand(
+                                name = "plan",
+                                description = "Create a plan",
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(1, updates.size)
+        val mapped = assertIs<StructuredUpdate.AvailableCommands>(updates.single())
+        assertEquals(2, mapped.commands.size)
+        assertEquals("web", mapped.commands[0].name)
+        assertEquals("query", mapped.commands[0].inputHint)
+        assertEquals("plan", mapped.commands[1].name)
+        assertNull(mapped.commands[1].inputHint)
     }
 }

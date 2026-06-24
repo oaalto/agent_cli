@@ -67,6 +67,11 @@ sealed class StructuredUpdate {
         val planId: String,
         val dismissed: Boolean = true,
     ) : StructuredUpdate()
+
+    /** Agent slash commands advertised for the current session (not rendered in transcript). */
+    data class AvailableCommands(
+        val commands: List<SlashCommand>,
+    ) : StructuredUpdate()
 }
 
 /** Plan entry with content, status, and priority. */

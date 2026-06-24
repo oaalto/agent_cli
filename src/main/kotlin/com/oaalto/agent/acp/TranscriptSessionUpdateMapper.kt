@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.AvailableCommand
+import com.agentclientprotocol.model.AvailableCommandInput
 import com.agentclientprotocol.model.SessionUpdate
 import com.oaalto.agent.acp.plan.PlanUpdateMapper
 
@@ -21,6 +23,7 @@ internal object TranscriptSessionUpdateMapper {
                 is SessionUpdate.ToolCall -> listOf(mapToolCall(update))
                 is SessionUpdate.ToolCallUpdate -> listOf(mapToolCallUpdate(update))
                 is SessionUpdate.UsageUpdate -> listOf(mapUsageUpdate(update))
+                is SessionUpdate.AvailableCommandsUpdate -> listOf(mapAvailableCommands(update))
                 else -> emptyList()
             }
         if (result.isNotEmpty()) return result
@@ -37,6 +40,24 @@ internal object TranscriptSessionUpdateMapper {
             else -> emptyList()
         }
     }
+
+    private fun mapAvailableCommands(
+        update: SessionUpdate.AvailableCommandsUpdate,
+    ): StructuredUpdate.AvailableCommands =
+        StructuredUpdate.AvailableCommands(
+            commands = update.availableCommands.map(::toSlashCommand),
+        )
+
+    private fun toSlashCommand(command: AvailableCommand): SlashCommand =
+        SlashCommand(
+            name = command.name,
+            description = command.description,
+            inputHint =
+                when (val input = command.input) {
+                    is AvailableCommandInput.Unstructured -> input.hint.takeIf { it.isNotBlank() }
+                    else -> null
+                },
+        )
 
     private fun mapUsageUpdate(update: SessionUpdate.UsageUpdate): StructuredUpdate.Usage =
         StructuredUpdate.Usage(
