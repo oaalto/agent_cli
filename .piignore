@@ -1,5 +1,7 @@
 !docs/prd
 !docs/prd/**
+!docs/prds
+!docs/prds/**
 !docs/issues
 !docs/issues/**
 !graphify-out
