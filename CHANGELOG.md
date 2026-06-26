@@ -4,6 +4,12 @@
 
 ### Documentation
 
+- **implement skill** (`.pi/skills/implement/SKILL.md`): Run `qualityGate` then load `/review` from `.agents/skills/review/SKILL.md` before commit. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **to-issues skill** (`.agents/skills/to-issues/SKILL.md`): Add Agent CLI project context (slices, ADRs, glossary, triage labels, quality gate) and save implementation slices to `docs/issues/<feature_name>/<slice-slug>.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **to-prd skill** (`.agents/skills/to-prd/SKILL.md`): Add Agent CLI project context (slices, ADRs, glossary, quality gate) and save PRDs to `docs/prds/<feature_name>/prd.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Agent commands cleanup** (`docs/agent-commands.md`): Remove obsolete To Complete checklist; gates confirmed from Gradle/CI. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Wiki log backfill** (`docs/wiki/log.md`): Ingest entries for five existing wiki pages; ADC post-update history repair. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
