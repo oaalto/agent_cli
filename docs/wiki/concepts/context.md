@@ -11,7 +11,7 @@ sources:
 
 ## Summary
 
-`CONTEXT.md` is the repo's live domain and navigation layer for agents. For the 3.0 ACP slice it documents the transcript rendering stack: how `SessionUpdate` events flow from the Kotlin ACP client into a `JEditorPane` HTML transcript with streaming agent text, structured blocks, and parallel notification paths.
+`CONTEXT.md` is the repo's domain glossary and navigation layer for agents. Implementation detail for the ACP transcript stack lives in wiki pages and `agent/acp/` source — start at [`AcpAgentEditor.kt`](../../../src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt) for transcript behavior changes.
 
 ## Verified Facts
 
@@ -26,12 +26,11 @@ sources:
 ## Agent Synthesis
 
 - When changing transcript behavior, start at `AcpAgentEditor.kt` and trace both paths: prompt events through `AcpPromptEventDispatcher` and out-of-band `notify()` through `AcpClientSessionOperationsImpl`.
-- `CONTEXT.md` currently reads as implementation-heavy code context rather than a compact glossary; durable product terms (Launch Mode, worktree, configuration catalog) also live in ADRs and subsystem wiki pages.
+- `CONTEXT.md` is glossary + pointers; durable implementation detail belongs in this page, subsystem wiki pages, and source.
 
 ## Open Questions
 
-- Should `CONTEXT.md` be trimmed back to glossary-style domain language with implementation detail moved to subsystem pages? (To Complete)
-- Should `notify()` route through `AcpPromptEventDispatcher` for consistent finalize semantics? (`CONTEXT.md` flags this as an inconsistency risk.)
+- Should `notify()` route through `AcpPromptEventDispatcher` for consistent finalize semantics?
 
 ## Related
 

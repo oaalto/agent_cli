@@ -19,6 +19,10 @@ Agent instruction: Read this file before code-changing work.
 
 `./gradlew test`
 
+## Quality Gate
+
+`./gradlew qualityGate`  (format, compile, lint, detekt, tests, coverage — run before push)
+
 ## Wiki Lint
 
 When `scripts/wiki-lint.mjs` is present, run mechanical wiki lint before commit. Node reference implementation:

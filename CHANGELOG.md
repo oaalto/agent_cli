@@ -8,9 +8,13 @@
 
 - **Wiki log backfill** (`docs/wiki/log.md`): Ingest entries for five existing wiki pages; ADC post-update history repair. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **CONTEXT glossary trim** (`CONTEXT.md`, `docs/wiki/concepts/context.md`): Replace 1.3k-line code dump with domain glossary and wiki/source pointers; fix stale `docs/prd/` path in agent-cli overview → `docs/prds/`; add `qualityGate` one-liner to agent-commands. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Changed
 
 - **ADC 2026.06.26 update** (`AGENTS.md`, `.agents/rules/`, `.agentic-config/manifest.json`, `.graphifyignore`): Merge new bundle rules (graphify, ponytail, headroom, restricted-operations), restore tailored Gradle workflow gates, and record content hashes for post-install tracking. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Pre-commit graphify** (`scripts/pre-commit`, `.agents/rules/graphify-consultation.md`, `.agents/rules/workflow-gates.md`): Run `graphify update .` after ktlint in pre-commit so structural graph stays fresh. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Fixed
 

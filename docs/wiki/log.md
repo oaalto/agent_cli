@@ -35,3 +35,15 @@
 - Updated: [Engineering Wiki Log](log.md)
 - Sources: existing wiki pages under `docs/wiki/`
 - Notes: Backfilled ingest history after ADC update; no page content changes.
+
+## [2026-06-26] update | Domain context & ACP transcript model
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md)
+- Sources: `CONTEXT.md`
+- Notes: CONTEXT trimmed to glossary; this page retains ACP transcript implementation detail.
+
+## [2026-06-26] update | Agent CLI overview
+
+- Updated: [Agent CLI overview](concepts/agent-cli-overview.md)
+- Sources: `CONTEXT.md`
+- Notes: PRD path corrected to `docs/prds/`.

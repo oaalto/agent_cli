@@ -38,7 +38,7 @@ For plugin compatibility with target IDE builds, also run before release-oriente
 ## CI and hooks
 
 - **CI** (`.github/workflows/build-plugin.yml`): `node scripts/wiki-lint.mjs`, then `./gradlew qualityGate verifyPlugin`, then artifact build.
-- **Pre-commit** (`scripts/pre-commit`): wiki-lint (staged) and `ktlintCheck` only — run `./gradlew qualityGate` before push when code changed beyond formatting.
+- **Pre-commit** (`scripts/pre-commit`): wiki-lint, `ktlintCheck`, and `graphify update .` — run `./gradlew qualityGate` before push when code changed beyond formatting.
 
 ## Zero-Suppression Enforcement
 

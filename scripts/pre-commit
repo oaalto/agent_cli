@@ -26,4 +26,10 @@ if ! ./gradlew ktlintCheck --quiet; then
   exit 1
 fi
 
+echo "Running graphify update (pre-commit)..."
+if ! graphify update .; then
+  echo "Pre-commit: graphify update failed. Ensure graphify is installed and configured (see graphify.env.example)."
+  exit 1
+fi
+
 exit 0
