@@ -1,0 +1,1 @@
+Installed by ./.agentic-config/install.sh via graphify (uv tool install + platform install --project).

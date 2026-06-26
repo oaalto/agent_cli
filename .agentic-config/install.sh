@@ -7,14 +7,35 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PLAN="${SCRIPT_DIR}/install-plan.json"
 
+# --- Install type detection (before any overwrites) ---
+INSTALL_TYPE=""
+prior_adc_in_head() {
+  git rev-parse HEAD >/dev/null 2>&1 || return 1
+  if git show HEAD:.agentic-config/manifest.json >/dev/null 2>&1; then
+    return 0
+  fi
+  git ls-tree -r --name-only HEAD 2>/dev/null | grep -q '^\.agentic-config/'
+}
+if git rev-parse HEAD >/dev/null 2>&1; then
+  if prior_adc_in_head; then
+    INSTALL_TYPE="update"
+  else
+    INSTALL_TYPE="integration"
+  fi
+else
+  INSTALL_TYPE="greenfield"
+fi
+
 DRY_RUN=0
 FORCE=0
 SKIP_PI=0
 SKIP_SKILLS=0
 SKIP_ENV_CHECK=0
+STRICT=0
+UPSTREAM_WARNINGS=0
 
 usage() {
-  echo "Usage: $0 [--dry-run] [--force] [--skip-pi] [--skip-skills] [--skip-env-check]"
+  echo "Usage: $0 [--dry-run] [--force] [--skip-pi] [--skip-skills] [--skip-env-check] [--strict]"
   exit 1
 }
 
@@ -25,6 +46,7 @@ while [[ $# -gt 0 ]]; do
     --skip-pi) SKIP_PI=1 ;;
     --skip-skills) SKIP_SKILLS=1 ;;
     --skip-env-check) SKIP_ENV_CHECK=1 ;;
+    --strict) STRICT=1 ;;
     -h|--help) usage ;;
     *) echo "Unknown option: $1" >&2; usage ;;
   esac
@@ -95,10 +117,79 @@ print_tool_help() {
     bash)
       echo "  Note:    bash should be present on POSIX systems."
       ;;
+    python3)
+      echo "  Docs:    https://www.python.org/downloads/"
+      echo "  Install: sudo apt-get install -y python3 python3-venv    # Debian/Ubuntu"
+      echo "           brew install python@3.12                         # macOS (Homebrew)"
+      echo "  Note:    Only required when an install step invokes python3 directly."
+      ;;
+    uv)
+      echo "  Docs:    https://docs.astral.sh/uv/getting-started/installation/"
+      echo "  Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
+      echo "  Note:    Graphify install uses \`uv tool install graphifyy[mcp]\`."
+      echo "           Headroom install uses \`uv tool install 'headroom-ai[proxy,mcp]'\`."
+      ;;
+    graphify)
+      echo "  Docs:    https://github.com/safishamsi/graphify"
+      echo "  Note:    Installed by the graphify-tool-install step via \`uv tool install graphifyy[mcp]\`."
+      echo "  Install: ensure ~/.local/bin is on PATH (uv tool install places the CLI there)."
+      ;;
+    headroom)
+      echo "  Docs:    https://github.com/headroomlabs-ai/headroom"
+      echo "  Note:    Installed by the headroom-tool-install step via \`uv tool install 'headroom-ai[proxy,mcp]'\`."
+      echo "  Note:    PyPI has no native Windows wheels; use WSL/Linux or MSVC C++ Build Tools (link.exe) on Windows."
+      echo "  Install: ensure ~/.local/bin is on PATH (uv tool install places the CLI there)."
+      ;;
     *)
       echo "  Install: add '${tool}' to your PATH, then re-run ./.agentic-config/install.sh"
       ;;
   esac
+}
+
+ensure_graphify_path() {
+  export PATH="${HOME}/.local/bin:${PATH}"
+}
+
+ensure_headroom_path() {
+  export PATH="${HOME}/.local/bin:${PATH}"
+}
+
+plan_includes_graphify() {
+  jq -e '.steps[] | select(.kind == "graphify-tool-install" or .kind == "graphify-install")' "$PLAN" >/dev/null 2>&1
+}
+
+# Env var list must match packages/agentic-config-core/lib/graphify-extraction-backend.mjs
+# (GRAPHIFY_EXTRACTION_BACKEND_ENV_VARS); core.test.mjs asserts install scripts stay in sync.
+has_graphify_extraction_backend_env() {
+  local -a vars=(
+    GEMINI_API_KEY GOOGLE_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY
+    DEEPSEEK_API_KEY MOONSHOT_API_KEY OLLAMA_BASE_URL
+  )
+  local key val
+  for key in "${vars[@]}"; do
+    val="${!key:-}"
+    if [[ -n "$val" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+warn_missing_graphify_extraction_backend() {
+  if ! plan_includes_graphify; then
+    return 0
+  fi
+  if has_graphify_extraction_backend_env; then
+    return 0
+  fi
+  echo ""
+  echo "[warn] No Graphify extraction backend detected (GEMINI_API_KEY, GOOGLE_API_KEY,"
+  echo "       ANTHROPIC_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY,"
+  echo "       or OLLAMA_BASE_URL)."
+  echo "       Semantic doc/image extraction needs a backend pip extra and env vars."
+  echo "       See .agentic-config/INSTALL.md and graphify.env.example."
+  echo "       Install still succeeded — AST-only indexing remains possible."
+  echo ""
 }
 
 # Collect binaries required by steps that will actually run (non-optional only).
@@ -126,7 +217,9 @@ collect_required_tools() {
     if [[ "$kind" == "skills-add" && "$SKIP_SKILLS" -eq 1 ]]; then continue; fi
     requires="$(jq -r '.steps['"$i"'].requires[]?' "$PLAN")"
     while IFS= read -r bin; do
-      [[ -n "$bin" ]] && add_unique "$bin"
+        # graphify is installed by graphify-tool-install; checked at graphify-install step time.
+        # headroom is installed by headroom-tool-install; checked at headroom-mcp-install step time.
+        [[ -n "$bin" && "$bin" != "graphify" && "$bin" != "headroom" ]] && add_unique "$bin"
     done <<< "$requires"
   done
 }
@@ -180,7 +273,9 @@ if [[ "$SKIP_ENV_CHECK" -eq 0 ]]; then
 fi
 
 run_step() {
-  local id="$1" kind="$2" cmd="$3" requires="$4" optional="$5"
+  local id="$1" kind="$2" cmd="$3" requires="$4" optional="$5" exe="${6:-}"
+  shift 6 || true
+  local -a step_args=("$@")
 
   if [[ "$kind" == "pi-install" && "$SKIP_PI" -eq 1 ]]; then
     echo "[skip] ${id} (--skip-pi)"
@@ -191,8 +286,22 @@ run_step() {
     return 0
   fi
 
+  if [[ "$kind" == "graphify-install" ]]; then
+    ensure_graphify_path
+  fi
+
+  if [[ "$kind" == "headroom-mcp" || "$kind" == "headroom-tool" ]]; then
+    ensure_headroom_path
+  fi
+
   local IFS=,
   for bin in $requires; do
+    if [[ "$bin" == "graphify" && "$DRY_RUN" -eq 1 ]]; then
+      continue
+    fi
+    if [[ "$bin" == "headroom" && "$DRY_RUN" -eq 1 ]]; then
+      continue
+    fi
     if ! have "$bin"; then
       if [[ "$optional" == "true" || "$optional" == "1" ]]; then
         echo "[skip] ${id} (missing: ${bin}, optional)"
@@ -212,7 +321,26 @@ run_step() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
     return 0
   fi
-  (cd "$PROJECT_ROOT" && eval "$cmd")
+  local status=0
+  if [[ -n "$exe" ]]; then
+    (cd "$PROJECT_ROOT" && "$exe" "${step_args[@]}") || status=$?
+  else
+    (cd "$PROJECT_ROOT" && eval "$cmd") || status=$?
+  fi
+  if [[ "$status" -ne 0 ]]; then
+    if [[ "$kind" == "skills-add" || "$kind" == "pi-install" ]]; then
+      if [[ "$STRICT" -eq 1 ]]; then
+        echo "[fail] ${id} exited with code ${status}" >&2
+        return 1
+      fi
+      echo "[warn] ${id}: upstream install failed (exit ${status}); skill may be missing upstream - refresh bundle or install manually"
+      UPSTREAM_WARNINGS=$((UPSTREAM_WARNINGS + 1))
+      return 0
+    fi
+    echo "[fail] ${id} exited with code ${status}" >&2
+    return 1
+  fi
+  return 0
 }
 
 failed=0
@@ -224,8 +352,13 @@ for ((i = 0; i < step_count; i++)); do
   cmd="$(jq -r ".steps[$i].command" "$PLAN")"
   requires="$(jq -r '.steps['"$i"'].requires | join(",")' "$PLAN")"
   optional="$(jq -r ".steps[$i].optional // false" "$PLAN")"
-  if ! run_step "$id" "$kind" "$cmd" "$requires" "$optional"; then
+  exe="$(jq -r ".steps[$i].exe // empty" "$PLAN")"
+  mapfile -t step_args < <(jq -r ".steps[$i].args // [] | .[]" "$PLAN")
+  if ! run_step "$id" "$kind" "$cmd" "$requires" "$optional" "$exe" "${step_args[@]}"; then
     failed=1
+    if [[ "$optional" != "true" && "$optional" != "1" ]]; then
+      break
+    fi
   fi
 done
 
@@ -235,10 +368,38 @@ if [[ "$failed" -ne 0 ]]; then
   echo "Installer finished with errors." >&2
   exit 1
 fi
+
+# --- Install type recommendation ---
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "Dry run complete (${step_count} steps)."
+  echo "Install type detected: ${INSTALL_TYPE}"
 else
-  echo "Installer finished successfully."
+  warn_missing_graphify_extraction_backend
+  if [[ "$UPSTREAM_WARNINGS" -gt 0 ]]; then
+    echo "Installer finished with ${UPSTREAM_WARNINGS} warning(s)."
+  else
+    echo "Installer finished successfully."
+  fi
+  echo ""
+  case "${INSTALL_TYPE}" in
+    greenfield)
+      echo "This appears to be a new repository with no prior ADC installation."
+      echo "Post-install review: .agentic-config/post-install-review-greenfield.md"
+      echo "Open the file, select all, and paste into your coding agent."
+      ;;
+    integration)
+      echo "This appears to be an existing repository without a prior ADC installation."
+      echo "Post-install review: .agentic-config/post-install-review-integration.md"
+      echo "Open the file, select all, and paste into your coding agent."
+      ;;
+    update)
+      echo "This appears to be an update to an existing ADC installation."
+      echo "Recommended post-install review: .agentic-config/post-install-review-update.md"
+      echo "Open the file, select all, and paste into your coding agent."
+      echo "The agent will compare the new bundle against the prior installation in git history."
+      ;;
+  esac
+  echo ""
   if [[ -n "$agent" ]]; then
     case "$agent" in
       pi) echo "In Pi, run /reload to pick up new packages and skills." ;;

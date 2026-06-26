@@ -10,7 +10,7 @@ This file is the human-facing entry point for daily agentic development work.
 - Planning artifact: `/to-prd`
 - Implementation slices: `/to-issues`
 - Implementation: `/tdd`
-- Debugging: `/diagnose`
+- Debugging: `/diagnosing-bugs`
 - Architecture review: `/improve-codebase-architecture`
 - Wiki query/update/lint: `/wiki`
 - Code review: `/review`

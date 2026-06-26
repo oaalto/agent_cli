@@ -36,13 +36,3 @@ This repository includes a Node-based wiki lint script and an npm script `npm ru
 Checks requiring credentials, root, Docker, cloud access, paid services, hardware, or local-only infrastructure:
 
 None known.
-
-## To Complete
-
-Agent instruction: When this section lists items, offer the user LLM-assisted follow-up to resolve them. Do not invent commands silently.
-
-- Confirm format command (`./gradlew ktlintFormat`)
-- Confirm build/typecheck commands (`./gradlew build` and/or `./gradlew buildPlugin`)
-- Confirm lint command (`./gradlew ktlintCheck`)
-- Confirm test command (`./gradlew test`)
-- Confirm whether to adopt `scripts/wiki-lint.mjs` (Node) or port it to a Gradle/shell implementation

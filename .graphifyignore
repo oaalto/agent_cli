@@ -1,0 +1,18 @@
+# Graphify ignore starter (ADC bundle)
+# See https://github.com/safishamsi/graphify for full syntax.
+
+node_modules/
+dist/
+build/
+coverage/
+.git/
+.gradle/
+.idea/
+.intellijPlatform/
+.kotlin/
+.pi/
+.tmp-acp-search/
+.tmp-acp-sources/
+graphify-out/
+**/*.min.js
+**/*.map

@@ -1,7 +1,7 @@
 {
   "manifestVersion": "1",
-  "agenticConfigVersion": "0.1.0",
-  "generatedAt": "2026-06-16T07:12:13.991Z",
+  "agenticConfigVersion": "2026.06.26",
+  "generatedAt": "2026-06-26T06:40:25.123Z",
   "selection": {
     "version": "1",
     "targetAgent": {
@@ -44,11 +44,19 @@
       "to-prd",
       "to-issues",
       "tdd",
-      "diagnose",
+      "diagnosing-bugs",
       "improve-codebase-architecture",
       "review",
       "wiki",
-      "vertical-slice-migration"
+      "vertical-slice-migration",
+      "graphify",
+      "decision-mapping",
+      "domain-modeling",
+      "handoff",
+      "implement",
+      "ponytail",
+      "prototype",
+      "triage"
     ],
     "rules": [
       "workflow-gates",
@@ -73,7 +81,11 @@
       "domain-language",
       "adr-discipline",
       "wiki-consultation",
-      "definition-of-done"
+      "definition-of-done",
+      "graphify-consultation",
+      "ponytail",
+      "restricted-operations",
+      "headroom-consultation"
     ],
     "install": {
       "acknowledgeUnsafeCommands": false,
@@ -87,8 +99,8 @@
         "to-prd": "bundled",
         "to-issues": "bundled",
         "tdd": "bundled",
-        "diagnose": "upstream",
-        "improve-codebase-architecture": "bundled"
+        "improve-codebase-architecture": "bundled",
+        "diagnosing-bugs": "upstream"
       },
       "custom": {
         "skills": [],
@@ -112,6 +124,19 @@
         "wontfix": "wontfix"
       },
       "domainLayout": "single-context"
+    },
+    "contextOptimization": {
+      "headroom": {
+        "enabled": true,
+        "runtime": true,
+        "mcp": false,
+        "rule": true,
+        "piExtension": true,
+        "guide": true
+      }
+    },
+    "graphify": {
+      "enabled": true
     }
   },
   "featureIds": [
@@ -136,17 +161,31 @@
     "wiki.linkStyle",
     "wiki.evidenceStrictness",
     "wiki.promotionPolicy",
+    "graphify.enabled",
+    "contextOptimization.headroom.enabled",
+    "contextOptimization.headroom.runtime",
+    "contextOptimization.headroom.rule",
+    "contextOptimization.headroom.piExtension",
+    "contextOptimization.headroom.guide",
     "skill.zoom-out",
     "skill.grill-me",
     "skill.grill-with-docs",
     "skill.to-prd",
     "skill.to-issues",
     "skill.tdd",
-    "skill.diagnose",
+    "skill.diagnosing-bugs",
     "skill.improve-architecture",
     "skill.review",
     "skill.wiki",
     "skill.vertical-slice-migration",
+    "skill.graphify",
+    "skill.decision-mapping",
+    "skill.domain-modeling",
+    "skill.handoff",
+    "skill.implement",
+    "skill.ponytail",
+    "skill.prototype",
+    "skill.triage",
     "rule.workflow-gates",
     "rule.documentation",
     "rule.testing",
@@ -156,7 +195,7 @@
     "rule.logging-observability",
     "rule.runtime-handoff",
     "rule.warning-hygiene",
-    "rule.current-state",
+    "rule.current-state-safeguards",
     "rule.changelog",
     "rule.code-format",
     "rule.commit",
@@ -170,6 +209,10 @@
     "rule.adr-discipline",
     "rule.wiki-consultation",
     "rule.definition-of-done",
+    "rule.graphify-consultation",
+    "rule.ponytail",
+    "rule.restricted-operations",
+    "rule.headroom-consultation",
     "agentSetup.issueTracker.repo-prd",
     "agentSetup.domainLayout.single-context",
     "install.skillSource.upstream"
@@ -177,7 +220,8 @@
   "autoIncluded": [
     "USAGE.md",
     "docs/agent-commands.md",
-    "docs/prd/",
+    "docs/prds/",
+    "docs/issues/",
     "CONTEXT.md",
     "docs/adr/",
     "docs/wiki/schema.md",
@@ -194,7 +238,8 @@
     "docs/agents/triage-labels.md",
     "docs/agents/domain.md",
     "AGENTS.md",
-    "docs/prd/.gitkeep"
+    "docs/prds/.gitkeep",
+    "docs/issues/.gitkeep"
   ],
   "targetAgent": {
     "id": "pi"
@@ -232,9 +277,20 @@
         "source": "catalog"
       },
       {
-        "id": "skill-zoom-out",
+        "id": "pi-package-ponytail",
+        "kind": "pi-install",
+        "command": "pi install -l npm:@dietrichgebert/ponytail",
+        "requires": [
+          "jq",
+          "pi"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-diagnosing-bugs",
         "kind": "skills-add",
-        "command": "npx -y skills@latest add mattpocock/skills --skill zoom-out --agent pi -y",
+        "command": "npx -y skills@latest add mattpocock/skills --skill diagnosing-bugs --agent pi -y",
         "requires": [
           "jq",
           "node",
@@ -244,9 +300,9 @@
         "source": "catalog"
       },
       {
-        "id": "skill-diagnose",
+        "id": "skill-decision-mapping",
         "kind": "skills-add",
-        "command": "npx -y skills@latest add mattpocock/skills --skill diagnose --agent pi -y",
+        "command": "npx -y skills@latest add mattpocock/skills --skill decision-mapping --agent pi -y",
         "requires": [
           "jq",
           "node",
@@ -254,11 +310,176 @@
         ],
         "optional": false,
         "source": "catalog"
+      },
+      {
+        "id": "skill-domain-modeling",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill domain-modeling --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-handoff",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill handoff --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-implement",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill implement --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-prototype",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill prototype --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-triage",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill triage --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "graphify-tool-install",
+        "kind": "graphify-tool",
+        "command": "uv tool install 'graphifyy[mcp]'",
+        "exe": "uv",
+        "args": [
+          "tool",
+          "install",
+          "graphifyy[mcp]"
+        ],
+        "requires": [
+          "jq",
+          "uv"
+        ],
+        "optional": false,
+        "source": "catalog",
+        "label": "Install graphify CLI (PyPI graphifyy)"
+      },
+      {
+        "id": "graphify-platform-install",
+        "kind": "graphify-install",
+        "command": "graphify install --platform pi --project",
+        "requires": [
+          "jq",
+          "graphify"
+        ],
+        "optional": false,
+        "source": "catalog",
+        "label": "Register graphify for target agent"
+      },
+      {
+        "id": "headroom-tool-install",
+        "kind": "headroom-tool",
+        "command": "uv tool install 'headroom-ai[proxy,mcp]'",
+        "exe": "uv",
+        "args": [
+          "tool",
+          "install",
+          "headroom-ai[proxy,mcp]"
+        ],
+        "requires": [
+          "jq",
+          "uv"
+        ],
+        "optional": false,
+        "source": "catalog",
+        "label": "Install Headroom runtime (PyPI headroom-ai)"
+      },
+      {
+        "id": "headroom-pi-extension",
+        "kind": "headroom-pi-extension",
+        "command": "pi install -l npm:@ryan_nookpi/pi-extension-headroom",
+        "requires": [
+          "jq",
+          "pi"
+        ],
+        "optional": false,
+        "source": "catalog",
+        "label": "Install Headroom Pi extension"
       }
     ]
   },
   "bundleOnlyRules": [],
   "warnings": [
     "Upstream skill installs require Node.js and npx."
-  ]
+  ],
+  "contentTemplateHashes": {
+    ".agents/skills/zoom-out/SKILL.md": "sha256:2a6894c7f9b1c9c55f451c625a834c4f377e217b623a85280e55db5fe9cacf48",
+    ".agents/skills/grill-me/SKILL.md": "sha256:74147eb6010a65957efef2b9e0f0b3ff935c1def7fc117697151b1d0f3610556",
+    ".agents/skills/grill-with-docs/SKILL.md": "sha256:3e35025119ba03efe7983dfdec3c8b96918142e3978512f3c2bf66d428310c7e",
+    ".agents/skills/to-prd/SKILL.md": "sha256:b60e3805e361e4eabc6f3df48d305299e0fde64cb24b6e95443c01de907a2e7d",
+    ".agents/skills/to-issues/SKILL.md": "sha256:0e6a2973fa5bdf32570227c578f7e474d945dd9281615d31439664c3ef016fce",
+    ".agents/skills/tdd/SKILL.md": "sha256:af059705061156fd4845ddbb736fe92b564118ac5f03551e09ef9e8f6d970638",
+    ".agents/skills/improve-codebase-architecture/SKILL.md": "sha256:f00de04c7bb83cfd0ed1f97f3401a83838212c30856912ee44ba406649e6c749",
+    ".agents/skills/review/SKILL.md": "sha256:a46a7d57a9e88139e92af5ea0383fbe05391db4d81520613c98b2fe4c5616baf",
+    ".agents/skills/wiki/SKILL.md": "sha256:bc72b877173e4ba2dbca1060b85d2a5e0e61be0600f69f3ae037120897b0cfc3",
+    ".agents/skills/vertical-slice-migration/SKILL.md": "sha256:2b4bf7e889b40a0e6c440537d21be9005173db8759ba665a78f8fd84a8ecacfc",
+    ".agents/skills/ponytail/SKILL.md": "sha256:c8f4aa8be31640d16bd8b1eae36300840e87f96dfe7fa94d17648eed75baafa8",
+    "AGENTS.md": "sha256:7da15af2408cf0dc06a2d99d33d8c27509058b4cad19756d3bd3fb2bc1118b14",
+    ".agents/rules/workflow-gates.md": "sha256:baf032bc2cbb00011db91195e1bbe59028e8c9c2288bd9ef14591d5dd265b57d",
+    ".agents/rules/documentation.md": "sha256:f417a82cd3b04e190e4a1f32ef627adc8563f593aa42432ad33035d552a1369e",
+    ".agents/rules/testing.md": "sha256:92abf5930f093742e88234fc76926f3c4f8737e6120d51e37d15c3da9afdf48d",
+    ".agents/rules/dependency-boundaries.md": "sha256:b10c897df8fd5d6ac4c0b08a02b9e42b0839107aa9cdaae95b117595f423e204",
+    ".agents/rules/api-design-basics.md": "sha256:263293e8fa335bc2968b72f4ab0a76f9d890a0bd4cb96be06d7bbdaea1ff3577",
+    ".agents/rules/result-handling.md": "sha256:0c5968f832fc81eca2a6ed6e5dc9e417c8e5f85987bf3e0cbe5d7ee61430171f",
+    ".agents/rules/logging-practices.md": "sha256:8a7cc61ebb88a29d4e3448874d0956676e92e6c7035470992ad855284a2328ea",
+    ".agents/rules/runtime-handoff.md": "sha256:c40c1beb34f136ab89fad664467d95cc321070754edf212659120afde1a19128",
+    ".agents/rules/warning-hygiene.md": "sha256:ef2cd0356688a16cc994c6ae3c519303f6948bf26d1654fda5d439345afffece",
+    ".agents/rules/current-state.md": "sha256:0209892bbe57afd8950d7e4babfd9d62daf0e53a63740002d4d9984985462fbb",
+    ".agents/rules/code-format.md": "sha256:fcfa9dc8522e4d1d353528d8a38049728e5ccdc2bccf7fa38da90307537230d4",
+    ".agents/rules/functional-programming.md": "sha256:b9bdbce487d57dde2239e119a800bd0b42a6329c0c88d91c799ee5ae6b072cd8",
+    ".agents/rules/vertical-slice-boundaries.md": "sha256:85be7fbedbe2469d8bc370452b5a6e2813024dfcd051a2f69173b50322fdec2f",
+    ".agents/rules/domain-language.md": "sha256:51c0d5e3b2c250bfa450ac4963e38b4f3a85dfe2ea18745bd0e449d7ab299229",
+    ".agents/rules/adr-discipline.md": "sha256:73ce654af9b67f33bdf55b6828e40ab6b276dbe99288f5dd6023418b43324cd3",
+    ".agents/rules/wiki-consultation.md": "sha256:ad1773be3c649ac9c413374979de32ba653b3431f485e60e34ad2025716e3493",
+    ".agents/rules/graphify-consultation.md": "sha256:a88ea51a529f4eebc5428fce849110257c30142d378b69abfebbeecec8739263",
+    ".agents/rules/headroom-consultation.md": "sha256:813488ac2cb50bd6d48aac16d5c1d05359adb3aa15ba38192f9c87af22aba59b"
+  },
+  "contentHashes": {
+    "AGENTS.md": "sha256:97e3225d6430610b3cdb98f52fcc8a764ec9c3e58e244e82a601533dd4614610",
+    ".agents/rules/workflow-gates.md": "sha256:b9d37887d97a5aff3ba135354552977edf258902b979404def8d32d673d17b02",
+    ".agents/rules/testing.md": "sha256:26f722d11255a754d42493d9283abf9075c3729c7df1ab912fd6adc5b96056a7",
+    ".agents/rules/code-format.md": "sha256:eb163a2c504eebe8f7d85f9fd880301a4230d3a8c852d417aa67966641b748f2",
+    ".agents/rules/warning-hygiene.md": "sha256:459207669be316b646f6c9298152c6d165dc35675ab2558968fe7c6908490c7c",
+    ".agents/rules/wiki-consultation.md": "sha256:b7ab898898238d6578fc445da86d585ed631814c9e5ff28d646d054e160ad8c0",
+    ".agents/rules/graphify-consultation.md": "sha256:c563721623030e229976d5b6bb3a1216dee9c2ab195f751592422fdfdb93899c",
+    ".agents/rules/headroom-consultation.md": "sha256:422c4c0d0695c2367a24714b7e636b35c1866b6e3abb2b8de17e5bb988c57f12",
+    "CONTEXT.md": "sha256:569d7237ecc4573578efe2db039b7d0bccf68ac2cfbef866fbc67c03c066903a",
+    "docs/agent-commands.md": "sha256:865769e5e7612d0c808937b12def994e8b3f6fce00241620cee039f159fd147e",
+    "docs/wiki/index.md": "sha256:727eae930ee4e83bb4caeaf8b819517a96f6baec5bd0627dd53cb898b060bdea"
+  }
 }

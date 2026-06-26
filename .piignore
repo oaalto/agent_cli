@@ -2,3 +2,5 @@
 !docs/prd/**
 !docs/issues
 !docs/issues/**
+!graphify-out
+!graphify-out/**

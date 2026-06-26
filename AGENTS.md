@@ -25,19 +25,54 @@
 | adr-discipline | scoped | "**/*" | .agents/rules/adr-discipline.md |
 | wiki-consultation | scoped | "**/*" | .agents/rules/wiki-consultation.md |
 | definition-of-done | always | — | inline |
+| graphify-consultation | scoped | "**/*" | .agents/rules/graphify-consultation.md |
+| ponytail | always | — | inline |
+| restricted-operations | always | — | inline |
+| headroom-consultation | scoped | "**/*" | .agents/rules/headroom-consultation.md |
 
 ## How project rules apply
 
 Precedence (highest first):
 
 1. Explicit user instructions in the current conversation
-2. Task-scoped rules whose scope matches files you are changing
+2. Task-scoped rules whose scope matches files you are working on (reading, searching, or editing)
 3. Global rules marked **always** in the Rules index (inlined below)
 4. Default agent behavior
 
 ### Scoped rule loading policy
 
-Before editing files in a task, **load** (read) each scoped rule file from the **Rules index** whose **scope** matches your target paths. Use the path in the index — do not assume scoped rule text from memory. Always-apply rules inlined below are in effect without a separate read.
+Before working on files in a task — reading, searching, or editing — **load** (read) each scoped rule file from the **Rules index** whose **scope** matches your target paths. Use the path in the index — do not assume scoped rule text from memory. Always-apply rules inlined below are in effect without a separate read.
+
+Consultation rules (`wiki-consultation`, `graphify-consultation`) apply before repository exploration as well as before edits: load them when the task involves reading or changing paths in their scope.
+
+### Architecture and exploration questions
+
+Classify read-only exploration first, then follow the matching track **before** broad source-code exploration.
+
+#### Narrative overview questions
+
+When the user asks what a package, slice, or subsystem **is** or **owns** (layout summary, responsibilities, stack — not a file-level call chain):
+
+1. **Wiki (required):** Read `docs/wiki/path-map.json` and `docs/wiki/index.md`. Match to path-map `sources` or index entries. Read up to **3** candidate pages (subsystem → concept → workflow). Load `.agents/rules/wiki-consultation.md` if not already loaded.
+2. **ADRs:** Read cited or task-relevant accepted ADRs when the wiki or question is architectural.
+3. **Skip graphify** for this track.
+4. **Code (targeted):** Open source only to verify wiki claims or fill gaps — not directory sweeps.
+
+#### Structural topology questions
+
+When the question needs **cross-file or cross-slice** relationships: call/import chains, caller maps, dependency paths, impact analysis, or which files connect A to B. Common triggers: "call chain", "import path", "what calls", "what connects", "cross-slice", "facade", "shortest path", "who depends on", "what breaks if".
+
+When shell confirms the graph exists (`test -f graphify-out/graph.json`) or `graphify-out/.graphify_semantic_marker` is readable — `graphify-out/` is gitignored; Read/Glob alone are not reliable:
+
+1. **Graphify (required):** Load `.agents/rules/graphify-consultation.md`. Check graph freshness, then run `graphify query`, `graphify path`, or graphify MCP via **shell or MCP** **before** opening implementation files or running broad search/`rg` for topology. Do not wait for the user to say "use graphify".
+2. **Wiki (optional, brief):** At most path-map + index, or one subsystem page for domain terms — do not substitute wiki deep-reads for graphify.
+3. **Code (targeted):** Open only files graphify names to verify **EXTRACTED** edges; prefer slice `index.ts` and cited hop files — not parallel sweeps across many `internal/` files.
+
+If the graph is missing or stale, propose `graphify .` or `graphify update .` before deep structural work; fall back to targeted search only then.
+
+#### Both tracks
+
+Do not skip consultation because the task is question-only with no file edits. If wiki has no match on the narrative track, say so and proceed with ADRs and code.
 
 ### changelog
 
@@ -197,7 +232,7 @@ Use this format:
 ## 4. Execution and Verification
 
 - Prefer `rg` filtering first when reading large files, command output, or test logs.
-- Run `[INSERT_TEST_COMMAND_HERE]` to verify modifications.
+- Run `./gradlew test` (or `./gradlew qualityGate` for the full gate chain) to verify modifications.
 - Upon successful execution, terminate the response immediately with `DONE`.
 - Never summarize test results or verification steps.
 - When unexpected file changes appear, assume they are intentional user edits and never revert them.
@@ -228,11 +263,159 @@ Work is incomplete until required surrounding updates for this change are done.
 
 - Format → build/typecheck → lint → test must pass before marking done. See the `workflow-gates` rule.
 
+### ponytail
+
+# Ponytail, lazy senior dev mode
+
+You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
+
+Before writing any code, stop at the first rung that holds:
+
+1. Does this need to be built at all? (YAGNI)
+2. Does it already exist in this codebase? Reuse the helper, util, or pattern that's already here, don't re-write it.
+3. Does the standard library already do this? Use it.
+4. Does a native platform feature cover it? Use it.
+5. Does an already-installed dependency solve it? Use it.
+6. Can this be one line? Make it one line.
+7. Only then: write the minimum code that works.
+
+The ladder runs after you understand the problem, not instead of it: read the task and the code it touches, trace the real flow end to end, then climb.
+
+Bug fix = root cause, not symptom: a report names a symptom. Grep every caller of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the path the ticket names leaves a sibling caller still broken.
+
+Rules:
+
+- No abstractions that weren't explicitly requested.
+- No new dependency if it can be avoided.
+- No boilerplate nobody asked for.
+- Deletion over addition. Boring over clever. Fewest files possible.
+- Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.
+- Question complex requests: "Do you actually need X, or does Y cover it?"
+- Pick the edge-case-correct option when two stdlib approaches are the same size, lazy means less code, not the flimsier algorithm.
+- Mark intentional simplifications with a `ponytail:` comment. If the shortcut has a known ceiling (global lock, O(n²) scan, naive heuristic), the comment names the ceiling and the upgrade path.
+
+Not lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
+
+**Precedence:** When `strict-output-execution` also applies, default to artifact-only output; allow one short trailing line only when the user explicitly asked for explanation. Workflow gates and meaningful tests stay authoritative — ponytail does not skip `./gradlew qualityGate`.
+
+**Pi overlap:** The Pi ponytail extension injects the full ladder at session start. This inline section is canonical for always-on behavior; upstream `/ponytail-*` slash skills add modes (audit, review, debt) — do not duplicate the ladder there.
+
+### restricted-operations
+
+# Restricted Operations
+
+Do not run commands that mutate state without explicit user permission. Read-only inspection (fetching information, listing state, reading logs) is always allowed.
+
+## Policy
+
+### Restricted categories (require explicit permission)
+
+**Destructive:**
+
+- `rm`, `rmdir` — permanent deletion of files or directories
+- `mv`, `cp` — when the target path already exists (overwrite). Moving/copying to a non-existing target is allowed.
+- `chmod`, `chown` — permission changes
+- `sudo` — privilege escalation for any command
+- Destructive `docker` commands: `rm`, `rmi`, `prune`, `volume rm`, `network rm`
+
+**Infrastructure mutations:**
+
+- `terraform apply`, `terraform destroy`
+- `kubectl apply`, `kubectl delete`, `kubectl scale`, `kubectl label` (write), `kubectl annotate` (write)
+- `helm install`, `helm upgrade`, `helm uninstall`, `helm rollback`
+- `docker compose up -d`, `docker run` (starting containers), `docker start`, `docker stop`, `docker kill`
+- Cloud CLI mutations: `aws *` (write commands), `gcloud *` (write commands), `az *` (write commands)
+- `systemctl start`, `systemctl stop`, `systemctl restart`, `systemctl enable`, `systemctl disable`
+- `service * start`, `service * stop`, `service * restart`
+
+**Remote publishing:**
+
+- `git commit`, `git push`, `git tag` (write)
+- `npm publish`, `pnpm publish`
+- Any command that publishes, deploys, or writes to a remote system
+
+**Privilege / credential access:**
+
+- `sudo` (any command)
+- Reading files outside the project directory
+- Reading `.env`, `*.pem`, `*.key`, `~/.ssh/*`, or similar credential files — unless the user explicitly asks the model to inspect or configure them
+- Writing files outside the project directory
+- `docker login`, any credential-storing operation
+
+### Always allowed (no permission needed)
+
+**Read-only inspection (any tool/CLI):**
+
+- `kubectl get`, `kubectl describe`, `kubectl logs`, `kubectl top` — no mutation
+- `aws * --query`, `aws * describe*`, `aws * list*`, `aws * get*` — read-only API calls
+- `gcloud * list`, `gcloud * describe`, `gcloud * get*` — read-only
+- `az * show`, `az * list` — read-only
+- `terraform show`, `terraform plan`, `terraform output`, `terraform state list` — inspection without apply
+- `helm list`, `helm status`, `helm get` — no mutation
+- `docker ps`, `docker images`, `docker inspect`, `docker logs` — read-only
+- `docker compose ps`, `docker compose logs` — read-only
+- `systemctl status`, `systemctl is-active`, `systemctl list-units` — read-only
+- `service * status` — read-only
+- `git status`, `git log`, `git diff`, `git branch`, `git stash list`, `git reflog` — read-only git state
+
+**File operations (no overwrite):**
+
+- `mv`, `cp` when the target path does not exist
+- `mkdir`
+- Reading any file inside the project directory
+
+**Dependency management:**
+
+- `npm install`, `pnpm install`, `pip install`, `uv tool install`, `cargo install` — fetching dependencies
+- `apt-get install` (fetch) — when the user has authorized package management
+
+**Network fetches:**
+
+- `curl`, `wget` — fetching remote content
+
+## Permission request format
+
+When a restricted command is needed, provide the user with a clear permission request:
+
+> **Action required:** I need to run `<command>` to `<purpose>`.
+> **Permission:** Do you want me to run this, or would you like to run it yourself?
+> **Command you can run:** `<exact command>`
+
+Example:
+
+> **Action required:** I need to run `terraform apply -auto-approve` to provision the GPU node pool.
+> **Permission:** Do you want me to run this, or would you like to run it yourself?
+> **Command you can run:** `terraform apply -auto-approve`
+
+### User-directed operations
+
+When the user explicitly asks the model to perform a restricted operation — for example "commit these changes" or "deploy this" — explicit permission is considered granted for that specific operation. The model should still report the command it will run before executing it.
+
+## Repo-Specific Notes
+
+**Remote publishing (require permission):**
+
+- `git push`, `git tag` — CI may push tags/releases via `.github/workflows/build-plugin.yml`; agents need explicit permission.
+- `./gradlew publishPlugin` — publishes the IntelliJ plugin artifact (not used in local dev by default).
+- GitHub release creation in CI (`gh release create`, marketplace upload steps).
+
+**Build mutations (usually allowed; confirm for release tasks):**
+
+- `./gradlew build`, `./gradlew buildPlugin`, `./gradlew qualityGate`, `./gradlew test` — standard local verification.
+- `./gradlew ktlintFormat` — auto-formats Kotlin sources.
+
+**Credentials / secrets (do not read without explicit ask):**
+
+- `graphify.env` or shell vars for Graphify extraction (`GEMINI_API_KEY`, `OPENAI_API_KEY`, etc.) — see `graphify.env.example`.
+- IntelliJ Platform plugin signing credentials (not stored in this repo).
+
+**Not used in this repo:** Docker, Kubernetes, Terraform, Helm, cloud CLIs (`aws`, `gcloud`, `az`). No database migration scripts.
+
 ## Agent skills
 
 ### Issue tracker
 
-Planning artifacts in Git; aligns with `/to-prd` + `docs/prd/`. See `docs/agents/issue-tracker.md`.
+Planning artifacts in Git; aligns with `/to-prd` + `docs/prds/<feature_name>/` and `/to-issues` + `docs/issues/<feature_name>/`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

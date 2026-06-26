@@ -32,3 +32,8 @@ Desktop.ini
 
 docs/prd
 docs/issues
+
+### Graphify ###
+graphify-out/*
+!graphify-out/.graphify_semantic_marker
+!graphify-out/GRAPH_REPORT.md

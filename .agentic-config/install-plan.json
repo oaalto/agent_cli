@@ -15,9 +15,20 @@
       "source": "catalog"
     },
     {
-      "id": "skill-zoom-out",
+      "id": "pi-package-ponytail",
+      "kind": "pi-install",
+      "command": "pi install -l npm:@dietrichgebert/ponytail",
+      "requires": [
+        "jq",
+        "pi"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-diagnosing-bugs",
       "kind": "skills-add",
-      "command": "npx -y skills@latest add mattpocock/skills --skill zoom-out --agent pi -y",
+      "command": "npx -y skills@latest add mattpocock/skills --skill diagnosing-bugs --agent pi -y",
       "requires": [
         "jq",
         "node",
@@ -27,9 +38,9 @@
       "source": "catalog"
     },
     {
-      "id": "skill-diagnose",
+      "id": "skill-decision-mapping",
       "kind": "skills-add",
-      "command": "npx -y skills@latest add mattpocock/skills --skill diagnose --agent pi -y",
+      "command": "npx -y skills@latest add mattpocock/skills --skill decision-mapping --agent pi -y",
       "requires": [
         "jq",
         "node",
@@ -37,6 +48,126 @@
       ],
       "optional": false,
       "source": "catalog"
+    },
+    {
+      "id": "skill-domain-modeling",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill domain-modeling --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-handoff",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill handoff --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-implement",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill implement --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-prototype",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill prototype --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-triage",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill triage --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "graphify-tool-install",
+      "kind": "graphify-tool",
+      "command": "uv tool install 'graphifyy[mcp]'",
+      "exe": "uv",
+      "args": [
+        "tool",
+        "install",
+        "graphifyy[mcp]"
+      ],
+      "requires": [
+        "jq",
+        "uv"
+      ],
+      "optional": false,
+      "source": "catalog",
+      "label": "Install graphify CLI (PyPI graphifyy)"
+    },
+    {
+      "id": "graphify-platform-install",
+      "kind": "graphify-install",
+      "command": "graphify install --platform pi --project",
+      "requires": [
+        "jq",
+        "graphify"
+      ],
+      "optional": false,
+      "source": "catalog",
+      "label": "Register graphify for target agent"
+    },
+    {
+      "id": "headroom-tool-install",
+      "kind": "headroom-tool",
+      "command": "uv tool install 'headroom-ai[proxy,mcp]'",
+      "exe": "uv",
+      "args": [
+        "tool",
+        "install",
+        "headroom-ai[proxy,mcp]"
+      ],
+      "requires": [
+        "jq",
+        "uv"
+      ],
+      "optional": false,
+      "source": "catalog",
+      "label": "Install Headroom runtime (PyPI headroom-ai)"
+    },
+    {
+      "id": "headroom-pi-extension",
+      "kind": "headroom-pi-extension",
+      "command": "pi install -l npm:@ryan_nookpi/pi-extension-headroom",
+      "requires": [
+        "jq",
+        "pi"
+      ],
+      "optional": false,
+      "source": "catalog",
+      "label": "Install Headroom Pi extension"
     }
   ]
 }

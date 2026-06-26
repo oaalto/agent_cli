@@ -12,7 +12,7 @@
 
 ## Workflows
 
-- [Quality gate & release workflow](../workflows/quality-gate.md)
+- [Quality gate & release workflow](workflows/quality-gate.md)
 
 ## Debugging
 

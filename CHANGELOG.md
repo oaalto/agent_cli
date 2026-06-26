@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-06-26
+
+### Documentation
+
+- **Agent commands cleanup** (`docs/agent-commands.md`): Remove obsolete To Complete checklist; gates confirmed from Gradle/CI. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Wiki log backfill** (`docs/wiki/log.md`): Ingest entries for five existing wiki pages; ADC post-update history repair. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+### Changed
+
+- **ADC 2026.06.26 update** (`AGENTS.md`, `.agents/rules/`, `.agentic-config/manifest.json`, `.graphifyignore`): Merge new bundle rules (graphify, ponytail, headroom, restricted-operations), restore tailored Gradle workflow gates, and record content hashes for post-install tracking. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+### Fixed
+
+- **Seed doc regression** (`CONTEXT.md`, `docs/agent-commands.md`, `docs/wiki/index.md`): Restore pre-bundle content overwritten by ADC update stubs. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+### Removed
+
+- **Obsolete diagnose stub** (`.agents/skills/diagnose/`): Dropped ADC placeholder; live skill is upstream `diagnosing-bugs` at `.pi/skills/diagnosing-bugs/`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-06-24
 
 ### Documentation
