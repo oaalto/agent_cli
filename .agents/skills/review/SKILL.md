@@ -35,6 +35,7 @@ Formatting and mechanical gates should run before review. Review is not a format
 
 ## Rules
 
+- Do not make any code changes without explicit user permission. Review only — report findings, do not edit.
 - Findings first, ordered by severity.
 - Every finding must cite changed code or a relevant source.
 - Do not focus on style unless it creates correctness or readability risk.
