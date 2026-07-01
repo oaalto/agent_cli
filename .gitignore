@@ -17,6 +17,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .run
+nul
 
 ### IntelliJ Platform Plugin ###
 .intellijPlatform/
