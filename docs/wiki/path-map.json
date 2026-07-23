@@ -13,9 +13,27 @@
       "allowSkip": false
     },
     {
-      "name": "Agent CLI pages",
-      "sources": ["src/main/kotlin/com/oaalto/agent/**", "build.gradle.kts"],
-      "wikiPages": ["concepts/agent-cli-overview.md", "subsystems/worktree.md"],
+      "name": "Agent CLI overview",
+      "sources": ["README.md", "LICENSE", "build.gradle.kts", "settings.gradle.kts"],
+      "wikiPages": ["concepts/agent-cli-overview.md"],
+      "allowSkip": true
+    },
+    {
+      "name": "ACP client",
+      "sources": ["src/main/kotlin/com/oaalto/agent/acp/**"],
+      "wikiPages": ["subsystems/acp-client.md"],
+      "allowSkip": true
+    },
+    {
+      "name": "Worktree subsystem",
+      "sources": ["src/main/kotlin/com/oaalto/agent/worktree/**"],
+      "wikiPages": ["subsystems/worktree.md"],
+      "allowSkip": true
+    },
+    {
+      "name": "Quality gate",
+      "sources": ["build.gradle.kts", ".github/workflows/build-plugin.yml", "detekt.yml"],
+      "wikiPages": ["workflows/quality-gate.md"],
       "allowSkip": true
     }
   ]

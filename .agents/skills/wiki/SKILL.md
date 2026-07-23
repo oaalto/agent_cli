@@ -1,6 +1,6 @@
 ---
 name: wiki
-description: Query, ingest, update, and lint the LLM-maintained engineering wiki in docs/wiki/.
+description: Query, ingest, update, and lint the engineering wiki in docs/wiki/. Load before narrative or subsystem overview questions, path-map/index consultation, and pre-exploration tasks — not only wiki writes.
 ---
 
 # Wiki
@@ -9,9 +9,7 @@ description: Query, ingest, update, and lint the LLM-maintained engineering wiki
 
 Maintain the engineering wiki as an agent-owned, human-reviewed memory layer.
 
-## Pre-task consultation
-
-Pre-task wiki consultation is in the `wiki-consultation` rule. Use the operations below for query, ingest, update, and lint.
+Engineering wiki at `docs/wiki/`. See the `documentation` rule for the four-tier ladder: glossary (`CONTEXT.md`) → wiki → user guide → generated reference.
 
 ## Operations
 
@@ -21,9 +19,58 @@ Use one of these operations:
 - `/wiki-ingest`: process a source into the wiki.
 - `/wiki-update`: update existing wiki pages after durable knowledge changes.
 - `/wiki-lint`: health-check the wiki.
+
+## Pre-task consultation
+
+Apply before reading, searching, or editing task-relevant paths — not only when making file changes.
+
+1. **Tier 1 (always):** Read `docs/wiki/path-map.json` and `docs/wiki/index.md`. List candidate pages from path-map `sources` matching paths you plan to read, search, or edit **or** index entries matching domain terms in the task.
+2. **Tier 2 (when candidates exist):** Read up to **3** candidate pages (subsystem → concept → workflow priority).
+3. **Tier 3 (before implementing from wiki):** Verify claims against code, tests, or ADRs; treat unverified synthesis as hypothesis.
+4. **No match:** Proceed; note no wiki coverage.
+
+### Architecture and exploration questions
+
+When the user asks for a package, slice, or subsystem overview (read-only — not implementation), Tier 1–2 are **required** before broad source-code exploration. See **Narrative overview questions** in `.agents/skills/repo-navigation/SKILL.md` for the full source order. Do not skip because the task has no file edits.
+
+For **structural topology** questions (call chains, cross-slice imports, impact analysis), load the `graphify` skill when shell confirms `graphify-out/graph.json` exists — see **Structural topology questions** in `.agents/skills/repo-navigation/SKILL.md`. Wiki deep-reads do not replace graphify for those tasks.
+
+## Read First
+
+1. `docs/wiki/schema.md`.
+2. `docs/wiki/index.md`.
+3. `docs/wiki/log.md`.
+4. `docs/wiki/path-map.json` when present.
+5. `CONTEXT.md`.
+6. Relevant ADRs.
+
+### This repo's wiki structure
+
+- **Concepts:** `docs/wiki/concepts/` — domain terms, ACP transcript model, plugin overview
+- **Subsystems:** `docs/wiki/subsystems/` — architecture decisions, worktree isolation
+- **Workflows:** `docs/wiki/workflows/` — quality gate, CI pipeline
+- **Source paths:** `src/main/kotlin/com/oaalto/agent/` (pty/, acp/, worktree/, settings/ slices)
+- **ADRs:** `docs/adr/` (0001: custom ACP client, 0002: Kotlin SDK, 0003: per-project agent selection)
+- **Lint:** `scripts/wiki-lint.mjs` (Node.js) + `npm run wiki-lint` or `node scripts/wiki-lint.mjs --staged`
+
+## Source Rules
+
+- Treat code, tests, accepted ADRs, `CONTEXT.md`, current runbooks, and current official external docs as live sources.
+- Treat PRDs, issue discussions, PR discussions, and chat history as historical sources unless verified against live sources.
+- Treat agent synthesis as synthesis, not fact.
+- Verify wiki claims against live sources before relying on them for implementation.
+- Record URLs and fetch dates for external sources.
+- Prefer raw Markdown or plain-text URLs for external fetches.
+
+## Write obligations
+
+- Update wiki pages when subsystem behavior, workflows, traps, or debugging paths change and will matter to a future agent.
+- Act by default in the same change; ask the user only when unsure which page owns the change or scope is ambiguous.
+- Record a `skip` log entry in `docs/wiki/log.md` only when there is no behavioral delta (formatting, comments, test-only, pure refactor with identical behavior).
+- Propose before changing rules, skills, or `docs/wiki/schema.md`.
 ## Before Commit
 
-Wiki skip-log policy is in the `wiki-consultation` rule. Path-map checks and mechanical lint before commit are in the `definition-of-done` rule. Use the operations in this skill (`/wiki-update`, `/wiki-ingest`, `/wiki-lint`) to satisfy them.
+Wiki completion gates before commit (path-map check, skip log policy, mechanical lint) are in the `definition-of-done` rule. Use the operations in this skill (`/wiki-update`, `/wiki-ingest`, `/wiki-lint`) to satisfy them.
 
 ## `/wiki-query`
 

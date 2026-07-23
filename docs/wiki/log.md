@@ -1,5 +1,11 @@
 # Engineering Wiki Log
 
+## [2026-07-23] ingest | ACP client subsystem
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpEditorLayout.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptViewController.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptHtmlAppender.kt`, `src/main/kotlin/com/oaalto/agent/acp/AcpPromptEventDispatcher.kt`
+- Notes: ACP client slice — UI layout (72/28 split), transcript rendering stack, prompt event routing, session operations, structured update hierarchy.
+
 ## [2026-06-16] ingest | Agent CLI overview
 
 - Updated: [Agent CLI overview](concepts/agent-cli-overview.md)

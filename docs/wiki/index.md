@@ -7,6 +7,7 @@
 
 ## Subsystems
 
+- [ACP client subsystem](subsystems/acp-client.md)
 - [Architecture decisions map](subsystems/architecture.md)
 - [Worktree subsystem](subsystems/worktree.md)
 
