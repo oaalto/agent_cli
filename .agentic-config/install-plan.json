@@ -6,7 +6,7 @@
     {
       "id": "pi-package-pi-ignore",
       "kind": "pi-install",
-      "command": "pi install -l npm:@oaalto-kodanbce/pi-ignore@1.0.0",
+      "command": "pi install -l npm:@oaalto-kodanbce/pi-ignore@latest",
       "requires": [
         "jq",
         "pi"
@@ -38,9 +38,9 @@
       "source": "catalog"
     },
     {
-      "id": "skill-decision-mapping",
+      "id": "skill-wayfinder",
       "kind": "skills-add",
-      "command": "npx -y skills@latest add mattpocock/skills --skill decision-mapping --agent pi -y",
+      "command": "npx -y skills@latest add mattpocock/skills --skill wayfinder --agent pi -y",
       "requires": [
         "jq",
         "node",
@@ -110,13 +110,74 @@
       "source": "catalog"
     },
     {
+      "id": "skill-code-review",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill code-review --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-codebase-design",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill codebase-design --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-research",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill research --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-resolving-merge-conflicts",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill resolving-merge-conflicts --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-teach",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill teach --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
       "id": "graphify-tool-install",
       "kind": "graphify-tool",
-      "command": "uv tool install 'graphifyy[mcp]'",
+      "command": "uv tool install --force 'graphifyy[mcp]'",
       "exe": "uv",
       "args": [
         "tool",
         "install",
+        "--force",
         "graphifyy[mcp]"
       ],
       "requires": [
@@ -142,11 +203,14 @@
     {
       "id": "headroom-tool-install",
       "kind": "headroom-tool",
-      "command": "uv tool install 'headroom-ai[proxy,mcp]'",
+      "command": "uv tool install --force --no-binary-package ast-grep-cli 'headroom-ai[proxy,mcp]'",
       "exe": "uv",
       "args": [
         "tool",
         "install",
+        "--force",
+        "--no-binary-package",
+        "ast-grep-cli",
         "headroom-ai[proxy,mcp]"
       ],
       "requires": [

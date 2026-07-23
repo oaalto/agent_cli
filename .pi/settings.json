@@ -1,6 +1,6 @@
 {
   "packages": [
-    "npm:@oaalto-kodanbce/pi-ignore@1.0.0",
+    "npm:@oaalto-kodanbce/pi-ignore@latest",
     "npm:@dietrichgebert/ponytail",
     "npm:@ryan_nookpi/pi-extension-headroom"
   ]

@@ -20,9 +20,4 @@ Treat these as Headroom-first when the runtime is installed: large `grep`/`find`
 
 ## Operations
 
-See `https://github.com/headroomlabs-ai/headroom` for proxy, `headroom wrap`, and MCP usage. ADC installs via PyPI `headroom-ai` and Pi extension `npm:@ryan_nookpi/pi-extension-headroom` (listed in `.pi/settings.json`).
-
-## Repository notes
-
-- Bulky gate output (`./gradlew qualityGate`, `./gradlew test`, detekt HTML reports) is a common Headroom compression target.
-- Pre-commit runs wiki-lint and `ktlintCheck` only (`scripts/pre-commit`) — not full `qualityGate`; large failures often come from Gradle test runs.
+See `https://github.com/headroomlabs-ai/headroom` for proxy, `headroom wrap`, and MCP usage. ADC installs via PyPI `headroom-ai` and optional Pi extension `npm:@ryan_nookpi/pi-extension-headroom`.

@@ -2,7 +2,6 @@
 
 | key | apply | scope | path |
 | --- | --- | --- | --- |
-| workflow-gates | scoped | "**/*" | .agents/rules/workflow-gates.md |
 | documentation | scoped | "**/*" | .agents/rules/documentation.md |
 | testing | scoped | "**/test/**" | .agents/rules/testing.md |
 | dependency-boundaries | scoped | "**/*" | .agents/rules/dependency-boundaries.md |
@@ -23,9 +22,7 @@
 | vertical-slice-boundaries | scoped | "**/slices/**" | .agents/rules/vertical-slice-boundaries.md |
 | domain-language | scoped | "**/*" | .agents/rules/domain-language.md |
 | adr-discipline | scoped | "**/*" | .agents/rules/adr-discipline.md |
-| wiki-consultation | scoped | "**/*" | .agents/rules/wiki-consultation.md |
 | definition-of-done | always | — | inline |
-| graphify-consultation | scoped | "**/*" | .agents/rules/graphify-consultation.md |
 | ponytail | always | — | inline |
 | restricted-operations | always | — | inline |
 | headroom-consultation | scoped | "**/*" | .agents/rules/headroom-consultation.md |
@@ -43,36 +40,13 @@ Precedence (highest first):
 
 Before working on files in a task — reading, searching, or editing — **load** (read) each scoped rule file from the **Rules index** whose **scope** matches your target paths. Use the path in the index — do not assume scoped rule text from memory. Always-apply rules inlined below are in effect without a separate read.
 
-Consultation rules (`wiki-consultation`, `graphify-consultation`) apply before repository exploration as well as before edits: load them when the task involves reading or changing paths in their scope.
+Consultation applies before repository exploration as well as before edits: **load** (read) `.agents/skills/repo-navigation/SKILL.md` for read-only exploration routing; load `wiki` or `graphify` per that skill (or directly when the task type is already obvious).
+
+When editing repository files, **load** (read) `.agents/skills/workflow/SKILL.md` before running validation gates or marking work complete.
 
 ### Architecture and exploration questions
 
-Classify read-only exploration first, then follow the matching track **before** broad source-code exploration.
-
-#### Narrative overview questions
-
-When the user asks what a package, slice, or subsystem **is** or **owns** (layout summary, responsibilities, stack — not a file-level call chain):
-
-1. **Wiki (required):** Read `docs/wiki/path-map.json` and `docs/wiki/index.md`. Match to path-map `sources` or index entries. Read up to **3** candidate pages (subsystem → concept → workflow). Load `.agents/rules/wiki-consultation.md` if not already loaded.
-2. **ADRs:** Read cited or task-relevant accepted ADRs when the wiki or question is architectural.
-3. **Skip graphify** for this track.
-4. **Code (targeted):** Open source only to verify wiki claims or fill gaps — not directory sweeps.
-
-#### Structural topology questions
-
-When the question needs **cross-file or cross-slice** relationships: call/import chains, caller maps, dependency paths, impact analysis, or which files connect A to B. Common triggers: "call chain", "import path", "what calls", "what connects", "cross-slice", "facade", "shortest path", "who depends on", "what breaks if".
-
-When shell confirms the graph exists (`test -f graphify-out/graph.json`) or `graphify-out/.graphify_semantic_marker` is readable — `graphify-out/` is gitignored; Read/Glob alone are not reliable:
-
-1. **Graphify (required):** Load `.agents/rules/graphify-consultation.md`. Check graph freshness, then run `graphify query`, `graphify path`, or graphify MCP via **shell or MCP** **before** opening implementation files or running broad search/`rg` for topology. Do not wait for the user to say "use graphify".
-2. **Wiki (optional, brief):** At most path-map + index, or one subsystem page for domain terms — do not substitute wiki deep-reads for graphify.
-3. **Code (targeted):** Open only files graphify names to verify **EXTRACTED** edges; prefer slice `index.ts` and cited hop files — not parallel sweeps across many `internal/` files.
-
-If the graph is missing or stale, propose `graphify .` or `graphify update .` before deep structural work; fall back to targeted search only then.
-
-#### Both tracks
-
-Do not skip consultation because the task is question-only with no file edits. If wiki has no match on the narrative track, say so and proceed with ADRs and code.
+Classify read-only exploration first. **Load** `.agents/skills/repo-navigation/SKILL.md` and follow the matching track before broad source-code exploration.
 
 ### changelog
 
@@ -232,7 +206,7 @@ Use this format:
 ## 4. Execution and Verification
 
 - Prefer `rg` filtering first when reading large files, command output, or test logs.
-- Run `./gradlew test` (or `./gradlew qualityGate` for the full gate chain) to verify modifications.
+- Run `[INSERT_TEST_COMMAND_HERE]` to verify modifications.
 - Upon successful execution, terminate the response immediately with `DONE`.
 - Never summarize test results or verification steps.
 - When unexpected file changes appear, assume they are intentional user edits and never revert them.
@@ -251,8 +225,9 @@ Work is incomplete until required surrounding updates for this change are done.
 ## Wiki
 
 - When durable knowledge changes: run `/wiki-update` or append an `update`, `ingest`, or `skip` entry to `docs/wiki/log.md`.
+- Do not require wiki updates for trivial edits; record a `skip` log entry in `docs/wiki/log.md` when wiki work is intentionally omitted.
 - Before commit, check `docs/wiki/path-map.json` when present and run mechanical wiki lint when available.
-- See the `wiki-consultation` rule and the `wiki` skill for operations and evidence rules.
+- See the `wiki` skill for operations and evidence rules.
 ## Documentation
 
 - Keep docs aligned with behavior changes. See the `documentation` rule when editing.
@@ -261,7 +236,7 @@ Work is incomplete until required surrounding updates for this change are done.
 - Cover new behavior and regressions; run the project test suite. See the `testing` rule when editing tests.
 ## Workflow gates
 
-- Format → build/typecheck → lint → test must pass before marking done. See the `workflow-gates` rule.
+- Format → build/typecheck → lint → test must pass before marking done. Load the `workflow` skill when bundled.
 
 ### ponytail
 
@@ -295,10 +270,6 @@ Rules:
 - Mark intentional simplifications with a `ponytail:` comment. If the shortcut has a known ceiling (global lock, O(n²) scan, naive heuristic), the comment names the ceiling and the upgrade path.
 
 Not lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
-
-**Precedence:** When `strict-output-execution` also applies, default to artifact-only output; allow one short trailing line only when the user explicitly asked for explanation. Workflow gates and meaningful tests stay authoritative — ponytail does not skip `./gradlew qualityGate`.
-
-**Pi overlap:** The Pi ponytail extension injects the full ladder at session start. This inline section is canonical for always-on behavior; upstream `/ponytail-*` slash skills add modes (audit, review, debt) — do not duplicate the ladder there.
 
 ### restricted-operations
 
@@ -393,29 +364,13 @@ When the user explicitly asks the model to perform a restricted operation — fo
 
 ## Repo-Specific Notes
 
-**Remote publishing (require permission):**
-
-- `git push`, `git tag` — CI may push tags/releases via `.github/workflows/build-plugin.yml`; agents need explicit permission.
-- `./gradlew publishPlugin` — publishes the IntelliJ plugin artifact (not used in local dev by default).
-- GitHub release creation in CI (`gh release create`, marketplace upload steps).
-
-**Build mutations (usually allowed; confirm for release tasks):**
-
-- `./gradlew build`, `./gradlew buildPlugin`, `./gradlew qualityGate`, `./gradlew test` — standard local verification.
-- `./gradlew ktlintFormat` — auto-formats Kotlin sources.
-
-**Credentials / secrets (do not read without explicit ask):**
-
-- `graphify.env` or shell vars for Graphify extraction (`GEMINI_API_KEY`, `OPENAI_API_KEY`, etc.) — see `graphify.env.example`.
-- IntelliJ Platform plugin signing credentials (not stored in this repo).
-
-**Not used in this repo:** Docker, Kubernetes, Terraform, Helm, cloud CLIs (`aws`, `gcloud`, `az`). No database migration scripts.
+Review and extend the restricted command list for infrastructure and tooling specific to this repository before relying on it.
 
 ## Agent skills
 
 ### Issue tracker
 
-Planning artifacts in Git; aligns with `/to-prd` + `docs/prds/<feature_name>/` and `/to-issues` + `docs/issues/<feature_name>/`. See `docs/agents/issue-tracker.md`.
+Planning artifacts in Git; aligns with `/to-spec` + `docs/prds/<feature_name>/` and `/to-tickets` + `docs/issues/<feature_name>/`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-23
+
+### Fixed
+
+- **headroom-tool-install on Windows** (`.agentic-config/install-plan.json`): Force `ast-grep-cli` to build from source (`--no-binary-package ast-grep-cli`) so the pre-built `sg.exe` wheel is not used — it gets quarantined by Windows Defender as a false positive. Rust MSVC toolchain required. made by: Olli Aalto.
+
 ## 2026-06-26
 
 ### Documentation

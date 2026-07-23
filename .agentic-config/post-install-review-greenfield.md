@@ -13,8 +13,8 @@ You are helping a human **finish installing** an agent setup bundle in the **cur
 - **Engineering wiki:** enabled — `docs/wiki/` installed (index, schema, log, topic directories)
 - **Graphify:** enabled — upstream graphify skill and MCP installed via `install.sh`; starter `.graphifyignore` and `graphify.env.example` bundled; **Graphify extraction backend** (LLM for semantic indexing) is operator-owned — see `.agentic-config/INSTALL.md`
 - **Headroom:** enabled — runtime install steps in `.agentic-config/install.sh`; see `.agentic-config/INSTALL.md` for proxy, MCP, or Pi extension workflow
-- **Skills added:** zoom-out, grill-me, grill-with-docs, to-prd, to-issues, tdd, diagnosing-bugs, improve-codebase-architecture, review, wiki, vertical-slice-migration, graphify, decision-mapping, domain-modeling, handoff, implement, ponytail, prototype, triage
-- **Rules added:** workflow-gates, documentation, testing, dependency-boundaries, api-design-basics, result-handling, logging-practices, runtime-handoff, warning-hygiene, current-state, changelog, code-format, commit, decision-making, functional-programming, role, signature, strict-output-execution, vertical-slice-boundaries, domain-language, adr-discipline, wiki-consultation, definition-of-done, graphify-consultation, ponytail, restricted-operations, headroom-consultation
+- **Skills added:** zoom-out, grilling, grill-with-docs, to-spec, to-tickets, tdd, diagnosing-bugs, improve-codebase-architecture, review, wiki, vertical-slice-migration, graphify, wayfinder, domain-modeling, handoff, implement, ponytail, prototype, triage, workflow, code-review, codebase-design, repo-navigation, research, resolving-merge-conflicts, teach
+- **Rules added:** documentation, testing, dependency-boundaries, api-design-basics, result-handling, logging-practices, runtime-handoff, warning-hygiene, current-state, changelog, code-format, commit, decision-making, functional-programming, role, signature, strict-output-execution, vertical-slice-boundaries, domain-language, adr-discipline, definition-of-done, ponytail, restricted-operations, headroom-consultation
 - **Install record:** `.agentic-config/manifest.json` (files and selections), `.agentic-config/install-plan.json` (installer steps when present)
 
 ## Constraints (mandatory)
@@ -53,7 +53,7 @@ Work through the task sections below iteratively. Pause for questions at decisio
 ### Duplicate content audit
 
 1. For each newly installed skill (`.agents/skills/*/SKILL.md`), scoped rule (`.agents/rules/*.md`), and the host file (`AGENTS.md`), scan for **identical or near-identical blocks** — especially sections like `## Repo Context`, `## Project overview`, or bullet lists describing stack, monorepo layout, or team conventions.
-   1a. Also scan upstream graphify artifacts (for example `.pi/agent/skills/graphify/SKILL.md`, `AGENTS.md (upstream graphify guidance, if present)`, and other target-specific platform entries) and ADC `graphify-consultation`. Merge overlap with the ADC rule; keep `graphify-consultation` where it fills gaps upstream does not cover.
+   1a. Also scan upstream graphify artifacts (for example `.pi/agent/skills/graphify/SKILL.md`, `AGENTS.md (upstream graphify guidance, if present)`, and other target-specific platform entries) and the bundled graphify consultation overlay at `.agents/skills/graphify/SKILL.md`. Merge overlap with the overlay; keep overlay guidance where upstream does not cover consultation routing.
 - **Ponytail Pi overlap:** When `ponytail` is selected (skill or rule) and the target is Pi, compare the bundled Ponytail rule (inline `### ponytail` in `AGENTS.md` for compiled hosts, or `.cursor/rules/ponytail.mdc` for Cursor) with Ponytail content injected by the Pi extension. Remove duplicate ladder blocks; keep one canonical always-on copy in the bundled rule and replace duplicates with short cross-references. Do not edit upstream Ponytail slash skills delivered by `pi install`.
 1c. Scan bundled `headroom-consultation` against upstream RTK-style Headroom blocks in `AGENTS.md` (and other host files). Merge overlap; keep `headroom-consultation` where it fills gaps upstream does not cover.
 2. When the same global context block appears in **two or more files**, remove it from the duplicates:
@@ -201,6 +201,22 @@ After completing all tailoring and merge work above, save SHA256 content hashes 
    ```
 5. Write the updated manifest back to disk, preserving all other fields.
 6. If the write fails for any reason (permissions, file locked, etc.), log a warning and **continue** — do not block the setup completion.
+
+### Skill body resolution (pi only)
+
+Some skills in the bundle may reference other skills by name (for example a body that says "run a `/grilling` session, using the `/domain-modeling` skill"). Pi does **not** resolve these references — the body is just instructions for the agent, and a bare `/skillName` reference gives the agent nothing to do.
+
+Scan every `*.SKILL.md` in `.pi/skills/` and `.agents/skills/` installed by this bundle:
+
+1. Read the body (everything after the front-matter `---` block).
+2. If the body contains a bare reference like `/grilling` or `/domain-modeling` — or any line that says "run a `/X` session" or "use the `/Y` skill" — **resolve it**:
+   - Read the referenced skill's body.
+   - Replace the referencing skill's body with the referenced skill's actual content (strip the referenced skill's own front-matter, keep the instruction text).
+   - If the referencing skill has its own useful content beyond the reference, merge: keep the original body, append the referenced skill's body, and mark the source with `<!-- sourced from: /skillName -->`.
+3. If the referenced skill is **not** installed alongside the referencing one, add a comment in the body: `<!-- TODO: /skillName not installed — resolve this reference -->`.
+4. Do **not** ask the human about this — it's mechanical and the agent is the reader. Include findings in the **Setup completion report**.
+
+This only applies to skills whose bodies rely on pi resolving `/skillName` references. Skills with substantive bodies (interview questions, domain modeling rules, etc.) leave alone.
 
 ### Initial graphify
 

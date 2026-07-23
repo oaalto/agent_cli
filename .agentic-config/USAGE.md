@@ -5,10 +5,10 @@ This file is the human-facing entry point for daily agentic development work.
 ## Daily Skill Use
 
 - Unfamiliar area: `/zoom-out`
-- Design discussion without doc updates: `/grill-me`
+- Design discussion without doc updates: `/grilling`
 - Design discussion with doc updates: `/grill-with-docs`
-- Planning artifact: `/to-prd`
-- Implementation slices: `/to-issues`
+- Planning artifact: `/to-spec`
+- Implementation slices: `/to-tickets`
 - Implementation: `/tdd`
 - Debugging: `/diagnosing-bugs`
 - Architecture review: `/improve-codebase-architecture`

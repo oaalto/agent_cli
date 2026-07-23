@@ -13,8 +13,8 @@ You are helping a human **finish installing** an agent setup bundle in the **cur
 - **Engineering wiki:** enabled — `docs/wiki/` installed (index, schema, log, topic directories)
 - **Graphify:** enabled — upstream graphify skill and MCP installed via `install.sh`; starter `.graphifyignore` and `graphify.env.example` bundled; **Graphify extraction backend** (LLM for semantic indexing) is operator-owned — see `.agentic-config/INSTALL.md`
 - **Headroom:** enabled — runtime install steps in `.agentic-config/install.sh`; see `.agentic-config/INSTALL.md` for proxy, MCP, or Pi extension workflow
-- **Skills added:** zoom-out, grill-me, grill-with-docs, to-prd, to-issues, tdd, diagnosing-bugs, improve-codebase-architecture, review, wiki, vertical-slice-migration, graphify, decision-mapping, domain-modeling, handoff, implement, ponytail, prototype, triage
-- **Rules added:** workflow-gates, documentation, testing, dependency-boundaries, api-design-basics, result-handling, logging-practices, runtime-handoff, warning-hygiene, current-state, changelog, code-format, commit, decision-making, functional-programming, role, signature, strict-output-execution, vertical-slice-boundaries, domain-language, adr-discipline, wiki-consultation, definition-of-done, graphify-consultation, ponytail, restricted-operations, headroom-consultation
+- **Skills added:** zoom-out, grilling, grill-with-docs, to-spec, to-tickets, tdd, diagnosing-bugs, improve-codebase-architecture, review, wiki, vertical-slice-migration, graphify, wayfinder, domain-modeling, handoff, implement, ponytail, prototype, triage, workflow, code-review, codebase-design, repo-navigation, research, resolving-merge-conflicts, teach
+- **Rules added:** documentation, testing, dependency-boundaries, api-design-basics, result-handling, logging-practices, runtime-handoff, warning-hygiene, current-state, changelog, code-format, commit, decision-making, functional-programming, role, signature, strict-output-execution, vertical-slice-boundaries, domain-language, adr-discipline, definition-of-done, ponytail, restricted-operations, headroom-consultation
 - **Install record:** `.agentic-config/manifest.json` (files and selections), `.agentic-config/install-plan.json` (installer steps when present)
 
 ## Constraints (mandatory)
@@ -76,6 +76,15 @@ This install may add `docs/agent-commands.md`. From the repo (inspect-only):
 - Docs-check commands if documented
 - Runtime-restricted checks — **only** if explicitly documented; never guess
 
+#### Domain terms
+
+This install may add `CONTEXT.md` and/or `CONTEXT-MAP.md`. From live sources:
+
+- Project purpose in one short paragraph
+- 3–10 **core domain terms** with tight definitions (what it IS, not implementation)
+- Terms to **avoid** when evident
+- Ambiguities where one word maps to multiple concepts
+
 #### Wiki seeds
 
 This install may add `docs/wiki/index.md`, `docs/wiki/path-map.json`, and `scripts/wiki-lint.mjs`. Note:
@@ -86,14 +95,14 @@ This install may add `docs/wiki/index.md`, `docs/wiki/path-map.json`, and `scrip
 - Top-level packages or subsystems worth a `path-map.json` mapping (paths only)
 - Primary language(s) and existing validation or git-hook tooling (paths only — do not assume Node or Husky)
 
-#### Domain terms
+#### Agent setup
 
-This install may add `CONTEXT.md` and/or `CONTEXT-MAP.md`. From live sources:
+This install includes issue-tracker / PRD workflow agent setup. From the repo:
 
-- Project purpose in one short paragraph
-- 3–10 **core domain terms** with tight definitions (what it IS, not implementation)
-- Terms to **avoid** when evident
-- Ambiguities where one word maps to multiple concepts
+- Existing host agent files (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.agents/`, etc.)
+- PRD, issue, or planning doc locations if present
+- Links or conventions for issues/PRs the process should respect
+- Gaps between existing workflow and structured PRD/issue setup
 
 ### Repo discovery (Graphify)
 
@@ -104,15 +113,6 @@ This install may register graphify for your agent and add a starter `.graphifyig
 - Primary languages and monorepo layout relevant to graph indexing
 - Existing docs or ADRs that graphify should ingest (paths only)
 - Whether `GRAPH_REPORT.md` already summarizes topology clusters
-
-#### Agent setup
-
-This install includes issue-tracker / PRD workflow agent setup. From the repo:
-
-- Existing host agent files (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.agents/`, etc.)
-- PRD, issue, or planning doc locations if present
-- Links or conventions for issues/PRs the process should respect
-- Gaps between existing workflow and structured PRD/issue setup
 
 
 
@@ -147,7 +147,7 @@ For each seed path in Setup context, check whether `git show HEAD:{path}` succee
 ### Duplicate content audit
 
 1. For each newly installed skill (`.agents/skills/*/SKILL.md`), scoped rule (`.agents/rules/*.md`), and the host file (`AGENTS.md`), scan for **identical or near-identical blocks** — especially sections like `## Repo Context`, `## Project overview`, or bullet lists describing stack, monorepo layout, or team conventions.
-   1a. Also scan upstream graphify artifacts (for example `.pi/agent/skills/graphify/SKILL.md`, `AGENTS.md (upstream graphify guidance, if present)`, and other target-specific platform entries) and ADC `graphify-consultation`. Merge overlap with the ADC rule; keep `graphify-consultation` where it fills gaps upstream does not cover.
+   1a. Also scan upstream graphify artifacts (for example `.pi/agent/skills/graphify/SKILL.md`, `AGENTS.md (upstream graphify guidance, if present)`, and other target-specific platform entries) and the bundled graphify consultation overlay at `.agents/skills/graphify/SKILL.md`. Merge overlap with the overlay; keep overlay guidance where upstream does not cover consultation routing.
 - **Ponytail Pi overlap:** When `ponytail` is selected (skill or rule) and the target is Pi, compare the bundled Ponytail rule (inline `### ponytail` in `AGENTS.md` for compiled hosts, or `.cursor/rules/ponytail.mdc` for Cursor) with Ponytail content injected by the Pi extension. Remove duplicate ladder blocks; keep one canonical always-on copy in the bundled rule and replace duplicates with short cross-references. Do not edit upstream Ponytail slash skills delivered by `pi install`.
 1c. Scan bundled `headroom-consultation` against upstream RTK-style Headroom blocks in `AGENTS.md` (and other host files). Merge overlap; keep `headroom-consultation` where it fills gaps upstream does not cover.
 2. When the same global context block appears in **two or more files**, remove it from the duplicates:
@@ -303,6 +303,22 @@ For each seed doc path (and any other documentation path) the bundle did **not**
 1. Read the current file — no full rewrite.
 2. Check alignment with the new setup: terms used in new rules/skills (see `.agentic-config/manifest.json`), links to `.agentic-config/USAGE.md` and wiki, and any **To Complete** / follow-up sections.
 3. Under **Existing documentation review → Proposed changes**, list small fixes only (missing cross-refs, stale commands, terms that clash with new rules). Do not replace established domain definitions.
+
+### Skill body resolution (pi only)
+
+Some skills in the bundle may reference other skills by name (for example a body that says "run a `/grilling` session, using the `/domain-modeling` skill"). Pi does **not** resolve these references — the body is just instructions for the agent, and a bare `/skillName` reference gives the agent nothing to do.
+
+Scan every `*.SKILL.md` in `.pi/skills/` and `.agents/skills/` installed by this bundle:
+
+1. Read the body (everything after the front-matter `---` block).
+2. If the body contains a bare reference like `/grilling` or `/domain-modeling` — or any line that says "run a `/X` session" or "use the `/Y` skill" — **resolve it**:
+   - Read the referenced skill's body.
+   - Replace the referencing skill's body with the referenced skill's actual content (strip the referenced skill's own front-matter, keep the instruction text).
+   - If the referencing skill has its own useful content beyond the reference, merge: keep the original body, append the referenced skill's body, and mark the source with `<!-- sourced from: /skillName -->`.
+3. If the referenced skill is **not** installed alongside the referencing one, add a comment in the body: `<!-- TODO: /skillName not installed — resolve this reference -->`.
+4. Do **not** ask the human about this — it's mechanical and the agent is the reader. Include findings in the **Setup completion report**.
+
+This only applies to skills whose bodies rely on pi resolving `/skillName` references. Skills with substantive bodies (interview questions, domain modeling rules, etc.) leave alone.
 
 ### Initial graphify
 
