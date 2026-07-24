@@ -6,3 +6,5 @@
 !docs/issues/**
 !graphify-out
 !graphify-out/**
+!.pi-subagents/artifacts
+!.pi-subagents/artifacts/**
