@@ -66,7 +66,15 @@ See [ADR 0001](docs/adr/0001-custom-acp-client-in-plugin.md).
 
 ### Transcript
 
-ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) and `agent/acp/`.
+ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) and `agent/acp/`. Distinct from **Session transcript file**.
+
+### Session transcript file
+
+Workspace-local plain-text record of an ACP session conversation, keyed by `acpSessionId`, written incrementally while the editor is open. Restored as plain lines when the session is resumed. ACP Client mode only. See [ADR 0004](docs/adr/0004-session-observability.md).
+
+### Session diagnostics
+
+Developer-facing observability in IDEA log (`idea.log`): tiered `warn`/`info`/`debug` output with session context and correlation tokens linking transcript errors to log lines. Distinct from **Transcript** and **Session transcript file**. See [ADR 0004](docs/adr/0004-session-observability.md).
 
 ### PRD
 

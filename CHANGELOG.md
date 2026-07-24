@@ -8,6 +8,16 @@
 
 ### Documentation
 
+- **Session observability ADR** (`docs/adr/0004-session-observability.md`, `CONTEXT.md`): Record split between transcript file (ACP, keyed by `acpSessionId`) and tiered IDE logging (`warn` always; `info`/`debug` via env or registry); two-PR delivery plan. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Tiered session diagnostics PRD** (`docs/features/tiered-session-diagnostics/prd.md`): PR1 spec for `AgentCliLog`, three-tier IDE logging gates, migration of existing log sites, and dialog-only failure paths (`ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP session transcript persistence PRD** (`docs/features/acp-session-transcript-persistence/prd.md`): PR2 spec for workspace-local session transcript files, debounced snapshot writes, plain restore, correlation tokens, and copy diagnostics (`ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Tiered session diagnostics tickets** (`docs/features/tiered-session-diagnostics/01-03`): Tracer-bullet tickets for AgentCliLog gates, Logger migration, and dialog-only failure logging (`ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP session transcript persistence tickets** (`docs/features/acp-session-transcript-persistence/01-06`): Tracer-bullet tickets for serializer, file store, debounced writer, restore, correlation tokens, and copy diagnostics (`ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Architecture deepening tickets** (`docs/features/*/0*.md`): Split seven feature PRDs into 29 tracer-bullet implementation tickets via `/to-tickets` (same directory as each `prd.md`, `ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Planning artifacts path** (`docs/features/`, `.gitignore`, `.piignore`, `CONTEXT.md`, `AGENTS.md`, `docs/agents/issue-tracker.md`): Rename `docs/prds/` to `docs/features/` to align with `/to-spec` and `/to-tickets`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
