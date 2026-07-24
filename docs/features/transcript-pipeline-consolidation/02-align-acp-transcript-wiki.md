@@ -8,7 +8,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] ACP client subsystem wiki documents the live view-controller → model → panel rendering stack only
-- [ ] Domain context wiki attributes transcript ownership to `TranscriptViewController`, not the deleted HTML appender
-- [ ] Obsolete `committedBodyHtml` and `streamingPlainText` descriptions are removed or corrected to match live block state
-- [ ] Wiki lint passes when `docs/wiki/path-map.json` applies
+- [x] ACP client subsystem wiki documents the live view-controller → model → panel rendering stack only
+- [x] Domain context wiki attributes transcript ownership to `TranscriptViewController`, not the deleted HTML appender
+- [x] Obsolete `committedBodyHtml` and `streamingPlainText` descriptions are removed or corrected to match live block state
+- [x] Wiki lint passes when `docs/wiki/path-map.json` applies

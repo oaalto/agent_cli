@@ -8,7 +8,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Orphan HTML appender and pane-ops modules are deleted with no remaining production references
-- [ ] Dead-path-only helpers are removed from shared cursor and render-helper modules; live-path HTML fragment builders and the live streaming cursor character are retained
-- [ ] Obsolete HTML appender and HTML cursor tests are deleted
-- [ ] `./gradlew qualityGate` passes with zero visible behaviour change to live transcript rendering
+- [x] Orphan HTML appender and pane-ops modules are deleted with no remaining production references
+- [x] Dead-path-only helpers are removed from shared cursor and render-helper modules; live-path HTML fragment builders and the live streaming cursor character are retained
+- [x] Obsolete HTML appender and HTML cursor tests are deleted
+- [x] `./gradlew qualityGate` passes with zero visible behaviour change to live transcript rendering

@@ -8,10 +8,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] One ingestion module exposes `ingest(SessionUpdate)` and `ingestPromptCompleted()` returning `StructuredUpdate` lists
-- [ ] Finalize-before-non-chunk policy and every `SessionUpdate` variant mapping live together with clear ownership
-- [ ] Session notification and prompt-completed routing call the merged seam instead of separate dispatcher and mapper objects
-- [ ] Text-extraction helpers are absorbed into ingestion or a package-private content-text helper; the misnamed renderer module no longer owns them
-- [ ] Mapper unit tests are migrated to the merged module; finalize-on-non-chunk cases are covered (including policy cases previously tested alongside the deleted HTML appender tests)
-- [ ] Former dispatcher and mapper modules are deleted
-- [ ] `./gradlew qualityGate` passes; transcript behaviour is unchanged when verified through the `StructuredUpdate` interface
+- [x] One ingestion module exposes `ingest(SessionUpdate)` and `ingestPromptCompleted()` returning `StructuredUpdate` lists
+- [x] Finalize-before-non-chunk policy and every `SessionUpdate` variant mapping live together with clear ownership
+- [x] Session notification and prompt-completed routing call the merged seam instead of separate dispatcher and mapper objects
+- [x] Text-extraction helpers are absorbed into ingestion or a package-private content-text helper; the misnamed renderer module no longer owns them
+- [x] Mapper unit tests are migrated to the merged module; finalize-on-non-chunk cases are covered (including policy cases previously tested alongside the deleted HTML appender tests)
+- [x] Former dispatcher and mapper modules are deleted
+- [x] `./gradlew qualityGate` passes; transcript behaviour is unchanged when verified through the `StructuredUpdate` interface
