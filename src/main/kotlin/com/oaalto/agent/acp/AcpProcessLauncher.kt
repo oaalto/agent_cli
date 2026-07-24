@@ -2,14 +2,13 @@ package com.oaalto.agent.acp
 
 import com.oaalto.agent.AgentCommandBuilder
 import com.oaalto.agent.AgentLaunchContext
+import com.oaalto.agent.AgentLaunchResolver
 import com.oaalto.agent.AgentWslCommandRequest
-import com.oaalto.agent.WorkingDirectoryResolver
-import com.oaalto.agent.WslPathResolver
+import com.oaalto.agent.ResolvedLaunchInputs
 import com.oaalto.agent.acp.mcp.McpCapabilityBridge
 import com.oaalto.agent.settings.AgentSettingsState
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Locale
 
 object AcpProcessLauncher {
     fun buildLaunchPlan(
@@ -40,88 +39,66 @@ object AcpProcessLauncher {
                 mcpServers = mcpCapabilityBridge.resolveServers(configuration),
                 exposeMcp = mcpCapabilityBridge.shouldExposeMcp(configuration),
             )
-        return when (resolveExecutionTarget(configuration.executionTarget)) {
-            AgentSettingsState.ExecutionTarget.LOCAL -> buildLocalPlan(request)
-            AgentSettingsState.ExecutionTarget.WSL -> buildWslPlan(request)
-        }
+        return AgentLaunchResolver
+            .resolveLaunchInputs(
+                configuration = configuration,
+                projectBasePath = request.projectContext.basePath,
+                workingDirectoryOverride = request.launchContext.workingDirectoryOverride,
+            ).fold(
+                onSuccess = { inputs ->
+                    when (inputs) {
+                        is ResolvedLaunchInputs.Local -> buildLocalPlan(request, inputs)
+                        is ResolvedLaunchInputs.Wsl -> buildWslPlan(request, inputs)
+                    }
+                },
+                onFailure = { failure ->
+                    Result.failure<AcpLaunchPlan>(failure)
+                },
+            )
     }
 
-    private fun buildLocalPlan(request: AcpLaunchRequest): Result<AcpLaunchPlan> {
+    private fun buildLocalPlan(
+        request: AcpLaunchRequest,
+        inputs: ResolvedLaunchInputs.Local,
+    ): Result<AcpLaunchPlan> {
         if (request.binaryPath.contains("/") && !Files.isExecutable(Path.of(request.binaryPath))) {
             return Result.failure(IllegalStateException("Agent binary is not executable:\n${request.binaryPath}"))
         }
 
-        val workingDirectory =
-            WorkingDirectoryResolver.resolve(
-                configuredWorkingDirectory = request.configuration.workingDirectory,
-                overrideWorkingDirectory = request.launchContext.workingDirectoryOverride,
-                projectBasePath = request.projectContext.basePath,
+        if (!Files.isDirectory(Path.of(inputs.workingDirectory))) {
+            return Result.failure(
+                IllegalStateException("Working directory does not exist:\n${inputs.workingDirectory}"),
             )
-        return when {
-            !Files.isDirectory(Path.of(workingDirectory)) ->
-                Result.failure(IllegalStateException("Working directory does not exist:\n$workingDirectory"))
-            else ->
-                Result.success(
-                    AcpLaunchPlan(
-                        command =
-                            AgentCommandBuilder.buildLocalCommand(
-                                binaryPath = request.binaryPath,
-                                arguments = request.arguments,
-                                useNodeShellWrapper = request.configuration.useNodeShellWrapper,
-                            ),
-                        processWorkingDirectory = workingDirectory,
-                        sessionWorkingDirectory = workingDirectory,
-                        environmentVariables = request.environmentVariables,
-                        mcpServers = request.mcpServers,
-                        exposeMcp = request.exposeMcp,
-                    ),
-                )
         }
+
+        return Result.success(
+            AcpLaunchPlan(
+                command =
+                    AgentCommandBuilder.buildLocalCommand(
+                        binaryPath = request.binaryPath,
+                        arguments = request.arguments,
+                        useNodeShellWrapper = request.configuration.useNodeShellWrapper,
+                    ),
+                processWorkingDirectory = inputs.workingDirectory,
+                sessionWorkingDirectory = inputs.workingDirectory,
+                environmentVariables = request.environmentVariables,
+                mcpServers = request.mcpServers,
+                exposeMcp = request.exposeMcp,
+            ),
+        )
     }
 
-    private fun buildWslPlan(request: AcpLaunchRequest): Result<AcpLaunchPlan> {
-        val resolvedWslWorkingDirectory =
-            WslPathResolver.resolveWslWorkingDirectory(
-                configuredWorkingDirectory = request.configuration.workingDirectory,
-                overrideWorkingDirectory = request.launchContext.workingDirectoryOverride,
-                projectBasePath = request.projectContext.basePath,
-            )
-        val overrideValue =
-            request.launchContext.workingDirectoryOverride
-                ?.trim()
-                .orEmpty()
-        val configured = request.configuration.workingDirectory.trim()
-        val basePath =
-            request.projectContext.basePath
-                ?.trim()
-                .orEmpty()
-        val rawPath =
-            when {
-                overrideValue.isNotBlank() -> overrideValue
-                configured.isNotBlank() -> configured
-                basePath.isNotBlank() -> basePath
-                else -> ""
-            }
-        if (rawPath.isNotBlank() && WslPathResolver.mapToWslPath(rawPath) == null) {
-            return Result.failure(
-                IllegalStateException(
-                    "Working directory could not be mapped to a WSL path:\n${request.configuration.workingDirectory}",
-                ),
-            )
-        }
-
-        val effectiveDistribution =
-            request.configuration.wslDistribution
-                .trim()
-                .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-        val hostWorkingDirectory = WslPathResolver.resolveHostWorkingDirectory(request.projectContext.basePath)
+    private fun buildWslPlan(
+        request: AcpLaunchRequest,
+        inputs: ResolvedLaunchInputs.Wsl,
+    ): Result<AcpLaunchPlan> {
         val command =
             AgentCommandBuilder.buildWslCommand(
                 AgentWslCommandRequest(
                     binaryPath = request.binaryPath,
                     arguments = request.arguments,
-                    wslDistribution = effectiveDistribution,
-                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                    wslDistribution = inputs.wslDistribution,
+                    wslWorkingDirectory = inputs.linuxPath,
                     useNodeShellWrapper = request.configuration.useNodeShellWrapper,
                     environmentVariables = request.environmentVariables,
                 ),
@@ -129,18 +106,12 @@ object AcpProcessLauncher {
         return Result.success(
             AcpLaunchPlan(
                 command = command,
-                processWorkingDirectory = hostWorkingDirectory,
-                sessionWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
+                processWorkingDirectory = inputs.hostWorkingDirectory,
+                sessionWorkingDirectory = inputs.linuxPath,
                 environmentVariables = emptyMap(),
                 mcpServers = request.mcpServers,
                 exposeMcp = request.exposeMcp,
             ),
         )
-    }
-
-    private fun resolveExecutionTarget(rawTarget: String): AgentSettingsState.ExecutionTarget {
-        val normalized = rawTarget.trim().uppercase(Locale.ROOT)
-        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }
-            ?: AgentSettingsState.ExecutionTarget.LOCAL
     }
 }
