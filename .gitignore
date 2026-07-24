@@ -30,7 +30,7 @@ Desktop.ini
 .tmp-acp-search/
 .tmp-acp-sources/
 .pi/worker-context/
-.pi-subagents/artifacts/
+.pi-subagents/
 
 docs/prd
 docs/prds
