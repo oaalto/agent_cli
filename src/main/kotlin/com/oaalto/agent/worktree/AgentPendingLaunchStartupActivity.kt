@@ -6,9 +6,14 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.ui.Messages
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.settings.LaunchMode
 import com.oaalto.agent.worktree.WorktreeLaunchCoordinator
+
+private val agentCliLog = AgentCliLog.getInstance(AgentPendingLaunchStartupActivity::class.java)
 
 class AgentPendingLaunchStartupActivity : StartupActivity.DumbAware {
     override fun runActivity(project: Project) {
@@ -28,18 +33,38 @@ class AgentPendingLaunchStartupActivity : StartupActivity.DumbAware {
                 return@invokeLater
             }
 
-            val launchContext =
+            val launchResult =
                 WorktreeLaunchCoordinator.buildLaunchContext(
                     project = project,
                     configuration = configuration,
                     worktreePath = pendingLaunch.worktreePath,
                     resume = pendingLaunch.resume,
                 )
-            FileEditorManager.getInstance(project).openFile(
-                AgentVirtualFile(configuration.id, configuration.name, launchContext),
-                true,
-            )
-            state.touch(pendingLaunch.worktreePath)
+            if (launchResult.isSuccess) {
+                val launchContext = launchResult.getOrThrow()
+                FileEditorManager.getInstance(project).openFile(
+                    AgentVirtualFile(configuration.id, configuration.name, launchContext),
+                    true,
+                )
+                state.touch(pendingLaunch.worktreePath)
+            } else {
+                val reason = launchResult.exceptionOrNull()?.message ?: "Failed to resolve launch paths."
+                agentCliLog.error(
+                    message = "Worktree launch resolution failed: $reason",
+                    throwable = launchResult.exceptionOrNull(),
+                    context =
+                        AgentCliSessionContext(
+                            configId = configuration.id,
+                            launchMode = LaunchMode.from(configuration.launchMode),
+                            worktreePath = pendingLaunch.worktreePath,
+                        ),
+                )
+                Messages.showErrorDialog(
+                    project,
+                    reason,
+                    "Run Agent",
+                )
+            }
         }, ModalityState.nonModal())
     }
 }

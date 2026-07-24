@@ -22,6 +22,8 @@
 
 - **ACP transcript wiki alignment** (`docs/wiki/`): Remove remaining `onTranscriptHtml`/`onTranscriptPlainLine` dead listener references from context wiki; zero dead-path references remain across wiki. made by: Olli Aalto. made with: pi.
 
+- **Unified launch resolution — slice adapter migration** (`worktree/`, `pty/`, `acp/`): `WorktreeLaunchCoordinator` delegates path and execution-target resolution to new kernel `AgentLaunchResolver`; `buildResumeContext` now returns `Result<ResumeContext>` propagating kernel failures; `buildLaunchContext` returns `Result<AgentLaunchContext>`; `AgentPendingLaunchStartupActivity` shows error dialog on resolution failure; `PtyResumeStrategy` deletes private `resolveExecutionTarget` and uses `ExecutionTarget.from`; `AcpProcessLauncher`, `PtyAgentEditor`, and `WorktreeLaunchCoordinator` no longer re-implement override precedence, WSL mapping, or distribution inference. made by: Olli Aalto. made with: pi.
+
 ### Removed
 
 - **Orphaned HTML transcript rendering path** (`acp/`): Deleted `TranscriptHtmlAppender`, `TranscriptPaneHtmlOps`, `TranscriptHtmlAppenderStreamingTest`, `TranscriptStreamingCursorTest`; removed HTML cursor helpers (`streamBlockHtml`, `finalizedBlockHtml`, `stripCursor`, `hasCursor`, `CURSOR_HTML`) from `TranscriptStreamingCursor`; removed `userPromptSpan`/`plainLineSpan` helpers from `TranscriptRenderHelpers`. Live `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` path untouched. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

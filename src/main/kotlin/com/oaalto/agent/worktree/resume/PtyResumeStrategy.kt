@@ -1,7 +1,6 @@
 package com.oaalto.agent.worktree.resume
 
 import com.oaalto.agent.settings.AgentSettingsState
-import java.util.Locale
 
 object PtyResumeStrategy : ResumeStrategy {
     override fun prepareLaunch(context: ResumeContext): LaunchResumePlan {
@@ -9,7 +8,7 @@ object PtyResumeStrategy : ResumeStrategy {
         if (baseArgs == null) {
             return LaunchResumePlan.Pty(emptyList())
         }
-        val executionTarget = resolveExecutionTarget(context.configuration.executionTarget)
+        val executionTarget = AgentSettingsState.ExecutionTarget.from(context.configuration.executionTarget)
         val probed =
             context.cursorProbe.applyIfNeeded(
                 CursorResumeProbeRequest(
@@ -37,16 +36,10 @@ object PtyResumeStrategy : ResumeStrategy {
     fun canResume(configuration: AgentSettingsState.AgentCliConfiguration): Boolean =
         baseResumeArguments(configuration) != null
 
-    private fun resolveExecutionTarget(rawTarget: String): AgentSettingsState.ExecutionTarget {
-        val normalized = rawTarget.trim().uppercase(Locale.ROOT)
-        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }
-            ?: AgentSettingsState.ExecutionTarget.LOCAL
-    }
-
     private fun executableName(binaryPath: String): String {
         val normalizedPath = binaryPath.trim()
         if (normalizedPath.isBlank()) return ""
         val fileName = normalizedPath.substringAfterLast('/').substringAfterLast('\\')
-        return fileName.substringBeforeLast('.').lowercase(Locale.ROOT)
+        return fileName.substringBeforeLast('.').lowercase()
     }
 }

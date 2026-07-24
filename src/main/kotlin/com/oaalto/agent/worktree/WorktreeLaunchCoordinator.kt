@@ -2,8 +2,8 @@ package com.oaalto.agent.worktree
 
 import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentLaunchContext
-import com.oaalto.agent.WorkingDirectoryResolver
-import com.oaalto.agent.WslPathResolver
+import com.oaalto.agent.AgentLaunchResolver
+import com.oaalto.agent.ResolvedLaunchInputs
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
 import com.oaalto.agent.worktree.resume.AcpResumeStrategy
@@ -11,7 +11,6 @@ import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import com.oaalto.agent.worktree.resume.PtyResumeStrategy
 import com.oaalto.agent.worktree.resume.ResumeContext
 import com.oaalto.agent.worktree.resume.ResumeStrategy
-import java.util.Locale
 
 object WorktreeLaunchCoordinator {
     fun strategyFor(configuration: AgentSettingsState.AgentCliConfiguration): ResumeStrategy =
@@ -26,9 +25,9 @@ object WorktreeLaunchCoordinator {
         worktreePath: String?,
         resume: Boolean,
         stateService: AgentWorktreeStateService = AgentWorktreeStateService.getInstance(),
-    ): AgentLaunchContext {
+    ): Result<AgentLaunchContext> {
         val record = worktreePath?.let { stateService.getRecordByPath(it) }
-        val resumeContext =
+        val resumeContextResult =
             buildResumeContext(
                 configuration = configuration,
                 worktreeRecord = record,
@@ -36,13 +35,15 @@ object WorktreeLaunchCoordinator {
                 resume = resume,
                 projectBasePath = project.basePath,
             )
-        val plan = strategyFor(configuration).prepareLaunch(resumeContext)
-        return toLaunchContext(
-            plan = plan,
-            worktreePath = worktreePath,
-            worktreeId = record?.id,
-            resume = resume,
-        )
+        return resumeContextResult.map { resumeContext ->
+            val plan = strategyFor(configuration).prepareLaunch(resumeContext)
+            toLaunchContext(
+                plan = plan,
+                worktreePath = worktreePath,
+                worktreeId = record?.id,
+                resume = resume,
+            )
+        }
     }
 
     internal fun buildResumeContext(
@@ -51,24 +52,37 @@ object WorktreeLaunchCoordinator {
         worktreePath: String?,
         resume: Boolean,
         projectBasePath: String?,
-    ): ResumeContext {
-        val workingDirectory = resolveWorkingDirectory(projectBasePath, configuration, worktreePath)
-        val executionTarget = resolveExecutionTarget(configuration.executionTarget)
-        val wslPaths =
-            if (executionTarget == AgentSettingsState.ExecutionTarget.WSL) {
-                resolveWslPaths(projectBasePath, configuration, worktreePath)
-            } else {
-                null
+    ): Result<ResumeContext> {
+        val resolvedInputs =
+            AgentLaunchResolver.resolveLaunchInputs(
+                configuration = configuration,
+                projectBasePath = projectBasePath,
+                workingDirectoryOverride = worktreePath,
+            )
+        return resolvedInputs.map { inputs ->
+            when (inputs) {
+                is ResolvedLaunchInputs.Local ->
+                    ResumeContext(
+                        configuration = configuration,
+                        worktreeRecord = worktreeRecord,
+                        workingDirectory = inputs.workingDirectory,
+                        resume = resume,
+                        wslWorkingDirectory = null,
+                        wslDistribution = "",
+                        hostWorkingDirectory = inputs.workingDirectory,
+                    )
+                is ResolvedLaunchInputs.Wsl ->
+                    ResumeContext(
+                        configuration = configuration,
+                        worktreeRecord = worktreeRecord,
+                        workingDirectory = inputs.hostWorkingDirectory,
+                        resume = resume,
+                        wslWorkingDirectory = inputs.linuxPath,
+                        wslDistribution = inputs.wslDistribution,
+                        hostWorkingDirectory = inputs.hostWorkingDirectory,
+                    )
             }
-        return ResumeContext(
-            configuration = configuration,
-            worktreeRecord = worktreeRecord,
-            workingDirectory = workingDirectory,
-            resume = resume,
-            wslWorkingDirectory = wslPaths?.linuxPath,
-            wslDistribution = wslPaths?.distribution.orEmpty(),
-            hostWorkingDirectory = wslPaths?.hostWorkingDirectory ?: workingDirectory,
-        )
+        }
     }
 
     private fun toLaunchContext(
@@ -90,57 +104,4 @@ object WorktreeLaunchCoordinator {
             resumePlan = plan,
         )
     }
-
-    private fun resolveWorkingDirectory(
-        projectBasePath: String?,
-        configuration: AgentSettingsState.AgentCliConfiguration,
-        worktreePath: String?,
-    ): String =
-        WorkingDirectoryResolver.resolve(
-            configuredWorkingDirectory = configuration.workingDirectory,
-            overrideWorkingDirectory = worktreePath,
-            projectBasePath = projectBasePath,
-        )
-
-    private fun resolveExecutionTarget(rawTarget: String): AgentSettingsState.ExecutionTarget {
-        val normalized = rawTarget.trim().uppercase(Locale.ROOT)
-        return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }
-            ?: AgentSettingsState.ExecutionTarget.LOCAL
-    }
-
-    private fun resolveWslPaths(
-        projectBasePath: String?,
-        configuration: AgentSettingsState.AgentCliConfiguration,
-        worktreePath: String?,
-    ): WslPaths? {
-        val override = worktreePath?.trim().orEmpty()
-        val configured = configuration.workingDirectory.trim()
-        val rawPath =
-            when {
-                override.isNotBlank() -> override
-                configured.isNotBlank() -> configured
-                !projectBasePath.isNullOrBlank() -> projectBasePath
-                else -> ""
-            }
-        val mapped =
-            when {
-                rawPath.isBlank() -> null
-                else -> WslPathResolver.mapToWslPath(rawPath) ?: return null
-            }
-        val distribution =
-            configuration.wslDistribution
-                .trim()
-                .ifBlank { mapped?.inferredDistribution.orEmpty() }
-        return WslPaths(
-            linuxPath = mapped?.linuxPath ?: "/home",
-            distribution = distribution,
-            hostWorkingDirectory = WslPathResolver.resolveHostWorkingDirectory(projectBasePath),
-        )
-    }
-
-    private data class WslPaths(
-        val linuxPath: String,
-        val distribution: String,
-        val hostWorkingDirectory: String,
-    )
 }
