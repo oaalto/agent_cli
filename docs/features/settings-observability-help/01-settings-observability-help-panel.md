@@ -12,15 +12,15 @@ Centralize transcript directory path on the existing **Session transcript file**
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] **Session logs & transcripts** section is placed between the agent table toolbar and the per-row detail panel; selecting different agent rows does not change observability copy or controls
-- [ ] IDE log hint uses disabled-foreground label styling consistent with existing settings hints; copy covers `idea.log`, Help menu path (platform-appropriate Explorer/Finder wording), and `[agent-cli:…]` grep; no IDE-log open button; no `AGENT_CLI_LOG` / registry toggle documentation
-- [ ] Transcript hint explains ACP Client vs Terminal (PTY Passthrough), `.idea/agent-cli/transcripts/`, and shows focused project name when `basePath` is available
-- [ ] With no open project (or no project `basePath`), transcript hint explains why and **Open transcript folder** is disabled
-- [ ] **Open transcript folder** resolves directory via shared transcript file store companion, creates directory if missing, reveals in file manager via platform API; failures show error dialog
-- [ ] Focused project resolution uses first open project from open-project manager when multiple projects are open
-- [ ] Transcript directory resolver unit test asserts path shape for a given project base path (prior art: transcript file store tests)
-- [ ] `CHANGELOG.md` updated for user-visible settings change
-- [ ] `./gradlew qualityGate` passes
-- [ ] Manual QA: settings with project open (hint + button work); settings with no project (button disabled); section stable when changing agent row selection
+- [x] **Session logs & transcripts** section is placed between the agent table toolbar and the per-row detail panel; selecting different agent rows does not change observability copy or controls
+- [x] IDE log hint uses disabled-foreground label styling consistent with existing settings hints; copy covers `idea.log`, Help menu path (platform-appropriate Explorer/Finder wording), and `[agent-cli:…]` grep; no IDE-log open button; no `AGENT_CLI_LOG` / registry toggle documentation
+- [x] Transcript hint explains ACP Client vs Terminal (PTY Passthrough), `.idea/agent-cli/transcripts/`, and shows focused project name when `basePath` is available
+- [x] With no open project (or no project `basePath`), transcript hint explains why and **Open transcript folder** is disabled
+- [x] **Open transcript folder** resolves directory via shared transcript file store companion, creates directory if missing, reveals in file manager via platform API; failures show error dialog
+- [x] Focused project resolution uses first open project from open-project manager when multiple projects are open
+- [x] Transcript directory resolver unit test asserts path shape for a given project base path (prior art: transcript file store tests)
+- [x] `CHANGELOG.md` updated for user-visible settings change
+- [x] `./gradlew qualityGate` passes
+- [x] Manual QA: settings with project open (hint + button work); settings with no project (button disabled); section stable when changing agent row selection

@@ -74,4 +74,32 @@ class TranscriptFileStoreTest {
 
         assertTrue(path.endsWith(".idea/agent-cli/transcripts/abc123.txt"))
     }
+
+    @Test
+    fun `companion resolveTranscriptsDirectory returns normalized directory path`() {
+        val projectDir = Files.createTempDirectory("transcript-store").toFile()
+        projectDir.deleteOnExit()
+
+        val path =
+            TranscriptFileStore
+                .resolveTranscriptsDirectory(projectDir.absolutePath)
+                .toString()
+                .replace('\\', '/')
+
+        assertTrue(path.endsWith(".idea/agent-cli/transcripts"))
+    }
+
+    @Test
+    fun `companion resolves to directory under given base path`() {
+        val projectDir = Files.createTempDirectory("transcript-store").toFile()
+        projectDir.deleteOnExit()
+        val store = TranscriptFileStore(projectDir.absolutePath)
+
+        val directory =
+            TranscriptFileStore
+                .resolveTranscriptsDirectory(projectDir.absolutePath)
+        val storeDirectory = store.resolveDirectory()
+
+        assertEquals(storeDirectory, directory)
+    }
 }

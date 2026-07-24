@@ -1,12 +1,20 @@
 package com.oaalto.agent.settings
 
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
+import java.awt.Cursor
+import java.awt.Desktop
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.UUID
 import javax.swing.DefaultCellEditor
 import javax.swing.JCheckBox
@@ -122,6 +130,141 @@ internal object AgentSettingsUiFactory {
             addRow(JBLabel("Environment variables"))
             addRow(environmentPanel, GridBagConstraints.BOTH)
         }
+
+    fun createObservabilityPanel(): ObservationHelpPanel {
+        val projectManager = ProjectManager.getInstance()
+        val focusedProject = projectManager.openProjects.firstOrNull()
+        val hasBasePath = focusedProject?.basePath?.isNotBlank() == true
+
+        val sessionDiagnosticsHint = createSessionDiagnosticsHint()
+        val transcriptHint = createTranscriptHint(focusedProject, hasBasePath)
+        val openButton = createOpenTranscriptButton(focusedProject, hasBasePath)
+        val panel = buildObservabilityPanel(sessionDiagnosticsHint, transcriptHint, openButton)
+
+        return ObservationHelpPanel(
+            panel = panel,
+            hasBasePath = hasBasePath,
+        )
+    }
+
+    private fun createSessionDiagnosticsHint(): JBLabel =
+        JBLabel(
+            "Session diagnostics are written to the IDE log file idea.log. " +
+                "Open the log folder via Help > Show Log in Explorer " +
+                "(macOS: Show Log in Finder). " +
+                "Grep idea.log for [agent-cli:...] to match transcript errors to log detail.",
+        ).apply {
+            foreground = JBUI.CurrentTheme.Label.disabledForeground()
+        }
+
+    private fun createTranscriptHint(
+        focusedProject: com.intellij.openapi.project.Project?,
+        hasBasePath: Boolean,
+    ): JBLabel {
+        val projectDisplayName = focusedProject?.name
+        return JBLabel(
+            buildString {
+                append("Session transcript file is ACP Client only. ")
+                append("Files live at .idea/agent-cli/transcripts/ (workspace-local, not VCS). ")
+                append("Terminal (PTY Passthrough) does not create plugin transcript files — ")
+                append("use terminal scrollback or the external agent CLI. ")
+                if (hasBasePath) {
+                    append("For the focused project ").append(projectDisplayName).append(".")
+                } else {
+                    append("Open a project to view the transcript folder.")
+                }
+            },
+        ).apply {
+            foreground = JBUI.CurrentTheme.Label.disabledForeground()
+        }
+    }
+
+    private fun createOpenTranscriptButton(
+        focusedProject: com.intellij.openapi.project.Project?,
+        hasBasePath: Boolean,
+    ): JBLabel {
+        val transcriptDirectory =
+            if (hasBasePath && focusedProject != null) {
+                val basePath = focusedProject.basePath.orEmpty()
+                com.oaalto.agent.acp.TranscriptFileStore
+                    .resolveTranscriptsDirectory(basePath)
+            } else {
+                null
+            }
+
+        return JBLabel("Open transcript folder").apply {
+            cursor =
+                if (hasBasePath) {
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                } else {
+                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)
+                }
+            addMouseListener(
+                object : java.awt.event.MouseAdapter() {
+                    override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                        if (!hasBasePath || transcriptDirectory == null) return
+                        openTranscriptFolder(
+                            transcriptDirectory = transcriptDirectory,
+                            project = focusedProject,
+                        )
+                    }
+                },
+            )
+        }
+    }
+
+    private fun buildObservabilityPanel(
+        sessionDiagnosticsHint: JBLabel,
+        transcriptHint: JBLabel,
+        openButton: JBLabel,
+    ): JPanel =
+        JPanel(GridBagLayout()).apply {
+            border = JBUI.Borders.emptyTop(AgentConfigsTableColumns.DETAIL_PANEL_TOP_INSET)
+            var row = 0
+
+            fun addRow(
+                component: JComponent,
+                gridFill: Int = GridBagConstraints.HORIZONTAL,
+            ) {
+                add(
+                    component,
+                    GridBagConstraints().apply {
+                        gridx = 0
+                        gridy = row++
+                        weightx = 1.0
+                        fill = gridFill
+                        anchor = GridBagConstraints.WEST
+                    },
+                )
+            }
+
+            addRow(sessionDiagnosticsHint)
+            addRow(transcriptHint)
+            addRow(openButton, GridBagConstraints.HORIZONTAL)
+        }
+
+    private fun openTranscriptFolder(
+        transcriptDirectory: Path,
+        project: com.intellij.openapi.project.Project?,
+    ) {
+        ApplicationManager.getApplication().invokeLater {
+            try {
+                Files.createDirectories(transcriptDirectory)
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(transcriptDirectory.toFile())
+                }
+            } catch (e: java.io.IOException) {
+                AgentCliLog
+                    .getInstance(AgentSettingsUiFactory::class.java)
+                    .error(message = "Failed to open transcript folder: ${e.message}")
+                Messages.showErrorDialog(
+                    null as java.awt.Component?,
+                    e.message ?: "Failed to open transcript folder",
+                    "Open transcript folder failed",
+                )
+            }
+        }
+    }
 
     fun createConfigurationsToolbar(
         model: AgentConfigsTableModel,

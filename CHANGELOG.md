@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Settings session logs and transcripts help panel** (`settings/`, `acp/`): Fixed **Session logs & transcripts** section in **Tools → Agent CLI** settings between table and detail panel; IDE log hint with platform-appropriate Explorer/Finder wording and `[agent-cli:…]` grep; **Open transcript folder** button that resolves directory via shared `TranscriptFileStore` companion, creates if missing, and reveals in file manager; focused project resolution for transcript path; unit test for directory resolver. made by: Olli Aalto. made with: pi.
+
+- **Settings observability panel layout** (`settings/`): Move observability section below the agent configuration table (between table and per-row detail panel) to match spec; center area now stacks table + observability vertically. made by: Olli Aalto. made with: pi.
+
 - **ACP session transcript persistence** (`acp/`): Workspace-local session transcript files under `.idea/agent-cli/transcripts/<acpSessionId>.txt`, plain-text serializer, debounced snapshot writer, plain-line restore on resumed sessions, correlation tokens on transcript errors, and **Copy Session Diagnostics** editor action. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **AgentCliLog infrastructure** (`com.oaalto.agent`): Tiered session diagnostics helper with `AgentCliSessionContext`, env/registry gate functions (`AGENT_CLI_LOG`, `AGENT_CLI_DEBUG`, `agent_cli.log`, `agent_cli.debug`), lazy tier-2/3 evaluation, and secret redaction helpers. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

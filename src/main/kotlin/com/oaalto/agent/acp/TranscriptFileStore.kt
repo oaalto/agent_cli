@@ -14,6 +14,8 @@ internal class TranscriptFileStore(
             .get(projectBasePath, TRANSCRIPT_DIR, "$sessionId.txt")
             .normalize()
 
+    fun resolveDirectory(): Path = Paths.get(projectBasePath, TRANSCRIPT_DIR).normalize()
+
     fun read(sessionId: String): Result<String> =
         runCatching {
             val path = resolvePath(sessionId)
@@ -40,5 +42,8 @@ internal class TranscriptFileStore(
 
     companion object {
         private const val TRANSCRIPT_DIR = ".idea/agent-cli/transcripts"
+
+        fun resolveTranscriptsDirectory(projectBasePath: String): Path =
+            Paths.get(projectBasePath, TRANSCRIPT_DIR).normalize()
     }
 }

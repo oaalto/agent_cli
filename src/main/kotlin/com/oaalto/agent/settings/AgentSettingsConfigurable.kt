@@ -34,6 +34,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
     private var mcpScopeHintLabel: JBLabel? = null
     private var mcpHintLabel: JBLabel? = null
     private var envHintLabel: JBLabel? = null
+    private var observationPanel: ObservationHelpPanel? = null
     private var syncingDetailPanel = false
     private var detailPanelRowIndex = -1
 
@@ -63,7 +64,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     onImport = { importFromAcpJson(model, table) },
                     onExport = { exportToAcpJson(model) },
                 )
-
+            val observationHelp = AgentSettingsUiFactory.createObservabilityPanel()
             wireDetailPanelControls(
                 DetailPanelBindings(
                     model = model,
@@ -77,13 +78,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
                     envHint = hints.envHint,
                 ),
             )
-
-            rootPanel =
-                JPanel(BorderLayout()).apply {
-                    border = JBUI.Borders.empty(AgentConfigsTableColumns.SETTINGS_PANEL_INSET)
-                    add(toolbar.createPanel(), BorderLayout.CENTER)
-                    add(detailPanel, BorderLayout.SOUTH)
-                }
+            rootPanel = buildRootPanel(toolbar, observationHelp, detailPanel)
             tableModel = model
             this.table = table
             ideaMcpCheckbox = ideaMcp
@@ -93,6 +88,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
             mcpScopeHintLabel = hints.mcpScopeHint
             mcpHintLabel = hints.mcpPluginsHint
             envHintLabel = hints.envHint
+            observationPanel = observationHelp
             if (model.rowCount > 0) {
                 table.selectionModel.setSelectionInterval(0, 0)
                 detailPanelRowIndex = 0
@@ -101,6 +97,22 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         }
         return requireNotNull(rootPanel)
     }
+
+    private fun buildRootPanel(
+        toolbar: com.intellij.ui.ToolbarDecorator,
+        observationHelp: ObservationHelpPanel,
+        detailPanel: JPanel,
+    ): JPanel =
+        JPanel(BorderLayout()).apply {
+            border = JBUI.Borders.empty(AgentConfigsTableColumns.SETTINGS_PANEL_INSET)
+            val centerStack =
+                JPanel(java.awt.GridLayout(0, 1, 0, 0)).apply {
+                    add(toolbar.createPanel())
+                    add(observationHelp.panel)
+                }
+            add(centerStack, BorderLayout.CENTER)
+            add(detailPanel, BorderLayout.SOUTH)
+        }
 
     private fun wireDetailPanelControls(bindings: DetailPanelBindings) {
         bindings.table.selectionModel.addListSelectionListener { event: ListSelectionEvent ->
@@ -232,6 +244,7 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         mcpScopeHintLabel = null
         mcpHintLabel = null
         envHintLabel = null
+        observationPanel = null
         detailPanelRowIndex = -1
     }
 
