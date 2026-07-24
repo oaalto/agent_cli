@@ -2,6 +2,10 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
+import java.awt.event.ComponentEvent
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JComponent
 import javax.swing.JPanel
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -140,6 +144,72 @@ class TranscriptBlockViewFactoryTest {
         )
 
         assertEquals(1, factory.createdCount)
+    }
+
+    @Test
+    fun `transcript row width adjustment updates preferred size for all children`() {
+        val factory = RecordingCodeBlockViewFactory()
+        val viewFactory = TranscriptBlockViewFactory(factory)
+        val row =
+            viewFactory.create(
+                TranscriptBlock.FinalAgentText(
+                    blockId = "1",
+                    text = "```kotlin\nfun main()\n```",
+                ),
+                onToolToggle = {},
+            )
+
+        row.setSize(800, 200)
+        row.doLayout()
+        row.setSize(400, 200)
+        row.maximumSize
+
+        val availableWidth = row.width - row.insets.left - row.insets.right
+        val contentColumn = row.getComponent(0) as JPanel
+        contentColumn.components.filterIsInstance<JComponent>().forEach { child ->
+            assertEquals(
+                availableWidth,
+                child.preferredSize.width,
+                "child ${child::class.simpleName} preferred width",
+            )
+        }
+    }
+
+    @Test
+    fun `expanded tool card body adjustment updates preferred size for all children`() {
+        val factory = RecordingCodeBlockViewFactory()
+        val viewFactory = TranscriptBlockViewFactory(factory)
+        val row =
+            viewFactory.create(
+                TranscriptBlock.ToolCallBlock(
+                    blockId = "1",
+                    toolCallId = "tool-1",
+                    title = "read file",
+                    kind = ToolKind.READ,
+                    status = ToolCallStatus.COMPLETED,
+                    bodyParts =
+                        listOf(
+                            TranscriptBodyPart.Code("kotlin", "fun main()"),
+                        ),
+                    expanded = true,
+                ),
+                onToolToggle = {},
+            ) as CollapsibleToolPanel
+
+        row.setSize(800, 400)
+        row.dispatchEvent(ComponentEvent(row, ComponentEvent.COMPONENT_RESIZED))
+        row.setSize(400, 400)
+        row.dispatchEvent(ComponentEvent(row, ComponentEvent.COMPONENT_RESIZED))
+
+        val availableWidth = row.width - row.insets.left - row.insets.right
+        val bodyContainer = row.components.filterIsInstance<JPanel>().last { it.layout is BoxLayout }
+        bodyContainer.components.filterIsInstance<JComponent>().filterNot { it is Box.Filler }.forEach { child ->
+            assertEquals(
+                availableWidth,
+                child.preferredSize.width,
+                "child ${child::class.simpleName} preferred width",
+            )
+        }
     }
 
     private class RecordingCodeBlockViewFactory : TranscriptCodeBlockViewFactory {

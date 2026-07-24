@@ -211,16 +211,8 @@ internal class CollapsibleToolPanel(
     private fun adjustBodyHeight() {
         val width = width - insets.left - insets.right
         if (width <= 0) return
-        bodyContainer.components.forEach { child ->
-            if (child is JEditorPane) {
-                child.setSize(width, Int.MAX_VALUE)
-                val height = child.preferredSize.height
-                child.preferredSize = Dimension(width, height)
-                child.maximumSize = Dimension(Int.MAX_VALUE, height)
-            } else if (child is JComponent) {
-                child.setSize(width, child.preferredSize.height)
-                child.maximumSize = Dimension(Int.MAX_VALUE, child.preferredSize.height)
-            }
+        bodyContainer.components.filterIsInstance<JComponent>().forEach { child ->
+            applyTranscriptColumnWidth(child, width)
         }
         bodyContainer.setSize(width, Int.MAX_VALUE)
         val height = bodyContainer.preferredSize.height

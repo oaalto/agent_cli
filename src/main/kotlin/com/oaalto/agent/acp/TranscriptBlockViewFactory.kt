@@ -300,19 +300,8 @@ private class AgentTextRow(
     private fun widthAdjustment() {
         val w = width - insets.left - insets.right
         if (w <= 0) return
-        contentColumn.components.forEach { child ->
-            when (child) {
-                is JTextPane -> {
-                    child.setSize(w, Int.MAX_VALUE)
-                    val height = child.preferredSize.height
-                    child.preferredSize = Dimension(w, height)
-                    child.maximumSize = Dimension(Int.MAX_VALUE, height)
-                }
-                is JComponent -> {
-                    child.setSize(w, child.preferredSize.height)
-                    child.maximumSize = Dimension(Int.MAX_VALUE, child.preferredSize.height)
-                }
-            }
+        contentColumn.components.filterIsInstance<JComponent>().forEach { child ->
+            applyTranscriptColumnWidth(child, w)
         }
     }
 

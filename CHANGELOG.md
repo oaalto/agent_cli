@@ -2,6 +2,10 @@
 
 ## 2026-07-24
 
+### Fixed
+
+- **ACP transcript block alignment** (`agent/acp/`): Update `preferredSize` for `JComponent` children in transcript row and tool card body resize paths so block content (code, tables, blockquotes) stays within the viewport instead of clipping right; shared sizing logic in `TranscriptColumnSizing.kt`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Documentation
 
 - **Architecture deepening tickets** (`docs/features/*/0*.md`): Split seven feature PRDs into 29 tracer-bullet implementation tickets via `/to-tickets` (same directory as each `prd.md`, `ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
