@@ -6,10 +6,10 @@
 
 **Blocked by:** 02 — Kernel `AgentLaunchResolver` with unit tests
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `buildLocalPlan` and `buildWslPlan` consume `ResolvedLaunchInputs` from the kernel resolver instead of duplicating orchestration
-- [ ] WSL mapping failures propagate as `Result.failure` with the kernel error message (ACP gains the same path-format guidance PTY already shows)
-- [ ] `AcpLaunchPlan` command shape, MCP fields, and environment-variable handling are unchanged
-- [ ] `AcpProcessLauncherTest` retains minimal smoke coverage per execution target; redundant path-resolution cases removed in favor of kernel tests
-- [ ] `./gradlew qualityGate` passes
+- [x] `buildLocalPlan` and `buildWslPlan` consume `ResolvedLaunchInputs` from the kernel resolver instead of duplicating orchestration
+- [x] WSL mapping failures propagate as `Result.failure` with the kernel error message (ACP gains the same path-format guidance PTY already shows)
+- [x] `AcpLaunchPlan` command shape, MCP fields, and environment-variable handling are unchanged
+- [x] `AcpProcessLauncherTest` retains minimal smoke coverage per execution target; redundant path-resolution cases removed in favor of kernel tests
+- [x] `./gradlew qualityGate` passes

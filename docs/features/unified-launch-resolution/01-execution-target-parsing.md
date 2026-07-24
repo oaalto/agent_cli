@@ -6,8 +6,8 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AgentSettingsState.ExecutionTarget` exposes a shared `from(raw: String)` (or equivalent) that normalizes, matches enum entries, and defaults to `LOCAL`
-- [ ] `AcpProcessLauncher`, `PtyAgentEditor` / `PtyEditorSupport`, `WorktreeLaunchCoordinator`, and `PtyResumeStrategy` delete their private `resolveExecutionTarget` copies and call the shared parser
-- [ ] Existing launch and resume tests pass unchanged — parsing behavior is identical before the kernel module lands
+- [x] `AgentSettingsState.ExecutionTarget` exposes a shared `from(raw: String)` that normalizes, matches enum entries, and defaults to `LOCAL`
+- [x] `AcpProcessLauncher`, `PtyAgentEditor` / `PtyEditorSupport`, `WorktreeLaunchCoordinator`, and `PtyResumeStrategy` delete their private `resolveExecutionTarget` copies and call the shared parser
+- [x] Existing launch and resume tests pass unchanged — parsing behavior is identical before the kernel module lands

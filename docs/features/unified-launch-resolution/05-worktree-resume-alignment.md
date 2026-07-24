@@ -6,12 +6,12 @@
 
 **Blocked by:** 02 — Kernel `AgentLaunchResolver` with unit tests
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `buildResumeContext` calls `resolveLaunchInputs` with worktree path as the working-directory override
-- [ ] WSL `ResumeContext` fields are populated from `ResolvedLaunchInputs.Wsl`; local resume uses `ResolvedLaunchInputs.Local` working directory
-- [ ] Mapping failures no longer silently return `null` — coordinator propagates or maps kernel failures explicitly (document the choice in code)
-- [ ] `PtyResumeStrategy` deletes its private execution-target parser; resume probing receives consistent WSL path inputs matching editor launch paths
-- [ ] `WorktreeLaunchCoordinatorTest` verifies `ResumeContext` WSL fields match kernel output for WSL configurations
-- [ ] `CHANGELOG.md` updated under `### Changed`; `docs/wiki/log.md` receives a `skip` or `update` entry per PRD notes
-- [ ] `./gradlew qualityGate` passes
+- [x] `buildResumeContext` calls `resolveLaunchInputs` with worktree path as the working-directory override
+- [x] WSL `ResumeContext` fields are populated from `ResolvedLaunchInputs.Wsl`; local resume uses `ResolvedLaunchInputs.Local` working directory
+- [x] Mapping failures no longer silently return `null` — coordinator propagates kernel failures via `Result<ResumeContext>` (documented in code)
+- [x] `PtyResumeStrategy` deletes its private execution-target parser; resume probing receives consistent WSL path inputs matching editor launch paths
+- [x] `WorktreeLaunchCoordinatorTest` verifies `ResumeContext` WSL fields match kernel output for WSL configurations
+- [x] `CHANGELOG.md` updated under `### Changed`
+- [x] `./gradlew qualityGate` passes

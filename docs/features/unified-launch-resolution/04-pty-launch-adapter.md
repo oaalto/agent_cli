@@ -6,10 +6,10 @@
 
 **Blocked by:** 02 — Kernel `AgentLaunchResolver` with unit tests
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Local and WSL terminal startup paths call `resolveLaunchInputs` and branch on `ResolvedLaunchInputs.Local` / `.Wsl`
-- [ ] WSL mapping failures surface through `showError` using the kernel failure message (preserving user-facing path-format hints)
-- [ ] `applyCursorResumeFallbackForLocal` / `applyCursorResumeFallbackForWsl` still run after resolution with the resolved paths and distribution
-- [ ] PTY terminal widget lifecycle, keyboard navigation, and error panel behavior are unchanged
-- [ ] `./gradlew qualityGate` passes
+- [x] Local and WSL terminal startup paths call `resolveLaunchInputs` and branch on `ResolvedLaunchInputs.Local` / `.Wsl`
+- [x] WSL mapping failures surface through `showError` using the kernel failure message (preserving user-facing path-format hints)
+- [x] `applyCursorResumeFallbackForLocal` / `applyCursorResumeFallbackForWsl` still run after resolution with the resolved paths and distribution
+- [x] PTY terminal widget lifecycle, keyboard navigation, and error panel behavior are unchanged
+- [x] `./gradlew qualityGate` passes
