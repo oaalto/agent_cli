@@ -2,7 +2,7 @@ package com.oaalto.agent.acp.mcp
 
 import com.agentclientprotocol.model.EnvVariable
 import com.agentclientprotocol.model.McpServer
-import com.intellij.openapi.diagnostic.Logger
+import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.settings.AiAssistantPresence
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -21,7 +21,7 @@ fun interface UserMcpServerSource {
 }
 
 object ReflectiveIdeaMcpServerSource : IdeaMcpServerSource {
-    private val logger = Logger.getInstance(ReflectiveIdeaMcpServerSource::class.java)
+    private val log = AgentCliLog.getInstance(ReflectiveIdeaMcpServerSource::class.java)
 
     override fun resolve(): McpServer? {
         if (!AiAssistantPresence.default.isAvailable()) {
@@ -29,7 +29,7 @@ object ReflectiveIdeaMcpServerSource : IdeaMcpServerSource {
         }
         return runCatching { resolveViaReflection() }
             .onFailure { throwable ->
-                logger.warn("Failed to resolve IntelliJ MCP server", throwable)
+                log.warn("Failed to resolve IntelliJ MCP server", throwable)
             }.getOrNull()
     }
 
@@ -48,13 +48,16 @@ object ReflectiveIdeaMcpServerSource : IdeaMcpServerSource {
         val isRunning = service.javaClass.getMethod("isRunning").invoke(service) as Boolean
         return when {
             !isRunning -> {
-                logger.info(
+                log.info(
                     "IntelliJ MCP server is not running; enable it in Tools | MCP Server " +
                         "before launching with IntelliJ MCP.",
                 )
                 null
             }
-            else -> buildReflectiveMcpServer(service)
+            else ->
+                buildReflectiveMcpServer(service).also { server ->
+                    log.info({ "Resolved IntelliJ MCP server '${server.name}'" })
+                }
         }
     }
 
@@ -100,20 +103,24 @@ object ReflectiveIdeaMcpServerSource : IdeaMcpServerSource {
 }
 
 object UserMcpConfigServerSource : UserMcpServerSource {
-    private val logger = Logger.getInstance(UserMcpConfigServerSource::class.java)
+    private val log = AgentCliLog.getInstance(UserMcpConfigServerSource::class.java)
 
-    override fun resolve(): List<McpServer> =
-        UserMcpConfigPaths
-            .candidateConfigPaths()
-            .asSequence()
-            .mapNotNull { path ->
-                runCatching { UserMcpConfigParser.readServersFromFile(path) }
-                    .onFailure { throwable ->
-                        logger.warn("Failed to read user MCP config from $path", throwable)
-                    }.getOrNull()
-            }.flatten()
-            .distinctBy { server -> UserMcpConfigParser.serverKey(server) }
-            .toList()
+    override fun resolve(): List<McpServer> {
+        val servers =
+            UserMcpConfigPaths
+                .candidateConfigPaths()
+                .asSequence()
+                .mapNotNull { path ->
+                    runCatching { UserMcpConfigParser.readServersFromFile(path) }
+                        .onFailure { throwable ->
+                            log.warn("Failed to read user MCP config from $path", throwable)
+                        }.getOrNull()
+                }.flatten()
+                .distinctBy { server -> UserMcpConfigParser.serverKey(server) }
+                .toList()
+        log.info({ "Resolved ${servers.size} MCP server(s) from user config" })
+        return servers
+    }
 }
 
 private object UserMcpConfigPaths {
@@ -136,7 +143,7 @@ private object UserMcpConfigPaths {
 }
 
 internal object UserMcpConfigParser {
-    private val logger = Logger.getInstance(UserMcpConfigParser::class.java)
+    private val log = AgentCliLog.getInstance(UserMcpConfigParser::class.java)
     private val json = Json { ignoreUnknownKeys = true }
 
     fun readServersFromFile(path: Path): List<McpServer> {
@@ -197,7 +204,7 @@ internal object UserMcpConfigParser {
                 .orEmpty()
         return when {
             url.isBlank() -> {
-                logger.warn("Skipping MCP server '$name': SSE url is blank.")
+                log.warn("Skipping MCP server '$name': SSE url is blank.")
                 null
             }
             else -> McpServer.Sse(name = name, url = url, headers = emptyList())
@@ -216,7 +223,7 @@ internal object UserMcpConfigParser {
                 .orEmpty()
         return when {
             url.isBlank() -> {
-                logger.warn("Skipping MCP server '$name': HTTP url is blank.")
+                log.warn("Skipping MCP server '$name': HTTP url is blank.")
                 null
             }
             else -> McpServer.Http(name = name, url = url, headers = emptyList())
@@ -234,7 +241,7 @@ internal object UserMcpConfigParser {
                 ?.trim()
                 .orEmpty()
         if (command.isBlank()) {
-            logger.warn("Skipping MCP server '$name': stdio command is blank.")
+            log.warn("Skipping MCP server '$name': stdio command is blank.")
             return null
         }
         val args = entry["args"]?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()

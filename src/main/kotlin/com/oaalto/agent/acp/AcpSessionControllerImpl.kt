@@ -13,8 +13,10 @@ import com.agentclientprotocol.model.McpServer
 import com.agentclientprotocol.model.SessionId
 import com.agentclientprotocol.protocol.Protocol
 import com.agentclientprotocol.transport.StdioTransport
-import com.intellij.openapi.diagnostic.Logger
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.acp.auth.AuthFlowCoordinator
+import com.oaalto.agent.settings.LaunchMode
 import com.oaalto.agent.worktree.resume.SessionSummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -108,6 +110,10 @@ class AcpSessionControllerImpl(
             scope.launch {
                 val exitCode = startedProcess.waitFor()
                 if (scope.isActive) {
+                    log.info(
+                        { "Agent process exited with code $exitCode" },
+                        sessionLogContext(),
+                    )
                     listener.onError("Agent process exited with code $exitCode.")
                 }
             }
@@ -172,6 +178,10 @@ class AcpSessionControllerImpl(
             session =
                 open(activeClient, context, cwd, operationsFactory, mcpServers)
             sessionReady.complete(Unit)
+            log.info(
+                { "ACP session opened: ${session?.sessionId?.value}" },
+                sessionLogContext(session?.sessionId?.value),
+            )
         }.onFailure { throwable ->
             sessionReady.completeExceptionally(throwable)
         }.getOrThrow()
@@ -221,7 +231,7 @@ class AcpSessionControllerImpl(
                         handlePromptEvent(event)
                     }
                 }.onFailure { throwable ->
-                    logger.warn("ACP prompt failed", throwable)
+                    log.warn("ACP prompt failed", throwable, sessionLogContext())
                     listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
                     listener.onError(throwable.message ?: throwable.javaClass.simpleName)
                 }
@@ -312,8 +322,16 @@ class AcpSessionControllerImpl(
         exitJob = null
     }
 
+    private fun sessionLogContext(sessionId: String? = currentSessionId()): AgentCliSessionContext =
+        AgentCliSessionContext(
+            configId = editorContext?.configurationId,
+            sessionId = sessionId,
+            launchMode = LaunchMode.ACP_CLIENT,
+            worktreePath = editorContext?.launchContext?.workingDirectoryOverride,
+        )
+
     companion object {
-        private val logger = Logger.getInstance(AcpSessionControllerImpl::class.java)
+        private val log = AgentCliLog.getInstance(AcpSessionControllerImpl::class.java)
         private const val PROCESS_DESTROY_TIMEOUT_MS = 3000L
     }
 }

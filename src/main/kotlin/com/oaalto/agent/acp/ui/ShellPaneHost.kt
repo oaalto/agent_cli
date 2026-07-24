@@ -4,6 +4,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
@@ -17,6 +19,7 @@ import javax.swing.JPanel
 class ShellPaneHost(
     private val project: Project,
     private val parentDisposable: Disposable,
+    private val logContextProvider: () -> AgentCliSessionContext? = { null },
 ) {
     private val panel =
         JPanel(BorderLayout()).apply {
@@ -78,11 +81,27 @@ class ShellPaneHost(
         panel.repaint()
     }
 
-    private fun createWidget(startupOptions: ShellStartupOptions): ShellTerminalWidget {
-        val runner = DefaultTerminalRunnerFactory.getInstance().createLocalRunner(project)
-        return ShellTerminalWidget.asShellJediTermWidget(
-            runner.startShellTerminalWidget(parentDisposable, startupOptions, false),
-        ) ?: error("Failed to create Shell pane terminal widget.")
+    private fun createWidget(startupOptions: ShellStartupOptions): ShellTerminalWidget =
+        runCatching {
+            val runner = DefaultTerminalRunnerFactory.getInstance().createLocalRunner(project)
+            val terminalWidget = runner.startShellTerminalWidget(parentDisposable, startupOptions, false)
+            ShellTerminalWidget.asShellJediTermWidget(terminalWidget)
+                ?: error("Failed to create Shell pane terminal widget.")
+        }.getOrElse { throwable ->
+            val message = throwable.message ?: "Failed to create Shell pane terminal widget."
+            logEmbeddedTerminalFailure(message, throwable)
+            error(message)
+        }
+
+    private fun logEmbeddedTerminalFailure(
+        message: String,
+        throwable: Throwable? = null,
+    ) {
+        agentCliLog.error(
+            message = "ACP embedded terminal launch failed: $message",
+            throwable = throwable,
+            context = logContextProvider(),
+        )
     }
 
     private fun replaceWidget(widget: ShellTerminalWidget) {
@@ -97,6 +116,8 @@ class ShellPaneHost(
     }
 
     companion object {
+        private val agentCliLog = AgentCliLog.getInstance(ShellPaneHost::class.java)
+
         fun formatCommandLabel(
             command: String,
             args: List<String>,

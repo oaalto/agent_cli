@@ -8,12 +8,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Separator
 import com.intellij.openapi.actionSystem.SplitButtonAction
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.Messages
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.settings.AgentConfigurationSelector
 import com.oaalto.agent.settings.AgentSettingsConfigurable
@@ -79,6 +80,7 @@ private class RunAgentSplitActionGroup :
                     DeleteWorktreeAction(
                         displayName = displayName,
                         recordId = managed.id,
+                        configurationId = managed.configurationId,
                         worktreePath = managed.worktreePath,
                     )
                 actions += Separator.getInstance()
@@ -218,9 +220,19 @@ private class RunAgentInNewWorktreeAction :
         val worktreeService = AgentWorktreeService(project)
         val createdWorktree =
             worktreeService.createWorktree(configuration).getOrElse { throwable ->
+                val reason = throwable.message ?: "Failed to create worktree."
+                agentCliLog.error(
+                    message = "Worktree create failed: $reason",
+                    throwable = throwable,
+                    context =
+                        AgentCliSessionContext(
+                            configId = configuration.id,
+                            launchMode = LaunchMode.from(configuration.launchMode),
+                        ),
+                )
                 Messages.showErrorDialog(
                     project,
-                    throwable.message ?: "Failed to create worktree.",
+                    reason,
                     "Run Agent",
                 )
                 return
@@ -245,9 +257,21 @@ private class RunAgentInNewWorktreeAction :
         val openResult = worktreeService.openWorktreeProject(record.worktreePath)
         if (openResult.isFailure) {
             state.consumePendingLaunch(record.worktreePath)
+            val throwable = openResult.exceptionOrNull()
+            val reason = throwable?.message ?: "Failed to open worktree project."
+            agentCliLog.error(
+                message = "Worktree open failed: $reason",
+                throwable = throwable,
+                context =
+                    AgentCliSessionContext(
+                        configId = configuration.id,
+                        launchMode = LaunchMode.from(configuration.launchMode),
+                        worktreePath = record.worktreePath,
+                    ),
+            )
             Messages.showErrorDialog(
                 project,
-                openResult.exceptionOrNull()?.message ?: "Failed to open worktree project.",
+                reason,
                 "Run Agent",
             )
         }
@@ -287,9 +311,26 @@ private class OpenOrResumeWorktreeAction(
         val result = worktreeService.openWorktreeProject(worktreePath)
         if (result.isFailure) {
             state.consumePendingLaunch(worktreePath)
+            val throwable = result.exceptionOrNull()
+            val reason = throwable?.message ?: "Failed to open worktree project."
+            val launchMode =
+                AgentSettingsState
+                    .getInstance()
+                    .getConfigurationById(configurationId)
+                    ?.let { LaunchMode.from(it.launchMode) }
+            agentCliLog.error(
+                message = "Worktree open failed: $reason",
+                throwable = throwable,
+                context =
+                    AgentCliSessionContext(
+                        configId = configurationId,
+                        launchMode = launchMode,
+                        worktreePath = worktreePath,
+                    ),
+            )
             Messages.showErrorDialog(
                 project,
-                result.exceptionOrNull()?.message ?: "Failed to open worktree project.",
+                reason,
                 "Run Agent",
             )
         }
@@ -299,6 +340,7 @@ private class OpenOrResumeWorktreeAction(
 private class DeleteWorktreeAction(
     displayName: String,
     private val recordId: String,
+    private val configurationId: String,
     private val worktreePath: String,
 ) : DumbAwareAction(
         "Delete $displayName",
@@ -322,18 +364,34 @@ private class DeleteWorktreeAction(
         val service = AgentWorktreeService(project)
         val result = service.deleteWorktree(worktreePath)
         if (result.isFailure) {
+            val throwable = result.exceptionOrNull()
+            val reason = throwable?.message ?: "Failed to delete worktree."
+            agentCliLog.error(
+                message = "Worktree delete failed: $reason",
+                throwable = throwable,
+                context =
+                    AgentCliSessionContext(
+                        configId = configurationId,
+                        worktreePath = worktreePath,
+                    ),
+            )
             Messages.showErrorDialog(
                 project,
-                result.exceptionOrNull()?.message ?: "Failed to delete worktree.",
+                reason,
                 "Run Agent",
             )
         } else {
             val state = AgentWorktreeStateService.getInstance()
             val markedById = state.markDeletedById(recordId)
             if (!markedById) {
-                logger.warn(
+                log.warn(
                     "Worktree '$worktreePath' deleted successfully, but managed record " +
                         "'$recordId' was missing; marking by path.",
+                    context =
+                        AgentCliSessionContext(
+                            configId = configurationId,
+                            worktreePath = worktreePath,
+                        ),
                 )
                 state.markDeleted(worktreePath)
             }
@@ -343,9 +401,11 @@ private class DeleteWorktreeAction(
     }
 
     companion object {
-        private val logger = Logger.getInstance(DeleteWorktreeAction::class.java)
+        private val log = AgentCliLog.getInstance(DeleteWorktreeAction::class.java)
     }
 }
+
+private val agentCliLog = AgentCliLog.getInstance(RunAgentSplitButtonAction::class.java)
 
 private class ManageAgentSettingsAction :
     DumbAwareAction(

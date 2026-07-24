@@ -5,7 +5,6 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
@@ -41,17 +40,25 @@ class SelectAgentConfigurationActionGroup :
                             val actionProject = event.project
                             when {
                                 actionProject == null ->
-                                    logger.warn(
+                                    log.warn(
                                         "Failed to select agent configuration '${configuration.id}' " +
                                             "from toolbar action: no project.",
+                                        context =
+                                            AgentCliSessionContext(
+                                                configId = configuration.id,
+                                            ),
                                     )
                                 !AgentConfigurationSelector.setSelectedConfiguration(
                                     actionProject,
                                     configuration.id,
                                 ) ->
-                                    logger.warn(
+                                    log.warn(
                                         "Failed to select agent configuration " +
                                             "'${configuration.id}' from toolbar action.",
+                                        context =
+                                            AgentCliSessionContext(
+                                                configId = configuration.id,
+                                            ),
                                     )
                                 else -> ActivityTracker.getInstance().inc()
                             }
@@ -98,6 +105,6 @@ class SelectAgentConfigurationActionGroup :
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        private val logger = Logger.getInstance(SelectAgentConfigurationActionGroup::class.java)
+        private val log = AgentCliLog.getInstance(SelectAgentConfigurationActionGroup::class.java)
     }
 }

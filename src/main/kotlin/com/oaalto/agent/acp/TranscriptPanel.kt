@@ -3,6 +3,7 @@ package com.oaalto.agent.acp
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliSessionContext
 import java.awt.Component
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -110,9 +111,10 @@ internal class TranscriptPanel(
             onToolToggle: (toolCallId: String) -> Unit,
             codeBlockViewFactory: TranscriptCodeBlockViewFactory =
                 EditorFactoryTranscriptCodeBlockViewFactory(project),
+            logContextProvider: () -> AgentCliSessionContext? = { null },
         ): TranscriptPanel =
             TranscriptPanel(
-                blockViewFactory = TranscriptBlockViewFactory(codeBlockViewFactory),
+                blockViewFactory = TranscriptBlockViewFactory(codeBlockViewFactory, logContextProvider),
                 onToolToggle = onToolToggle,
             )
     }

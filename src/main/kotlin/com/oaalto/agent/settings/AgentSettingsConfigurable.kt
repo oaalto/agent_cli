@@ -11,6 +11,8 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliLogRedaction
 import com.oaalto.agent.settings.acpjson.AcpJsonExporter
 import com.oaalto.agent.settings.acpjson.AcpJsonImportDraft
 import com.oaalto.agent.settings.acpjson.AcpJsonImporter
@@ -286,17 +288,27 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         val text =
             runCatching { VfsUtil.loadText(file) }
                 .getOrElse { throwable ->
+                    val reason = throwable.message ?: "Failed to read ${file.path}"
+                    agentCliLog.error(
+                        message = "Settings import failed reading ${file.path}: ${sanitizeImportFailureMessage(
+                            reason,
+                        )}",
+                    )
                     Messages.showErrorDialog(
                         table,
-                        throwable.message ?: "Failed to read ${file.path}",
+                        reason,
                         "Import failed",
                     )
                     return null
                 }
         return AcpJsonImporter.parse(text).getOrElse { throwable ->
+            val reason = throwable.message ?: "Invalid acp.json"
+            agentCliLog.error(
+                message = "Settings import failed parsing ${file.path}: ${sanitizeImportFailureMessage(reason)}",
+            )
             Messages.showErrorDialog(
                 table,
-                throwable.message ?: "Invalid acp.json",
+                reason,
                 "Import failed",
             )
             null
@@ -342,9 +354,15 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         runCatching {
             target.file.writeText(json, StandardCharsets.UTF_8)
         }.onFailure { throwable ->
+            val reason = throwable.message ?: "Failed to write ${target.file.path}"
+            agentCliLog.error(
+                message =
+                    "Settings export failed writing ${target.file.path}: " +
+                        sanitizeImportFailureMessage(reason),
+            )
             Messages.showErrorDialog(
                 table,
-                throwable.message ?: "Failed to write ${target.file.path}",
+                reason,
                 "Export failed",
             )
         }
@@ -362,6 +380,9 @@ class AgentSettingsConfigurable : SearchableConfigurable {
         return answer == Messages.YES
     }
 
+    private fun sanitizeImportFailureMessage(message: String): String =
+        AgentCliLogRedaction.redactSettingsFailureMessage(message)
+
     private fun rowsFromState(
         configurations: List<AgentSettingsState.AgentCliConfiguration>,
         selectedId: String?,
@@ -378,5 +399,6 @@ class AgentSettingsConfigurable : SearchableConfigurable {
 
     companion object {
         const val ID: String = "com.oaalto.agent.settings"
+        private val agentCliLog = AgentCliLog.getInstance(AgentSettingsConfigurable::class.java)
     }
 }

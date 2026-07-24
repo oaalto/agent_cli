@@ -1,0 +1,8 @@
+<registry>
+    <entry key="agent_cli.log"
+           default="false"
+           description="Enable Agent CLI tier-2 (info) session diagnostics in idea.log"/>
+    <entry key="agent_cli.debug"
+           default="false"
+           description="Enable Agent CLI tier-3 (debug) session diagnostics in idea.log"/>
+</registry>

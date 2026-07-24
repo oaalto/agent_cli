@@ -6,16 +6,16 @@
 
 **Blocked by:** 01 — AgentCliLog helper and tier gate functions
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Agent configuration toolbar selection failures use `AgentCliLog` with configuration context when known
-- [ ] ACP agent editor lifecycle logging uses `AgentCliLog` with launch mode **ACP Client** and available session context
-- [ ] ACP session controller connect, session open/load/list, and prompt errors use `AgentCliLog` with `sessionId` when assigned; recoverable load failures log at tier 1 before picker fallback
-- [ ] Transcript block view factory rendering failures use `AgentCliLog` with session context from the active editor/session when available
-- [ ] MCP server sources log resolution failures at tier 1 and resolution success summary at tier 2 when the log tier is enabled
-- [ ] Plan update mapper reflection failures emit at tier 3 (`debug`) only — no tier 1 `warn` remains for optional reflection paths
-- [ ] PTY agent editor lifecycle logging uses `AgentCliLog` with launch mode **PTY Passthrough** and the same tier gates as ACP Client
-- [ ] Delete-worktree action from the run split button logs deletion failures at tier 1 with worktree path context
-- [ ] No agent stderr mirroring into IDE log; no transcript file, correlation tokens, or copy-diagnostics action
+- [x] Agent configuration toolbar selection failures use `AgentCliLog` with configuration context when known
+- [x] ACP agent editor lifecycle logging uses `AgentCliLog` with launch mode **ACP Client** and available session context
+- [x] ACP session controller connect, session open/load/list, and prompt errors use `AgentCliLog` with `sessionId` when assigned; recoverable load failures log at tier 1 before picker fallback
+- [x] Transcript block view factory rendering failures use `AgentCliLog` with session context from the active editor/session when available
+- [x] MCP server sources log resolution failures at tier 1 and resolution success summary at tier 2 when the log tier is enabled
+- [x] Plan update mapper reflection failures emit at tier 3 (`debug`) only — no tier 1 `warn` remains for optional reflection paths
+- [x] PTY agent editor lifecycle logging uses `AgentCliLog` with launch mode **PTY Passthrough** and the same tier gates as ACP Client
+- [x] Delete-worktree action from the run split button logs deletion failures at tier 1 with worktree path context
+- [x] No agent stderr mirroring into IDE log; no transcript file, correlation tokens, or copy-diagnostics action
 - [ ] Optional secondary test: one representative migrated component asserts tier/context behavior with a test double or recording fake if a low-cost pattern already exists in the codebase
-- [ ] `./gradlew qualityGate` passes; `CHANGELOG.md` updated noting plan-mapper reflection messages moved from warn to debug
+- [x] `./gradlew qualityGate` passes; `CHANGELOG.md` updated noting plan-mapper reflection messages moved from warn to debug

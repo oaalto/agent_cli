@@ -2,11 +2,23 @@
 
 ## 2026-07-24
 
+### Added
+
+- **AgentCliLog infrastructure** (`com.oaalto.agent`): Tiered session diagnostics helper with `AgentCliSessionContext`, env/registry gate functions (`AGENT_CLI_LOG`, `AGENT_CLI_DEBUG`, `agent_cli.log`, `agent_cli.debug`), lazy tier-2/3 evaluation, and secret redaction helpers. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+### Changed
+
+- **Logger migration to AgentCliLog** (`com.oaalto.agent`, `acp/`, `pty/`, `worktree/`): Migrate existing `Logger` call sites to `AgentCliLog` with session context; tier-2 `info` for session open, MCP resolution, and process exit; `PlanUpdateMapper` reflection failures moved from `warn` to tier-3 `debug`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Dialog-only failure logging** (`worktree/`, `settings/`, `pty/`, `acp/`): Tier-1 `AgentCliLog` lines alongside existing error dialogs for worktree create/delete/open, settings import/export, PTY and ACP embedded-terminal launch failures, and degraded ACP resume paths. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Fixed
 
 - **ACP transcript block alignment** (`agent/acp/`): Update `preferredSize` for `JComponent` children in transcript row and tool card body resize paths so block content (code, tables, blockquotes) stays within the viewport instead of clipping right; shared sizing logic in `TranscriptColumnSizing.kt`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Documentation
+
+- **Tiered session diagnostics ticket status** (`docs/features/tiered-session-diagnostics/`): Mark PR1 tickets 01–03 `done` and PRD `implemented`; optional migrated-component test in ticket 02 remains open. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Session observability ADR** (`docs/adr/0004-session-observability.md`, `CONTEXT.md`): Record split between transcript file (ACP, keyed by `acpSessionId`) and tiered IDE logging (`warn` always; `info`/`debug` via env or registry); two-PR delivery plan. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

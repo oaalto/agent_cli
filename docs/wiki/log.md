@@ -1,5 +1,17 @@
 # Engineering Wiki Log
 
+## [2026-07-24] skip | Tiered session diagnostics ticket status
+
+- Reason: Planning artifact status-only update (`done` / `implemented`); behavior already recorded in changelog and ADR 0004.
+
+## [2026-07-24] skip | AgentCliLog call-site migration (PR1)
+
+- Reason: Tiered logging behavior documented in ADR 0004 and tiered-session-diagnostics PRD; wiki subsystem pages not yet updated for `AgentCliLog` usage patterns.
+
+## [2026-07-24] skip | AgentCliLog tier gate infrastructure
+
+- Reason: New diagnostics helper and registry keys only; ADR 0004 and tiered-session-diagnostics PRD already document the model. Wiki update deferred until call-site migration lands.
+
 ## [2026-07-24] skip | ACP transcript block alignment fix
 
 - Reason: Surgical Swing layout fix (`preferredSize` on resize); no durable domain or subsystem knowledge change beyond existing transcript layout docs.

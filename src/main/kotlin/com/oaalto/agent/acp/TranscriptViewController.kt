@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.intellij.openapi.project.Project
+import com.oaalto.agent.AgentCliSessionContext
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
@@ -9,6 +10,7 @@ internal class TranscriptViewController(
     project: Project,
     private val runOnEdt: ((() -> Unit) -> Unit)? = null,
     codeBlockViewFactory: TranscriptCodeBlockViewFactory = EditorFactoryTranscriptCodeBlockViewFactory(project),
+    logContextProvider: () -> AgentCliSessionContext? = { null },
 ) {
     private val model = TranscriptModel()
     private val transcriptPanel: TranscriptPanel =
@@ -21,6 +23,7 @@ internal class TranscriptViewController(
                 }
             },
             codeBlockViewFactory = codeBlockViewFactory,
+            logContextProvider = logContextProvider,
         )
 
     val component: JComponent get() = transcriptPanel.component

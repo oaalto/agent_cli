@@ -6,15 +6,15 @@
 
 **Blocked by:** 01 — AgentCliLog helper and tier gate functions
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Worktree create failure shows the existing error dialog and emits a tier-1 log line with failure reason and worktree path context when known
-- [ ] Worktree delete failure shows the existing error dialog and emits a tier-1 log line with failure reason and worktree path context
-- [ ] Worktree open failure shows the existing error dialog and emits a tier-1 log line with failure reason and path context
-- [ ] Agent settings import failure shows the existing error dialog and emits a tier-1 log line; no secret field values appear even if debug tier is enabled elsewhere
-- [ ] Agent settings export failure shows the existing error dialog and emits a tier-1 log line with write/serialization error detail
-- [ ] Terminal launch failure in PTY Passthrough path shows the existing error dialog and emits tier-1 log with launch mode and configuration context
-- [ ] Terminal launch failure in ACP Client embedded-terminal path shows the existing error dialog and emits tier-1 log with launch mode, configuration, and session context when known
-- [ ] Recoverable or degraded outcomes from abandoned resume flows log at tier 1 when they represent a failed or degraded session outcome per PRD
-- [ ] No new in-editor diagnostics panel; no transcript persistence or correlation tokens (PR2 scope)
-- [ ] `./gradlew qualityGate` passes; `CHANGELOG.md` updated under `### Added` or `### Changed` for dialog-path logging coverage
+- [x] Worktree create failure shows the existing error dialog and emits a tier-1 log line with failure reason and worktree path context when known
+- [x] Worktree delete failure shows the existing error dialog and emits a tier-1 log line with failure reason and worktree path context
+- [x] Worktree open failure shows the existing error dialog and emits a tier-1 log line with failure reason and path context
+- [x] Agent settings import failure shows the existing error dialog and emits a tier-1 log line; no secret field values appear even if debug tier is enabled elsewhere
+- [x] Agent settings export failure shows the existing error dialog and emits a tier-1 log line with write/serialization error detail
+- [x] Terminal launch failure in PTY Passthrough path shows the existing error dialog and emits tier-1 log with launch mode and configuration context
+- [x] Terminal launch failure in ACP Client embedded-terminal path shows the existing error dialog and emits tier-1 log with launch mode, configuration, and session context when known
+- [x] Recoverable or degraded outcomes from abandoned resume flows log at tier 1 when they represent a failed or degraded session outcome per PRD
+- [x] No new in-editor diagnostics panel; no transcript persistence or correlation tokens (PR2 scope)
+- [x] `./gradlew qualityGate` passes; `CHANGELOG.md` updated under `### Added` or `### Changed` for dialog-path logging coverage

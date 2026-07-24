@@ -5,7 +5,6 @@ import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -15,6 +14,8 @@ import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.acp.auth.AuthPromptResult
 import com.oaalto.agent.acp.auth.AuthPromptUi
@@ -27,6 +28,7 @@ import com.oaalto.agent.acp.ui.PromptInputBar
 import com.oaalto.agent.acp.ui.SessionPickerDialog
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.settings.LaunchMode
 import com.oaalto.agent.worktree.AgentWorktreeStateService
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import com.oaalto.agent.worktree.resume.SessionSummary
@@ -53,10 +55,20 @@ class AcpAgentEditor(
     private val propertyChangeSupport = PropertyChangeSupport(this)
     private val userData = UserDataHolderBase()
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val transcriptViewController = TranscriptViewController(project, ::runOnEdt)
+    private val transcriptViewController =
+        TranscriptViewController(
+            project,
+            ::runOnEdt,
+            logContextProvider = { logContext() },
+        )
     private val permissionPromptPanel = PermissionPromptPanel()
     private val authPromptPanel = AuthPromptPanel()
-    private val shellPaneHost = ShellPaneHost(project, this)
+    private val shellPaneHost =
+        ShellPaneHost(
+            project = project,
+            parentDisposable = this,
+            logContextProvider = { logContext() },
+        )
     private val promptInputBar =
         PromptInputBar { text ->
             transcriptViewController.finalizeAgentStream()
@@ -65,7 +77,7 @@ class AcpAgentEditor(
             transcriptViewController.appendPlainLine("")
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
-                    logger.warn("Failed to send ACP prompt", throwable)
+                    log.warn("Failed to send ACP prompt", throwable, logContext())
                     transcriptViewController.finalizeAgentStream()
                     transcriptViewController.appendError(
                         throwable.message ?: throwable.javaClass.simpleName,
@@ -272,7 +284,7 @@ class AcpAgentEditor(
                 promptInputBar.requestFocus()
             }
         }.onFailure { throwable ->
-            logger.warn("Failed to start ACP session", throwable)
+            log.warn("Failed to start ACP session", throwable, logContext())
             transcriptViewController.appendError(
                 throwable.message ?: throwable.javaClass.simpleName,
             )
@@ -287,7 +299,13 @@ class AcpAgentEditor(
                     sessionController.loadSession(plan.sessionId)
                     persistBoundSessionId(plan.sessionId)
                 }.onFailure { throwable ->
-                    logger.warn("ACP session load failed for ${plan.sessionId}", throwable)
+                    log.warn(
+                        message =
+                            "ACP resume degraded: stored session load failed for ${plan.sessionId}: " +
+                                (throwable.message ?: "load failed"),
+                        throwable = throwable,
+                        context = logContext(sessionId = plan.sessionId),
+                    )
                     transcriptViewController.appendPlainLine(
                         "Stored session is unavailable (${throwable.message ?: "load failed"}). " +
                             "Choose a session to resume or start fresh.",
@@ -318,7 +336,13 @@ class AcpAgentEditor(
             runCatching {
                 sessionController.listSessions(sessionWorkingDirectory)
             }.getOrElse { throwable ->
-                logger.warn("ACP listSessions failed", throwable)
+                log.warn(
+                    message =
+                        "ACP resume degraded: listSessions failed: " +
+                            (throwable.message ?: "list failed"),
+                    throwable = throwable,
+                    context = logContext(),
+                )
                 transcriptViewController.appendError(
                     throwable.message ?: "Failed to list sessions",
                 )
@@ -349,7 +373,13 @@ class AcpAgentEditor(
             persistBoundSessionId(selectedId)
             transcriptViewController.appendPlainLine("Resumed session $selectedId.")
         }.onFailure { throwable ->
-            logger.warn("ACP session load failed for picker selection $selectedId", throwable)
+            log.warn(
+                message =
+                    "ACP resume degraded: selected session load failed for $selectedId; starting new session: " +
+                        (throwable.message ?: "load failed"),
+                throwable = throwable,
+                context = logContext(sessionId = selectedId),
+            )
             transcriptViewController.appendError(
                 throwable.message ?: "Failed to load selected session",
             )
@@ -385,8 +415,16 @@ class AcpAgentEditor(
             }, ModalityState.any())
         }
 
+    private fun logContext(sessionId: String? = sessionController.currentSessionId()): AgentCliSessionContext =
+        AgentCliSessionContext(
+            configId = file.configurationId,
+            sessionId = sessionId,
+            launchMode = LaunchMode.ACP_CLIENT,
+            worktreePath = file.launchContext.workingDirectoryOverride,
+        )
+
     companion object {
-        private val logger = Logger.getInstance(AcpAgentEditor::class.java)
+        private val log = AgentCliLog.getInstance(AcpAgentEditor::class.java)
 
         private fun defaultSessionController(listener: AcpSessionListener): AcpSessionController =
             AcpSessionControllerImpl(listener)

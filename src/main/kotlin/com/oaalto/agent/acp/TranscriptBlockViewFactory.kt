@@ -1,10 +1,11 @@
 package com.oaalto.agent.acp
 
 import com.intellij.openapi.components.serviceOrNull
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.acp.plan.PlanPanel
 import java.awt.BorderLayout
 import java.awt.Component
@@ -118,8 +119,9 @@ private fun applyStyleToRun(
 /** Maps [TranscriptBlock] snapshots to Swing row components. */
 internal class TranscriptBlockViewFactory(
     private val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
+    private val logContextProvider: () -> AgentCliSessionContext? = { null },
 ) {
-    private val log = Logger.getInstance(TranscriptBlockViewFactory::class.java)
+    private val log = AgentCliLog.getInstance(TranscriptBlockViewFactory::class.java)
 
     fun create(
         block: TranscriptBlock,
@@ -186,6 +188,7 @@ internal class TranscriptBlockViewFactory(
         log.warn(
             "Transcript block/component type mismatch: " +
                 "component=${component::class.simpleName}, block=${block::class.simpleName}",
+            context = logContextProvider(),
         )
     }
 
@@ -196,6 +199,7 @@ internal class TranscriptBlockViewFactory(
         log.warn(
             "Transcript text row type mismatch: " +
                 "component=${component::class.simpleName}, block=${block::class.simpleName}",
+            context = logContextProvider(),
         )
     }
 

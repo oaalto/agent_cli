@@ -1,6 +1,6 @@
 package com.oaalto.agent.acp.plan
 
-import com.intellij.openapi.diagnostic.Logger
+import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.acp.PlanEntry
 import com.oaalto.agent.acp.PlanEntryPriority
 import com.oaalto.agent.acp.PlanEntryStatus
@@ -19,7 +19,7 @@ import com.oaalto.agent.acp.StructuredUpdate
  * Once the API stabilizes, this should be converted to direct method calls.
  */
 internal object PlanUpdateMapper {
-    private val logger = Logger.getInstance(PlanUpdateMapper::class.java)
+    private val log = AgentCliLog.getInstance(PlanUpdateMapper::class.java)
 
     /**
      * Attempts to map a PlanUpdate to StructuredUpdate.
@@ -49,10 +49,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapPlanUpdate: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanUpdate", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapPlanUpdate: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanUpdate", throwable = e)
             null
         }
     }
@@ -76,10 +76,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapPlanUpdateV2: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanUpdateV2", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapPlanUpdateV2: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanUpdateV2", throwable = e)
             null
         }
     }
@@ -99,10 +99,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapPlanRemoved: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanRemoved", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapPlanRemoved: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanRemoved", throwable = e)
             null
         }
     }
@@ -142,10 +142,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapItemsVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapItemsVariant", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapItemsVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapItemsVariant", throwable = e)
             null
         }
     }
@@ -168,10 +168,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapFileVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapFileVariant", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapFileVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapFileVariant", throwable = e)
             null
         }
     }
@@ -194,10 +194,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapMarkdownVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapMarkdownVariant", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapMarkdownVariant: ${e.message}", e)
+            log.debug("Reflection failed in mapMarkdownVariant", throwable = e)
             null
         }
     }
@@ -222,10 +222,10 @@ internal object PlanUpdateMapper {
         } catch (e: ClassNotFoundException) {
             null // Expected when SDK class not available - gracefully degrade
         } catch (e: ReflectiveOperationException) {
-            logger.warn("Reflection failed in mapPlanEntry: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanEntry", throwable = e)
             null
         } catch (e: IllegalArgumentException) {
-            logger.warn("Reflection failed in mapPlanEntry: ${e.message}", e)
+            log.debug("Reflection failed in mapPlanEntry", throwable = e)
             null
         }
 

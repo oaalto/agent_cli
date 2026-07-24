@@ -12,7 +12,6 @@ import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
@@ -26,6 +25,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCommandBuilder
 import com.oaalto.agent.AgentLaunchContext
 import com.oaalto.agent.AgentVirtualFile
@@ -34,6 +34,8 @@ import com.oaalto.agent.WorkingDirectoryResolver
 import com.oaalto.agent.WslPathResolver
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.settings.AgentSettingsState
+import com.oaalto.agent.settings.LaunchMode
+import com.oaalto.agent.toAgentCliSessionContext
 import org.jetbrains.plugins.terminal.DefaultTerminalRunnerFactory
 import org.jetbrains.plugins.terminal.ShellStartupOptions
 import java.awt.BorderLayout
@@ -157,14 +159,14 @@ class PtyAgentEditor(
     private fun startTerminalSession() {
         val configuration =
             resolvePtyConfiguration(file.configurationId) {
-                showError("Agent configuration was removed or is unavailable.")
+                logTerminalFailure("Agent configuration was removed or is unavailable.")
             }
                 ?: return
         val binaryPath = configuration.binaryPath.trim()
         val startupRequest =
             when {
                 binaryPath.isBlank() -> {
-                    showError("Agent binary path is empty for configuration '${configuration.name}'.")
+                    logTerminalFailure("Agent binary path is empty for configuration '${configuration.name}'.")
                     null
                 }
                 else -> buildTerminalStartupRequest(configuration, binaryPath)
@@ -211,7 +213,7 @@ class PtyAgentEditor(
     ): TerminalStartupRequest? =
         when {
             binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath)) -> {
-                showError("Agent binary is not executable:\n$binaryPath")
+                logTerminalFailure("Agent binary is not executable:\n$binaryPath")
                 null
             }
             else -> {
@@ -223,7 +225,7 @@ class PtyAgentEditor(
                     )
                 when {
                     !Files.isDirectory(Path.of(workingDirectory)) -> {
-                        showError("Working directory does not exist:\n$workingDirectory")
+                        logTerminalFailure("Working directory does not exist:\n$workingDirectory")
                         null
                     }
                     else -> {
@@ -270,7 +272,7 @@ class PtyAgentEditor(
                 else -> ""
             }
         if (rawPath.isNotBlank() && WslPathResolver.mapToWslPath(rawPath) == null) {
-            showError(
+            logTerminalFailure(
                 "Working directory could not be mapped to a WSL path:\n" +
                     "${configuration.workingDirectory}\n\n" +
                     "Use one of:\n" +
@@ -326,8 +328,14 @@ class PtyAgentEditor(
             rootPanel.add(terminalWidget.component, BorderLayout.CENTER)
             rootPanel.border = JBUI.Borders.empty()
         }.onFailure { throwable ->
-            logger.warn("Failed to initialize terminal widget for '$binaryPath'", throwable)
-            showError("Failed to initialize terminal widget:\n${throwable.message ?: throwable.javaClass.simpleName}")
+            logTerminalFailure(
+                message =
+                    terminalFailureDetail(
+                        "Failed to initialize terminal widget for '$binaryPath'",
+                        throwable,
+                    ),
+                throwable = throwable,
+            )
         }
     }
 
@@ -335,12 +343,29 @@ class PtyAgentEditor(
         kotlin
             .runCatching(builder)
             .getOrElse { throwable ->
-                logger.warn("Failed to build agent launch command.", throwable)
-                showError(
-                    "Failed to build agent launch command:\n${throwable.message ?: throwable.javaClass.simpleName}",
+                logTerminalFailure(
+                    message = terminalFailureDetail("Failed to build agent launch command", throwable),
+                    throwable = throwable,
                 )
                 null
             }
+
+    private fun terminalFailureDetail(
+        prefix: String,
+        throwable: Throwable,
+    ): String = "$prefix:\n${throwable.message ?: throwable.javaClass.simpleName}"
+
+    private fun logTerminalFailure(
+        message: String,
+        throwable: Throwable? = null,
+    ) {
+        log.error(
+            message = "PTY terminal launch failed: $message",
+            throwable = throwable,
+            context = file.toAgentCliSessionContext(LaunchMode.PTY_PASSTHROUGH),
+        )
+        showError(message)
+    }
 
     private fun showError(message: String) {
         val area =
@@ -373,7 +398,7 @@ class PtyAgentEditor(
     }
 
     companion object {
-        private val logger = Logger.getInstance(PtyAgentEditor::class.java)
+        private val log = AgentCliLog.getInstance(PtyAgentEditor::class.java)
         private val NAVIGATION_ACTION_IDS =
             listOf(
                 IdeActions.ACTION_PREVIOUS_EDITOR_TAB,
