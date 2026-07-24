@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
+import java.util.Locale
 import java.util.UUID
 
 @Service(Service.Level.APP)
@@ -13,6 +14,14 @@ class AgentSettingsState : PersistentStateComponent<AgentSettingsState.State> {
     enum class ExecutionTarget {
         LOCAL,
         WSL,
+        ;
+
+        companion object {
+            fun from(raw: String): ExecutionTarget {
+                val normalized = raw.trim().uppercase(Locale.ROOT)
+                return entries.firstOrNull { it.name == normalized } ?: LOCAL
+            }
+        }
     }
 
     class State {
