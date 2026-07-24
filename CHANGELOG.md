@@ -4,6 +4,8 @@
 
 ### Added
 
+- **ACP session transcript persistence** (`acp/`): Workspace-local session transcript files under `.idea/agent-cli/transcripts/<acpSessionId>.txt`, plain-text serializer, debounced snapshot writer, plain-line restore on resumed sessions, correlation tokens on transcript errors, and **Copy Session Diagnostics** editor action. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **AgentCliLog infrastructure** (`com.oaalto.agent`): Tiered session diagnostics helper with `AgentCliSessionContext`, env/registry gate functions (`AGENT_CLI_LOG`, `AGENT_CLI_DEBUG`, `agent_cli.log`, `agent_cli.debug`), lazy tier-2/3 evaluation, and secret redaction helpers. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Changed
@@ -13,6 +15,8 @@
 - **Dialog-only failure logging** (`worktree/`, `settings/`, `pty/`, `acp/`): Tier-1 `AgentCliLog` lines alongside existing error dialogs for worktree create/delete/open, settings import/export, PTY and ACP embedded-terminal launch failures, and degraded ACP resume paths. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Fixed
+
+- **ACP editor tab close during connect** (`acp/AcpAgentEditor.kt`): Rethrow `CancellationException` instead of logging it as a session failure or showing a transcript error when the tab is closed while connect/resume is in flight. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript block alignment** (`agent/acp/`): Update `preferredSize` for `JComponent` children in transcript row and tool card body resize paths so block content (code, tables, blockquotes) stays within the viewport instead of clipping right; shared sizing logic in `TranscriptColumnSizing.kt`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

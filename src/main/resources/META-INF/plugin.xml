@@ -60,5 +60,12 @@
             <add-to-group group-id="MainToolBar" anchor="before" relative-to-action="RunConfigurationsComboBoxAction"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action
+                id="com.oaalto.agent.CopySessionDiagnosticsAction"
+                class="com.oaalto.agent.CopySessionDiagnosticsAction"
+                text="Copy Session Diagnostics"
+                description="Copy session diagnostics to clipboard for bug reports">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

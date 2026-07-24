@@ -13,6 +13,8 @@ internal class TranscriptViewController(
     logContextProvider: () -> AgentCliSessionContext? = { null },
 ) {
     private val model = TranscriptModel()
+    var onBlocksChanged: (() -> Unit)? = null
+    var errorMessageDecorator: ((String) -> String)? = null
     private val transcriptPanel: TranscriptPanel =
         TranscriptPanel.create(
             project = project,
@@ -33,6 +35,7 @@ internal class TranscriptViewController(
             model.apply(update)
             transcriptPanel.sync(model.blocks())
             transcriptPanel.scrollToEndIfAtBottom()
+            onBlocksChanged?.invoke()
         }
     }
 
@@ -44,7 +47,16 @@ internal class TranscriptViewController(
     }
 
     fun appendError(message: String) {
-        apply(StructuredUpdate.AppendError(message))
+        val displayMessage = errorMessageDecorator?.invoke(message) ?: message
+        apply(StructuredUpdate.AppendError(displayMessage))
+    }
+
+    fun restorePlainLines(content: String) {
+        if (content.isEmpty()) return
+        content.lineSequence().forEach { line ->
+            val isUserPrompt = line.startsWith("> ")
+            appendPlainLine(line, isUserPrompt = isUserPrompt)
+        }
     }
 
     fun finalizeAgentStream() {

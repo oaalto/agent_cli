@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-07-24] skip | ACP session transcript persistence wiki
+
+- Reason: Feature behavior documented in ADR 0004, PRD, and changelog; subsystem wiki pages not yet updated for transcript file paths and copy-diagnostics action.
+
 ## [2026-07-24] skip | Tiered session diagnostics ticket status
 
 - Reason: Planning artifact status-only update (`done` / `implemented`); behavior already recorded in changelog and ADR 0004.

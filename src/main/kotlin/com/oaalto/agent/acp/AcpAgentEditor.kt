@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 
 class AcpAgentEditor(
@@ -61,6 +62,30 @@ class AcpAgentEditor(
             ::runOnEdt,
             logContextProvider = { logContext() },
         )
+
+    private fun snapshotBlocksOnEdt(): List<TranscriptBlock> {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return transcriptViewController.blocksForTest()
+        }
+        val holder = arrayOf(emptyList<TranscriptBlock>())
+        ApplicationManager.getApplication().invokeAndWait {
+            holder[0] = transcriptViewController.blocksForTest()
+        }
+        return holder[0]
+    }
+
+    private val sessionTranscript =
+        SessionTranscriptCoordinator(
+            projectBasePath = project.basePath,
+            callbacks =
+                SessionTranscriptCallbacks(
+                    blocksProvider = ::snapshotBlocksOnEdt,
+                    restoreLines = { content -> transcriptViewController.restorePlainLines(content) },
+                    appendPlainLine = { line -> transcriptViewController.appendPlainLine(line) },
+                    logWarn = { message, throwable, context -> log.warn(message, throwable, context) },
+                    logContext = { logContext() },
+                ),
+        )
     private val permissionPromptPanel = PermissionPromptPanel()
     private val authPromptPanel = AuthPromptPanel()
     private val shellPaneHost =
@@ -77,6 +102,7 @@ class AcpAgentEditor(
             transcriptViewController.appendPlainLine("")
             coroutineScope.launch {
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
+                    rethrowIfCancellation(throwable)
                     log.warn("Failed to send ACP prompt", throwable, logContext())
                     transcriptViewController.finalizeAgentStream()
                     transcriptViewController.appendError(
@@ -155,6 +181,8 @@ class AcpAgentEditor(
     private val sessionController: AcpSessionController = sessionControllerFactory(sessionListener)
 
     init {
+        transcriptViewController.errorMessageDecorator = sessionTranscript::decorateError
+        transcriptViewController.onBlocksChanged = sessionTranscript::onBlocksChanged
         rootPanel.add(
             AcpEditorLayout.buildRootPanel(
                 EditorLayoutComponents(
@@ -220,6 +248,7 @@ class AcpAgentEditor(
     override fun dispose() {
         permissionPromptPanel.cancelPending()
         authPromptPanel.cancelPending()
+        sessionTranscript.dispose()
         transcriptViewController.dispose()
         coroutineScope.launch {
             runCatching { sessionController.cancelPrompt() }
@@ -284,6 +313,7 @@ class AcpAgentEditor(
                 promptInputBar.requestFocus()
             }
         }.onFailure { throwable ->
+            rethrowIfCancellation(throwable)
             log.warn("Failed to start ACP session", throwable, logContext())
             transcriptViewController.appendError(
                 throwable.message ?: throwable.javaClass.simpleName,
@@ -298,7 +328,10 @@ class AcpAgentEditor(
                 runCatching {
                     sessionController.loadSession(plan.sessionId)
                     persistBoundSessionId(plan.sessionId)
+                    sessionTranscript.restoreIfPresent(plan.sessionId)
+                    sessionTranscript.bindSession(plan.sessionId)
                 }.onFailure { throwable ->
+                    rethrowIfCancellation(throwable)
                     log.warn(
                         message =
                             "ACP resume degraded: stored session load failed for ${plan.sessionId}: " +
@@ -326,6 +359,7 @@ class AcpAgentEditor(
             LaunchResumePlan.AcpNewSession, null -> {
                 sessionController.newSession()
                 persistCurrentSessionId()
+                sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
             }
             is LaunchResumePlan.Pty -> error("PTY resume plan is not valid for ACP editor")
         }
@@ -336,6 +370,7 @@ class AcpAgentEditor(
             runCatching {
                 sessionController.listSessions(sessionWorkingDirectory)
             }.getOrElse { throwable ->
+                rethrowIfCancellation(throwable)
                 log.warn(
                     message =
                         "ACP resume degraded: listSessions failed: " +
@@ -355,6 +390,7 @@ class AcpAgentEditor(
         if (candidates.isEmpty()) {
             sessionController.newSession()
             persistCurrentSessionId()
+            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
             transcriptViewController.appendPlainLine("Started a new ACP session.")
             return
         }
@@ -365,14 +401,18 @@ class AcpAgentEditor(
         if (selectedId == null) {
             sessionController.newSession()
             persistCurrentSessionId()
+            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
             transcriptViewController.appendPlainLine("Started a new ACP session.")
             return
         }
         runCatching {
             sessionController.loadSession(selectedId)
             persistBoundSessionId(selectedId)
+            sessionTranscript.restoreIfPresent(selectedId)
+            sessionTranscript.bindSession(selectedId)
             transcriptViewController.appendPlainLine("Resumed session $selectedId.")
         }.onFailure { throwable ->
+            rethrowIfCancellation(throwable)
             log.warn(
                 message =
                     "ACP resume degraded: selected session load failed for $selectedId; starting new session: " +
@@ -385,12 +425,14 @@ class AcpAgentEditor(
             )
             sessionController.newSession()
             persistCurrentSessionId()
+            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
         }
     }
 
     private fun persistCurrentSessionId() {
         val sessionId = sessionController.currentSessionId() ?: return
         persistBoundSessionId(sessionId)
+        sessionTranscript.bindSession(sessionId)
     }
 
     private fun persistBoundSessionId(sessionId: String) {
@@ -415,6 +457,8 @@ class AcpAgentEditor(
             }, ModalityState.any())
         }
 
+    fun buildDiagnosticsClipboardText(): String = sessionTranscript.clipboardText()
+
     private fun logContext(sessionId: String? = sessionController.currentSessionId()): AgentCliSessionContext =
         AgentCliSessionContext(
             configId = file.configurationId,
@@ -428,5 +472,9 @@ class AcpAgentEditor(
 
         private fun defaultSessionController(listener: AcpSessionListener): AcpSessionController =
             AcpSessionControllerImpl(listener)
+
+        private fun rethrowIfCancellation(throwable: Throwable) {
+            if (throwable is CancellationException) throw throwable
+        }
     }
 }
