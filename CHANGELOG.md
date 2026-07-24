@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-24
+
+### Documentation
+
+- **Wiki update** (`docs/wiki/`): Refresh ACP client, context, quality-gate, and agent-cli overview pages with transcript color provider, footer, plan visualization, slash-command autocomplete, Markdown rendering, and pre-commit workflow. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-07-23
 
 ### Fixed

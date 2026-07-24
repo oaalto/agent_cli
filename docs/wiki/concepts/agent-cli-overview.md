@@ -1,9 +1,10 @@
 ---
 title: Agent CLI overview
 type: concept
-status: draft
-updated: 2026-06-16
+status: current
+updated: 2026-07-24
 sources:
+  - CONTEXT.md
   - src/main/kotlin/com/oaalto/agent/
   - build.gradle.kts
 ---
@@ -14,16 +15,15 @@ This page explains the purpose and high-level design of the Agent CLI plugin in 
 ## Verified Facts
 
 - Plugin code lives under `src/main/kotlin/com/oaalto/agent/` and tests under `src/test/kotlin/`.
-- Build and quality gates are implemented via Gradle tasks in `build.gradle.kts` (ktlint integration, `qualityGate` task).
+- Vertical slices: `pty/` (PTY Passthrough), `acp/` (ACP client + transcript UI), `worktree/` (git worktree isolation), `settings/` (shared configuration).
+- Build and quality gates are implemented via Gradle tasks in `build.gradle.kts` (ktlint, detekt with type resolution, `qualityGate` task).
 - CI builds artifacts via `./gradlew buildPlugin` as shown in `.github/workflows/build-plugin.yml`.
+- Wiki mechanical lint runs via Node: `npm run wiki-lint` (`scripts/wiki-lint.mjs`); enforced in pre-commit.
 
 ## Agent Synthesis
 
 - The repository is a single Gradle-based IntelliJ plugin project; recommended developer workflow uses the Gradle wrapper (`./gradlew`), ktlint for formatting, and the provided `qualityGate` task for ordered checks.
-
-## Open Questions
-
-- Should wiki lint be run via Node (`scripts/wiki-lint.mjs`) or ported to a Gradle-friendly script? (To Complete)
+- Domain vocabulary is in `CONTEXT.md`; subsystem detail is in `docs/wiki/`.
 
 ## Related
 

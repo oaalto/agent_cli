@@ -1,5 +1,11 @@
 # Engineering Wiki Log
 
+## [2026-07-24] update | ACP transcript features & workflow refresh
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md), [Domain context & ACP transcript model](concepts/context.md), [Quality gate & release workflow](workflows/quality-gate.md), [Agent CLI overview](concepts/agent-cli-overview.md)
+- Sources: `src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt`, `src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt`, `src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt`, `src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanel.kt`, `CONTEXT.md`, `build.gradle.kts`, `scripts/pre-commit`
+- Notes: Documented theme-aware colors, footer usage/cost bar, plan visualization, slash-command autocomplete, GFM Markdown rendering, CONTEXT glossary trim, and pre-commit/wiki-lint/graphify workflow.
+
 ## [2026-07-23] ingest | ACP client subsystem
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md)

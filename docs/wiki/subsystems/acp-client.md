@@ -2,7 +2,7 @@
 title: ACP client subsystem
 type: subsystem
 status: current
-updated: 2026-07-23
+updated: 2026-07-24
 sources:
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
@@ -11,7 +11,14 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptHtmlAppender.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpPromptEventDispatcher.kt
   - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
-  - src/main/kotlin/com/oaalto/agent/acp/AcpSessionListener.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt
+  - src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt
+  - src/main/kotlin/com/oaalto/agent/acp/ui/SlashCommandMatcher.kt
+  - src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanel.kt
+  - src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanelRenderer.kt
   - docs/adr/0001-custom-acp-client-in-plugin.md
 ---
 
@@ -72,6 +79,16 @@ Implements `com.agentclientprotocol.common.ClientSessionOperations`:
 - **`fsWriteTextFile()`** — resolves scope, checks write permission via `PermissionCoordinator`, writes via `IdeScopedFileSystemAccess`.
 - **`terminalCreate()` / `terminalOutput()` / `terminalRelease()`** — manage terminal sessions via `TerminalSessionRegistry` and `ShellPaneHost`.
 
+### Session update mapping (`TranscriptSessionUpdateMapper`)
+
+Maps ACP `SessionUpdate` events to `StructuredUpdate` values:
+
+- **Agent/user/thought chunks** → `AppendAgentText`, `AppendUserEcho`, `AppendThought`.
+- **Tool calls** → tool call start/delta/end variants.
+- **`UsageUpdate`** → `StructuredUpdate.Usage` (feeds `TranscriptFooter`).
+- **`AvailableCommandsUpdate`** → `StructuredUpdate.AvailableCommands` (feeds slash-command autocomplete).
+- **Plan events** (`PlanUpdate`, `PlanUpdateV2`, `PlanRemoved`) → plan panel variants via `PlanUpdateMapper`.
+
 ### Structured updates (`StructuredUpdate`)
 
 The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
@@ -79,9 +96,44 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - `AppendPlainLine(line, isUserPrompt)` — plain text line (user prompts start with `> `).
 - `AppendError(message)` — error message.
 - `FinalizeAgentStream` — finalizes the active agent stream.
-- `AvailableCommands(commands)` — updates prompt input bar commands.
+- `AvailableCommands(commands)` — updates `PromptInputBar` slash-command list.
+- `Usage(used, size, cost)` — cumulative token usage and optional cost for the footer.
 - Tool call variants (tool call start, delta, end).
-- Plan variants (plan start, step updates).
+- Plan variants (plan start, step updates, removal).
+
+### Theme-aware colors (`TranscriptColorProvider`)
+
+- Central color authority for transcript HTML and Swing components; adapts to IDE light/dark theme via `JBColor`.
+- Registered as an IntelliJ service; `DefaultTranscriptColorProvider` is the fallback.
+- Used by `TranscriptRenderer`, `PlanPanel`, badges, and tool cards for consistent theming.
+
+### Markdown rendering (`TranscriptMarkdownRenderer`)
+
+- Agent text and tool card bodies render via IntelliJ's `org.intellij.markdown` parser with GFM flavour.
+- Produces `RenderedBlock` variants (inline text, code blocks, tables, blockquotes, images, thematic breaks).
+- Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
+
+### Plan visualization (`PlanPanel`, `PlanPanelRenderer`)
+
+- `PlanUpdate` / `PlanUpdateV2` render as in-transcript checklist panels keyed by plan ID.
+- Status icons: pending `[ ]`, in-progress `[→]`, completed `[✓]` with gray/orange/green styling.
+- Priority: HIGH (bold + red left border), LOW (muted gray).
+- Progress summary: "N of M completed" (green when fully complete).
+- `PlanRemoved` removes the panel; `PlanVariant.File` and `Markdown` have fallback rendering.
+- In-place updates by plan ID via `TranscriptModel` plan tracking.
+
+### Transcript footer (`TranscriptFooter`)
+
+- Sticky status bar at the bottom of the transcript column (SOUTH of `mainSplitter`).
+- Displays cumulative token usage (`used / size`) and optional cost from `UsageUpdate` events.
+- Usage label turns orange when `used / size > 0.8`; cost label hidden when null.
+
+### Slash-command autocomplete (`PromptInputBar`, `SlashCommandMatcher`)
+
+- `AvailableCommandsUpdate` populates `SlashCommand` list on the prompt input bar.
+- Typing `/` opens a popup (max 5 visible rows, width matches prompt field, positioned above input).
+- Up/Down highlight commands while keeping focus in the prompt field; Tab completes selection.
+- Filtering updates the list in place as the user types.
 
 ### Threading
 
