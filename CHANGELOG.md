@@ -24,6 +24,8 @@
 
 - **Unified launch resolution — slice adapter migration** (`worktree/`, `pty/`, `acp/`): `WorktreeLaunchCoordinator` delegates path and execution-target resolution to new kernel `AgentLaunchResolver`; `buildResumeContext` now returns `Result<ResumeContext>` propagating kernel failures; `buildLaunchContext` returns `Result<AgentLaunchContext>`; `AgentPendingLaunchStartupActivity` shows error dialog on resolution failure; `PtyResumeStrategy` deletes private `resolveExecutionTarget` and uses `ExecutionTarget.from`; `AcpProcessLauncher`, `PtyAgentEditor`, and `WorktreeLaunchCoordinator` no longer re-implement override precedence, WSL mapping, or distribution inference. made by: Olli Aalto. made with: pi.
 
+- **Un-ignore `.pi-subagents/`** (`.gitignore`, `.piignore`): Stop excluding the `.pi-subagents/` directory from version control; agents need access to subagent artifacts. made by: Olli Aalto. made with: pi.
+
 ### Removed
 
 - **Orphaned HTML transcript rendering path** (`acp/`): Deleted `TranscriptHtmlAppender`, `TranscriptPaneHtmlOps`, `TranscriptHtmlAppenderStreamingTest`, `TranscriptStreamingCursorTest`; removed HTML cursor helpers (`streamBlockHtml`, `finalizedBlockHtml`, `stripCursor`, `hasCursor`, `CURSOR_HTML`) from `TranscriptStreamingCursor`; removed `userPromptSpan`/`plainLineSpan` helpers from `TranscriptRenderHelpers`. Live `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` path untouched. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
@@ -73,6 +75,10 @@
 - **ACP client operations wiring PRD** (`docs/features/acp-client-operations-wiring/prd.md`): Deep analysis of shallow `AcpClientSessionOperationsImpl` and untested VFS access; proposes `SessionFilesystemOperations` seam. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP session controller deepening PRD** (`docs/features/acp-session-controller-deepening/prd.md`): Deep analysis of shallow eight-method controller interface; proposes four-method editor API and internal transport/lifecycle modules. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Implement skill "mark as done" fix** (`.pi/skills/implement/SKILL.md`): Replace ambiguous "mark the ticket(s) as done in the issue tracker" with actionable instruction to set `**Status:** done` and check off items. made by: Olli Aalto. made with: pi.
+
+- **Unified launch resolution ticket statuses** (`docs/features/unified-launch-resolution/`): Mark tickets 01–05 `done`. made by: Olli Aalto. made with: pi.
 
 ## 2026-07-23
 
