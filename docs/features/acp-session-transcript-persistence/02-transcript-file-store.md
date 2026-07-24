@@ -6,11 +6,11 @@
 
 **Blocked by:** None — can start immediately (parallel with 01)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] **TranscriptFileStore** resolves path from project root + `acpSessionId`; filename includes session id for isolation between sessions
-- [ ] First write creates transcript directory if missing; subsequent writes replace entire file content (snapshot semantics, not append)
-- [ ] Read of missing file returns empty content without throwing to callers expecting restore
-- [ ] Read-after-write round-trip and overwrite behavior verified with temporary project directories (temp-dir test pattern)
-- [ ] I/O failures are surfaced to callers (result/exception seam) so debounced writer and restore paths can react; **AgentCliLog** pairing deferred to ticket 05
-- [ ] `./gradlew qualityGate` passes
+- [x] **TranscriptFileStore** resolves path from project root + `acpSessionId`; filename includes session id for isolation between sessions
+- [x] First write creates transcript directory if missing; subsequent writes replace entire file content (snapshot semantics, not append)
+- [x] Read of missing file returns empty content without throwing to callers expecting restore
+- [x] Read-after-write round-trip and overwrite behavior verified with temporary project directories (temp-dir test pattern)
+- [x] I/O failures are surfaced to callers (result/exception seam) so debounced writer and restore paths can react; **AgentCliLog** pairing deferred to ticket 05
+- [x] `./gradlew qualityGate` passes

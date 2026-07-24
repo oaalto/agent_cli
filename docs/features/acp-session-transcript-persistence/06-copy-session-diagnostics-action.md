@@ -6,10 +6,10 @@
 
 **Blocked by:** 05 — Correlation tokens and Session diagnostics log pairing; tiered-session-diagnostics PR1 merged (**AgentCliLog** available)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Editor action available from ACP editor chrome (action menu or equivalent existing pattern) in **ACP Client** mode only
-- [ ] Clipboard bundle includes correlation token(s), `configId`, `sessionId`, `launchMode`, worktree path or current-project indication, and recent error summaries
-- [ ] Action does not paste full transcript file or rich HTML transcript content
-- [ ] Optional: clipboard content test with stubbed session context when clipboard test infrastructure exists; otherwise document manual QA step
-- [ ] `./gradlew qualityGate` passes; `CHANGELOG.md` updated under `### Added` when code ships (final ticket in feature slice)
+- [x] Editor action available from ACP editor chrome (action menu or equivalent existing pattern) in **ACP Client** mode only
+- [x] Clipboard bundle includes correlation token(s), `configId`, `sessionId`, `launchMode`, worktree path or current-project indication, and recent error summaries
+- [x] Action does not paste full transcript file or rich HTML transcript content
+- [x] Optional: clipboard content test with stubbed session context when clipboard test infrastructure exists; otherwise document manual QA step
+- [x] `./gradlew qualityGate` passes; `CHANGELOG.md` updated under `### Added` when code ships (final ticket in feature slice)

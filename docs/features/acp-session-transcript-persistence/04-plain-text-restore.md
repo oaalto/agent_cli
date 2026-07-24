@@ -6,12 +6,12 @@
 
 **Blocked by:** 02 — TranscriptFileStore
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Resumed **ACP Client** session open reads transcript file for `acpSessionId` before or during transcript initialization
-- [ ] File lines replay as plain transcript history via existing plain-line injection path (not block factory reconstruction)
-- [ ] Missing file → empty transcript, normal live behavior; empty file → restore succeeds with no user-visible error
-- [ ] After restore, new agent replies and tool events render with full live **Transcript** block UI
-- [ ] **PTY Passthrough** editors skip read/restore entirely
-- [ ] Optional but valuable: behavioral test replaying plain lines into **TranscriptViewController** and asserting visible plain history without block reconstruction
-- [ ] `./gradlew qualityGate` passes
+- [x] Resumed **ACP Client** session open reads transcript file for `acpSessionId` before or during transcript initialization
+- [x] File lines replay as plain transcript history via existing plain-line injection path (not block factory reconstruction)
+- [x] Missing file → empty transcript, normal live behavior; empty file → restore succeeds with no user-visible error
+- [x] After restore, new agent replies and tool events render with full live **Transcript** block UI
+- [x] **PTY Passthrough** editors skip read/restore entirely
+- [x] Optional but valuable: behavioral test replaying plain lines into **TranscriptViewController** and asserting visible plain history without block reconstruction
+- [x] `./gradlew qualityGate` passes

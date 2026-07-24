@@ -6,12 +6,12 @@
 
 **Blocked by:** 03 — Debounced snapshot writer (persistence paths to instrument); tiered-session-diagnostics PR1 merged (**AgentCliLog** available)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] User-visible transcript error lines include `[agent-cli:…]` token; one token minimum per user-visible error event
-- [ ] Matching **AgentCliLog.warn** / **AgentCliLog.error** lines include the same token plus session context fields
-- [ ] Stack traces never copied into **Session transcript file** or user-facing error text beyond short message + token
-- [ ] Transcript file write/read failures with user-visible impact log via **AgentCliLog** tier 1 with correlation token when applicable
-- [ ] Light unit test: token format generation and error emission attaches token to user message string (no live IDE log appender required)
-- [ ] Tier-1 emission works without `AGENT_CLI_LOG` / registry flags enabled (PR1 tier-1 always-on rule)
-- [ ] `./gradlew qualityGate` passes
+- [x] User-visible transcript error lines include `[agent-cli:…]` token; one token minimum per user-visible error event
+- [x] Matching **AgentCliLog.warn** / **AgentCliLog.error** lines include the same token plus session context fields
+- [x] Stack traces never copied into **Session transcript file** or user-facing error text beyond short message + token
+- [x] Transcript file write/read failures with user-visible impact log via **AgentCliLog** tier 1 with correlation token when applicable
+- [x] Light unit test: token format generation and error emission attaches token to user message string (no live IDE log appender required)
+- [x] Tier-1 emission works without `AGENT_CLI_LOG` / registry flags enabled (PR1 tier-1 always-on rule)
+- [x] `./gradlew qualityGate` passes

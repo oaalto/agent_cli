@@ -6,12 +6,12 @@
 
 **Blocked by:** 01 — TranscriptTextSerializer; 02 — TranscriptFileStore
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Model change hook schedules debounced snapshot writes; rapid updates coalesce to one pending flush
-- [ ] Each flush serializes current blocks and overwrites the session transcript file for the active `acpSessionId`
-- [ ] Pre-session buffer holds plain text until `acpSessionId` is assigned, then creates/overwrites file and continues normal debounced writes
-- [ ] Writer stops or no-ops on editor dispose, session id transition/rebind (target switches to current `acpSessionId` only), and non–**ACP Client** launch modes (**PTY Passthrough** creates no file)
-- [ ] Tests invoke flush hook or store directly — do **not** assert debounce timer duration
-- [ ] Snapshot content correctness covered by combining serializer + store assertions (given flushed blocks, file content matches expected plain text)
-- [ ] `./gradlew qualityGate` passes
+- [x] Model change hook schedules debounced snapshot writes; rapid updates coalesce to one pending flush
+- [x] Each flush serializes current blocks and overwrites the session transcript file for the active `acpSessionId`
+- [x] Pre-session buffer holds plain text until `acpSessionId` is assigned, then creates/overwrites file and continues normal debounced writes
+- [x] Writer stops or no-ops on editor dispose, session id transition/rebind (target switches to current `acpSessionId` only), and non–**ACP Client** launch modes (**PTY Passthrough** creates no file)
+- [x] Tests invoke flush hook or store directly — do **not** assert debounce timer duration
+- [x] Snapshot content correctness covered by combining serializer + store assertions (given flushed blocks, file content matches expected plain text)
+- [x] `./gradlew qualityGate` passes

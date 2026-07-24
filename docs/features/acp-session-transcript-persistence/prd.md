@@ -1,6 +1,6 @@
 ## Status
 
-ready-for-agent
+accepted
 
 ## Problem Statement
 

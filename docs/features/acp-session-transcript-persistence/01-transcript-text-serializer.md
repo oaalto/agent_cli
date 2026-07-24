@@ -6,10 +6,10 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] **TranscriptTextSerializer** converts block lists to plain text per PRD content policy (user prefix, agent text, stderr, errors, tool headers only, plan/payload/usage omission)
-- [ ] Serializer is pure: reads block snapshot only; no Swing or editor dependencies
-- [ ] Multiple tools, empty model, streaming vs final agent text, and auth-failure plain lines covered by unit tests using **TranscriptModel** test builders (prior art from **TranscriptBlockViewFactory** / **TranscriptModel** tests)
-- [ ] Thought/reasoning handling is explicit and tested (included or omitted per documented policy)
-- [ ] `./gradlew qualityGate` passes
+- [x] **TranscriptTextSerializer** converts block lists to plain text per PRD content policy (user prefix, agent text, stderr, errors, tool headers only, plan/payload/usage omission)
+- [x] Serializer is pure: reads block snapshot only; no Swing or editor dependencies
+- [x] Multiple tools, empty model, streaming vs final agent text, and auth-failure plain lines covered by unit tests using **TranscriptModel** test builders (prior art from **TranscriptBlockViewFactory** / **TranscriptModel** tests)
+- [x] Thought/reasoning handling is explicit and tested (included or omitted per documented policy)
+- [x] `./gradlew qualityGate` passes
