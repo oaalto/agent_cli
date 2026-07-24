@@ -1,30 +1,18 @@
 package com.oaalto.agent.acp
 
-import com.agentclientprotocol.model.ContentBlock
-import com.agentclientprotocol.model.SessionUpdate
-import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 
+/**
+ * Plain-text formatting for the transcript.
+ *
+ * Narrow scope: error/auth formatting, text normalization, terminal &
+ * permission formatting, and tool-status labels. Event mapping and text
+ * extraction live in [TranscriptEventIngestion]. Content-fragment rendering
+ * is delegated to [TranscriptToolCallContentRenderer].
+ */
 object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
-
-    internal fun renderToolCallBodyParts(
-        content: List<ToolCallContent>?,
-        status: ToolCallStatus?,
-    ): List<TranscriptBodyPart> = TranscriptToolCallContentRenderer.renderBodyParts(content, status)
-
-    fun renderToolCallContentFragments(
-        content: List<ToolCallContent>?,
-        status: ToolCallStatus?,
-    ): List<String> = TranscriptToolCallContentRenderer.renderContentFragments(content, status)
-
-    fun renderEventText(update: SessionUpdate): String? =
-        when (update) {
-            is SessionUpdate.AgentMessageChunk -> extractText(update.content)
-            is SessionUpdate.AgentThoughtChunk -> extractText(update.content)?.let { "[thought] $it" }
-            else -> null
-        }
 
     fun formatError(message: String): String = "Error: $message"
 
@@ -59,10 +47,4 @@ object TranscriptRenderer {
             }
         return "$iconPrefix$kindLabel $title"
     }
-
-    internal fun extractText(content: ContentBlock): String? =
-        when (content) {
-            is ContentBlock.Text -> content.text
-            else -> null
-        }
 }

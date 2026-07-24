@@ -37,23 +37,6 @@ internal object TranscriptRenderHelpers {
     /** Closing tags for the HTML document. */
     internal const val HTML_DOCUMENT_END: String = "</body></html>"
 
-    fun userPromptSpan(escapedText: String): String {
-        val provider = getProvider()
-        val color = provider.toHtml(provider.getUserEchoColor())
-        return coloredSpan(color, escapedText)
-    }
-
-    fun plainLineSpan(escapedText: String): String {
-        val provider = getProvider()
-        val color = provider.toHtml(provider.getTextForeground())
-        return coloredSpan(color, escapedText)
-    }
-
-    private fun coloredSpan(
-        color: String,
-        escapedText: String,
-    ): String = "<span style=\"color:$color;font-family:$FONT_FAMILY;font-size:$FONT_SIZE\">$escapedText</span>"
-
     /**
      * Returns the initial HTML document wrapper. Call once before appending fragments.
      */

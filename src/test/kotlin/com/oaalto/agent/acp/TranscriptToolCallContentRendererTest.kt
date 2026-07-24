@@ -13,7 +13,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `completed text content renders escaped pre block`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text("line one\nline two"))),
                 status = ToolCallStatus.COMPLETED,
             )
@@ -29,7 +29,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `failed text content renders body`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text("error output"))),
                 status = ToolCallStatus.FAILED,
             )
@@ -41,7 +41,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `in progress status emits no content body`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text("partial"))),
                 status = ToolCallStatus.IN_PROGRESS,
             )
@@ -52,7 +52,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `pending status emits no content body`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text("waiting"))),
                 status = ToolCallStatus.PENDING,
             )
@@ -63,7 +63,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `null status emits no content body`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text("ignored"))),
                 status = null,
             )
@@ -74,7 +74,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `empty text content produces no fragment`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text(""))),
                 status = ToolCallStatus.COMPLETED,
             )
@@ -85,7 +85,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `null content list produces no fragments`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = null,
                 status = ToolCallStatus.COMPLETED,
             )
@@ -96,7 +96,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff renders escaped path and colored lines`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -120,7 +120,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff with only additions shows green lines`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -140,7 +140,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff with empty oldText string shows additions only`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -161,7 +161,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff middle insertion does not mis-report unchanged trailing lines`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -185,7 +185,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff replacement shows remove and add without re-adding unchanged tail`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -210,7 +210,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff with only removals shows red lines`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -230,7 +230,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `terminal reference renders muted id line`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Terminal(terminalId = "term-7")),
                 status = ToolCallStatus.COMPLETED,
             )
@@ -243,7 +243,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `image content renders placeholder without base64`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -265,7 +265,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `audio content renders placeholder`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -286,7 +286,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `resource link renders name and uri`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -306,7 +306,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `text embedded resource renders like text body`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -329,7 +329,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `binary embedded resource renders compact placeholder`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -352,7 +352,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `multiple content entries render in order`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(ContentBlock.Text("first")),
@@ -371,7 +371,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `text content escapes html special characters`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Content(
@@ -392,7 +392,7 @@ class TranscriptToolCallContentRendererTest {
     @Test
     fun `diff lines escape html special characters`() {
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
                     listOf(
                         ToolCallContent.Diff(
@@ -415,7 +415,7 @@ class TranscriptToolCallContentRendererTest {
     fun `very long text truncates with character total suffix`() {
         val longText = "x".repeat(TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS + 100)
         val fragments =
-            TranscriptRenderer.renderToolCallContentFragments(
+            TranscriptToolCallContentRenderer.renderContentFragments(
                 content = listOf(ToolCallContent.Content(ContentBlock.Text(longText))),
                 status = ToolCallStatus.COMPLETED,
             )

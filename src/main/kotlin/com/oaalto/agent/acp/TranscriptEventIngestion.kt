@@ -2,14 +2,52 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.AvailableCommand
 import com.agentclientprotocol.model.AvailableCommandInput
+import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.SessionUpdate
+import com.agentclientprotocol.model.ToolCallContent
+import com.agentclientprotocol.model.ToolCallStatus
 import com.oaalto.agent.acp.plan.PlanUpdateMapper
 
-/** Maps ACP [SessionUpdate] events to normalized [StructuredUpdate] values. */
-internal object TranscriptSessionUpdateMapper {
-    fun mapAgentChunk(update: SessionUpdate.AgentMessageChunk): StructuredUpdate? =
-        TranscriptRenderer
-            .renderEventText(update)
+/**
+ * Consolidated ACP transcript event ingestion.
+ *
+ * Single seam: ACP [SessionUpdate] events and imperative editor calls enter,
+ * ordered [StructuredUpdate] deltas exit. Owns:
+ *
+ * - finalize-before-non-chunk policy (non-streaming events close any active
+ *   agent stream before mapping the event itself),
+ * - every `SessionUpdate` → `StructuredUpdate` variant mapping,
+ * - text extraction and tool-call body rendering (absorbed from the former
+ *   renderer/dispatcher split).
+ *
+ * Callers route prompt events through [ingest] and [ingestPromptCompleted]
+ * instead of the former dispatcher/mapper pair.
+ */
+@Suppress("TooManyFunctions")
+internal object TranscriptEventIngestion {
+    /**
+     * Ingest a [SessionUpdate] and return the ordered [StructuredUpdate] list
+     * to apply. Non-chunk updates finalize any active agent stream first
+     * (finalize-before-non-chunk policy). Agent message chunks stream in
+     * place without finalization.
+     */
+    fun ingest(update: SessionUpdate): List<StructuredUpdate> {
+        if (update is SessionUpdate.AgentMessageChunk) {
+            return listOfNotNull(mapAgentChunk(update))
+        }
+        val result = mutableListOf<StructuredUpdate>()
+        result += StructuredUpdate.FinalizeAgentStream
+        result += mapUpdate(update)
+        return result
+    }
+
+    /** Returns a single finalize marker for prompt-completed routing. */
+    fun ingestPromptCompleted(): List<StructuredUpdate> = listOf(StructuredUpdate.FinalizeAgentStream)
+
+    // -- Mapping ------------------------------------------------------------
+
+    private fun mapAgentChunk(update: SessionUpdate.AgentMessageChunk): StructuredUpdate? =
+        extractText(update.content)
             ?.takeIf { it.isNotBlank() }
             ?.let { StructuredUpdate.AppendAgentText(it) }
 
@@ -68,14 +106,14 @@ internal object TranscriptSessionUpdateMapper {
 
     private fun mapThoughtChunk(update: SessionUpdate.AgentThoughtChunk): List<StructuredUpdate> =
         listOfNotNull(
-            TranscriptRenderer.extractText(update.content)?.takeIf { it.isNotBlank() }?.let {
+            extractText(update.content)?.takeIf { it.isNotBlank() }?.let {
                 StructuredUpdate.AppendThought(it)
             },
         )
 
     private fun mapUserChunk(update: SessionUpdate.UserMessageChunk): List<StructuredUpdate> =
         listOfNotNull(
-            TranscriptRenderer.extractText(update.content)?.takeIf { it.isNotBlank() }?.let {
+            extractText(update.content)?.takeIf { it.isNotBlank() }?.let {
                 StructuredUpdate.AppendUserEcho(it)
             },
         )
@@ -86,11 +124,7 @@ internal object TranscriptSessionUpdateMapper {
             title = update.title,
             kind = update.kind,
             status = update.status,
-            bodyParts =
-                TranscriptRenderer.renderToolCallBodyParts(
-                    content = update.content,
-                    status = update.status,
-                ),
+            bodyParts = renderToolCallBodyParts(update.content, update.status),
         )
 
     private fun mapToolCallUpdate(update: SessionUpdate.ToolCallUpdate): StructuredUpdate.StartOrUpdateToolCall =
@@ -99,10 +133,19 @@ internal object TranscriptSessionUpdateMapper {
             title = update.title ?: update.toolCallId.value,
             kind = update.kind,
             status = update.status,
-            bodyParts =
-                TranscriptRenderer.renderToolCallBodyParts(
-                    content = update.content,
-                    status = update.status,
-                ),
+            bodyParts = renderToolCallBodyParts(update.content, update.status),
         )
+
+    // -- Text extraction helpers (absorbed from TranscriptRenderer) -----------
+
+    internal fun renderToolCallBodyParts(
+        content: List<ToolCallContent>?,
+        status: ToolCallStatus?,
+    ): List<TranscriptBodyPart> = TranscriptToolCallContentRenderer.renderBodyParts(content, status)
+
+    internal fun extractText(content: ContentBlock): String? =
+        when (content) {
+            is ContentBlock.Text -> content.text
+            else -> null
+        }
 }

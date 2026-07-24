@@ -8,10 +8,12 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpEditorLayout.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptViewController.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptHtmlAppender.kt
-  - src/main/kotlin/com/oaalto/agent/acp/AcpPromptEventDispatcher.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptModel.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptPanel.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockLabelBinder.kt
   - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptSessionUpdateMapper.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt
@@ -43,7 +45,7 @@ The root panel is a nested `Splitter`:
 ```
 mainSplitter (TRANSCRIPT_SPLIT_RATIO = 0.72f)
 ├── transcriptColumn (left, 72%)
-│   ├── transcriptArea (scrollable JEditorPane, CENTER)
+│   ├── transcriptArea (TranscriptPanel wrapped in JBScrollPane, CENTER)
 │   ├── permissionPromptPanel (SOUTH)
 │   └── authPromptPanel (NORTH)
 └── bottomSplitter (right, 28%)
@@ -56,32 +58,33 @@ transcriptFooter (SOUTH of mainSplitter)
 
 ### Transcript rendering stack
 
+The transcript renders via a vertical `BoxLayout` column of block rows inside a `JBScrollPane`. Each `StructuredUpdate` flows through a fixed chain:
+
 1. **`TranscriptViewController`** — EDT-safe bridge between `TranscriptModel` and `TranscriptPanel`. Public API: `apply(StructuredUpdate)`, `appendPlainLine()`, `appendError()`, `finalizeAgentStream()`.
 2. **`TranscriptModel`** — holds `List<TranscriptBlock>`; emits blocks on updates.
-3. **`TranscriptPanel`** — renders blocks via `TranscriptBlockConverter` and `TranscriptBlockViewFactory` implementations.
-4. **`TranscriptHtmlAppender`** — manages appending content into a `JEditorPane` in `text/html` mode. Maintains `committedBodyHtml` as the source of truth for finalized content; the active stream block is spliced at the document tail on each chunk.
-5. **`TranscriptRenderer`** — converts `TranscriptBlock` to HTML fragments.
+3. **`TranscriptPanel`** — renders blocks via `TranscriptBlockViewFactory` (Swing block views, `JTextPane` / nested `JEditorPane` fragments per block row).
+4. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks.
+5. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
-### Prompt event routing (`AcpPromptEventDispatcher`)
+### Prompt event routing (`TranscriptEventIngestion`)
 
-- `dispatchSessionUpdate(update, listener)` routes `SessionUpdate` events to the listener.
-- **Agent message chunks** (`SessionUpdate.AgentMessageChunk`) go directly through `TranscriptSessionUpdateMapper.mapAgentChunk()`.
-- **Non-chunk updates** trigger `FinalizeAgentStream` first, then map the update through `TranscriptSessionUpdateMapper.mapUpdate()`.
-- `dispatchPromptCompleted(listener)` finalizes the active agent stream.
+- `ingest(update)` returns `List<StructuredUpdate>`: non-chunk updates finalize the active agent stream first (`FinalizeAgentStream`), then map the update.
+- `ingestPromptCompleted()` returns a single `FinalizeAgentStream`.
+- Agent message chunks stream in place without finalization.
 
 ### Session operations (`AcpClientSessionOperationsImpl`)
 
 Implements `com.agentclientprotocol.common.ClientSessionOperations`:
 
-- **`notify(notification, _meta)`** — routes `SessionUpdate` events through `AcpPromptEventDispatcher.dispatchSessionUpdate()`.
+- **`notify(notification, _meta)`** — routes `SessionUpdate` events through `TranscriptEventIngestion.ingest()`.
 - **`requestPermissions()`** — delegates to `PermissionCoordinator.requestSessionPermission()`.
 - **`fsReadTextFile()`** — resolves scope via `ScopedFileSystemOperations`, reads via `IdeScopedFileSystemAccess`.
 - **`fsWriteTextFile()`** — resolves scope, checks write permission via `PermissionCoordinator`, writes via `IdeScopedFileSystemAccess`.
 - **`terminalCreate()` / `terminalOutput()` / `terminalRelease()`** — manage terminal sessions via `TerminalSessionRegistry` and `ShellPaneHost`.
 
-### Session update mapping (`TranscriptSessionUpdateMapper`)
+### Event ingestion (`TranscriptEventIngestion`)
 
-Maps ACP `SessionUpdate` events to `StructuredUpdate` values:
+Consolidates finalize policy and `SessionUpdate` → `StructuredUpdate` mapping:
 
 - **Agent/user/thought chunks** → `AppendAgentText`, `AppendUserEcho`, `AppendThought`.
 - **Tool calls** → tool call start/delta/end variants.
@@ -143,14 +146,14 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 
 ## Agent Synthesis
 
-- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace both paths: prompt events through `AcpPromptEventDispatcher` and out-of-band `notify()` through `AcpClientSessionOperationsImpl`.
-- `TranscriptHtmlAppender` keeps `committedBodyHtml` as finalized body state; live chunks accumulate in `streamingPlainText` with an inline cursor (`TranscriptStreamingCursor`).
+- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (or `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
+- Live agent streaming uses `TranscriptBlock.StreamingAgentText` with the `CURSOR_CHAR` indicator applied by `TranscriptBlockLabelBinder`; finalized agent text becomes `FinalAgentText`.
 - Layout split is hard-coded: 72% transcript / 28% bottom, 20% prompt / 80% shell.
 - The ACP client is in-process (not JetBrains AI Chat); the agent subprocess is a separate process communicating via stdio JSON-RPC.
 
 ## Open Questions
 
-- Should `notify()` route through `AcpPromptEventDispatcher` for consistent finalize semantics? (Currently `notify()` calls `AcpPromptEventDispatcher.dispatchSessionUpdate()` directly.)
+- (Consolidation closed this: `TranscriptEventIngestion` absorbs both routing paths into one seam.)
 
 ## Related
 

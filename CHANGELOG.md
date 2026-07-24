@@ -18,6 +18,18 @@
 
 - **Dialog-only failure logging** (`worktree/`, `settings/`, `pty/`, `acp/`): Tier-1 `AgentCliLog` lines alongside existing error dialogs for worktree create/delete/open, settings import/export, PTY and ACP embedded-terminal launch failures, and degraded ACP resume paths. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **ACP transcript pipeline consolidation — Phase 1** (`acp/`): Delete orphaned `TranscriptHtmlAppender`, `TranscriptPaneHtmlOps`, and their tests; trim `TranscriptStreamingCursor` to live-path `CURSOR_CHAR` only (drop `streamBlockHtml`, `finalizedBlockHtml`, `stripCursor`, `hasCursor`, `CURSOR_HTML`); drop dead `userPromptSpan`/`plainLineSpan` from `TranscriptRenderHelpers`. Wiki alignment and ingestion merge in follow-up tickets. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript wiki alignment** (`docs/wiki/`): Remove remaining `onTranscriptHtml`/`onTranscriptPlainLine` dead listener references from context wiki; zero dead-path references remain across wiki. made by: Olli Aalto. made with: pi.
+
+### Removed
+
+- **Orphaned HTML transcript rendering path** (`acp/`): Deleted `TranscriptHtmlAppender`, `TranscriptPaneHtmlOps`, `TranscriptHtmlAppenderStreamingTest`, `TranscriptStreamingCursorTest`; removed HTML cursor helpers (`streamBlockHtml`, `finalizedBlockHtml`, `stripCursor`, `hasCursor`, `CURSOR_HTML`) from `TranscriptStreamingCursor`; removed `userPromptSpan`/`plainLineSpan` helpers from `TranscriptRenderHelpers`. Live `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` path untouched. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Merge transcript event ingestion into single deep module** (`acp/`): Replace `AcpPromptEventDispatcher` + `TranscriptSessionUpdateMapper` with `TranscriptEventIngestion` exposing `ingest(SessionUpdate)` and `ingestPromptCompleted()`. Owns finalize-before-non-chunk policy, all `SessionUpdate` → `StructuredUpdate` mapping, and absorbed text-extraction helpers (`extractText`, `renderToolCallBodyParts`). `TranscriptRenderer` narrowed to pure formatting/utility. Migrated mapper tests; added finalize-on-non-chunk cases (`AgentMessageChunk` streams without finalize, all other events finalize-then-map). No behaviour change to live transcript rendering. made by: Olli Aalto. made with: pi.
+
+- **TranscriptRenderer wrapper cleanup** (`acp/`): Removed `renderToolCallContentFragments` dead wrapper (zero production callers) from `TranscriptRenderer`; test calls now route directly to `TranscriptToolCallContentRenderer.renderContentFragments`. made by: Olli Aalto. made with: pi.
+
 ### Fixed
 
 - **ACP editor tab close during connect** (`acp/AcpAgentEditor.kt`): Rethrow `CancellationException` instead of logging it as a session failure or showing a transcript error when the tab is closed while connect/resume is in flight. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
@@ -29,6 +41,8 @@
 - **Tiered session diagnostics ticket status** (`docs/features/tiered-session-diagnostics/`): Mark PR1 tickets 01–03 `done` and PRD `implemented`; optional migrated-component test in ticket 02 remains open. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Session observability ADR** (`docs/adr/0004-session-observability.md`, `CONTEXT.md`): Record split between transcript file (ACP, keyed by `acpSessionId`) and tiered IDE logging (`warn` always; `info`/`debug` via env or registry); two-PR delivery plan. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript wiki alignment** (`docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`): Remove dead `TranscriptHtmlAppender` references from rendering stack, sources, and agent synthesis; replace obsolete `committedBodyHtml`/`streamingPlainText` facts with live `StreamingAgentText`/`CURSOR_CHAR` description; update `transcriptArea` layout from `JEditorPane` to `TranscriptPanel` + `JBScrollPane`; attribute transcript ownership to `TranscriptViewController` in context wiki. made by: Olli Aalto. made with: pi.
 
 - **Tiered session diagnostics PRD** (`docs/features/tiered-session-diagnostics/prd.md`): PR1 spec for `AgentCliLog`, three-tier IDE logging gates, migration of existing log sites, and dialog-only failure paths (`ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

@@ -44,7 +44,7 @@ class AcpClientSessionOperationsImpl(
         notification: SessionUpdate,
         _meta: JsonElement?,
     ) {
-        AcpPromptEventDispatcher.dispatchSessionUpdate(notification, listener)
+        TranscriptEventIngestion.ingest(notification).forEach(listener::onStructuredUpdate)
     }
 
     override suspend fun fsReadTextFile(

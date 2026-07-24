@@ -261,8 +261,10 @@ class AcpSessionControllerImpl(
 
     private fun handlePromptEvent(event: Event) {
         when (event) {
-            is Event.SessionUpdateEvent -> AcpPromptEventDispatcher.dispatchSessionUpdate(event.update, listener)
-            is Event.PromptResponseEvent -> AcpPromptEventDispatcher.dispatchPromptCompleted(listener)
+            is Event.SessionUpdateEvent ->
+                TranscriptEventIngestion.ingest(event.update).forEach(listener::onStructuredUpdate)
+            is Event.PromptResponseEvent ->
+                TranscriptEventIngestion.ingestPromptCompleted().forEach(listener::onStructuredUpdate)
         }
     }
 

@@ -15,21 +15,50 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class TranscriptSessionUpdateMapperTest {
+class TranscriptEventIngestionTest {
     @Test
-    fun `maps agent chunk to append text`() {
-        val update =
-            TranscriptSessionUpdateMapper.mapAgentChunk(
+    fun `ingest agent chunk returns single append text without finalize`() {
+        val updates =
+            TranscriptEventIngestion.ingest(
                 SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("Hello")),
             )
 
-        assertEquals(StructuredUpdate.AppendAgentText("Hello"), update)
+        assertEquals(1, updates.size)
+        assertEquals(StructuredUpdate.AppendAgentText("Hello"), updates.single())
+    }
+
+    @Test
+    fun `ingest non chunk includes finalize before mapping`() {
+        val updates =
+            TranscriptEventIngestion.ingest(
+                SessionUpdate.ToolCallUpdate(
+                    toolCallId = ToolCallId("1"),
+                    title = "read README.md",
+                    kind = ToolKind.READ,
+                    status = ToolCallStatus.COMPLETED,
+                    content = listOf(ToolCallContent.Content(ContentBlock.Text("# README"))),
+                ),
+            )
+
+        assertTrue(updates.size >= 2)
+        assertIs<StructuredUpdate.FinalizeAgentStream>(updates[0])
+        val mapped = assertIs<StructuredUpdate.StartOrUpdateToolCall>(updates[1])
+        assertEquals("1", mapped.toolCallId)
+        assertEquals(ToolCallStatus.COMPLETED, mapped.status)
+    }
+
+    @Test
+    fun `ingest prompt completed returns single finalize`() {
+        val updates = TranscriptEventIngestion.ingestPromptCompleted()
+
+        assertEquals(1, updates.size)
+        assertIs<StructuredUpdate.FinalizeAgentStream>(updates.single())
     }
 
     @Test
     fun `maps tool lifecycle to single start or update`() {
         val updates =
-            TranscriptSessionUpdateMapper.mapUpdate(
+            TranscriptEventIngestion.mapUpdate(
                 SessionUpdate.ToolCallUpdate(
                     toolCallId = ToolCallId("1"),
                     title = "read README.md",
@@ -53,7 +82,7 @@ class TranscriptSessionUpdateMapperTest {
     @Test
     fun `maps in progress tool update without body fragments`() {
         val updates =
-            TranscriptSessionUpdateMapper.mapUpdate(
+            TranscriptEventIngestion.mapUpdate(
                 SessionUpdate.ToolCallUpdate(
                     toolCallId = ToolCallId("1"),
                     title = "read",
@@ -68,10 +97,10 @@ class TranscriptSessionUpdateMapperTest {
     }
 
     @Test
-    fun `chronological session sequence deduplicates in model`() {
+    fun `chronological session sequence finalizes before non chunk via ingest`() {
         val model = TranscriptModel()
         val updates =
-            listOf(
+            listOf<SessionUpdate>(
                 SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("Thinking")),
                 SessionUpdate.ToolCall(
                     toolCallId = ToolCallId("1"),
@@ -90,17 +119,9 @@ class TranscriptSessionUpdateMapperTest {
             )
 
         updates.forEach { update ->
-            when (update) {
-                is SessionUpdate.AgentMessageChunk -> {
-                    TranscriptSessionUpdateMapper.mapAgentChunk(update)?.let(model::apply)
-                }
-                else -> {
-                    model.apply(StructuredUpdate.FinalizeAgentStream)
-                    TranscriptSessionUpdateMapper.mapUpdate(update).forEach(model::apply)
-                }
-            }
+            TranscriptEventIngestion.ingest(update).forEach(model::apply)
         }
-        model.apply(StructuredUpdate.FinalizeAgentStream)
+        TranscriptEventIngestion.ingestPromptCompleted().forEach(model::apply)
 
         val blocks = model.blocks()
         assertEquals(3, blocks.size)
@@ -117,9 +138,60 @@ class TranscriptSessionUpdateMapperTest {
     }
 
     @Test
+    fun `finalize before agent thought chunk`() {
+        val model = TranscriptModel()
+        TranscriptEventIngestion
+            .ingest(
+                SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("streaming")),
+            ).forEach(model::apply)
+        TranscriptEventIngestion
+            .ingest(
+                SessionUpdate.AgentThoughtChunk(content = ContentBlock.Text("reasoning")),
+            ).forEach(model::apply)
+
+        val blocks = model.blocks()
+        // The streaming text should be finalized before the thought appears
+        val finalizeIdx =
+            blocks.indexOfFirst { it is TranscriptBlock.FinalAgentText }
+        val thoughtIdx =
+            blocks.indexOfFirst { it is TranscriptBlock.Thought }
+        assertTrue(finalizeIdx >= 0, "expected FinalAgentText in blocks: $blocks")
+        assertTrue(thoughtIdx >= 0, "expected ThoughtBlock in blocks: $blocks")
+        assertTrue(
+            finalizeIdx < thoughtIdx,
+            "finalize must precede thought; finalize=$finalizeIdx thought=$thoughtIdx",
+        )
+    }
+
+    @Test
+    fun `finalize before user echo chunk`() {
+        val model = TranscriptModel()
+        TranscriptEventIngestion
+            .ingest(
+                SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("streaming")),
+            ).forEach(model::apply)
+        TranscriptEventIngestion
+            .ingest(
+                SessionUpdate.UserMessageChunk(content = ContentBlock.Text("user said hi")),
+            ).forEach(model::apply)
+
+        val blocks = model.blocks()
+        val finalizeIdx =
+            blocks.indexOfFirst { it is TranscriptBlock.FinalAgentText }
+        val echoIdx =
+            blocks.indexOfFirst { it is TranscriptBlock.UserEcho }
+        assertTrue(finalizeIdx >= 0, "expected FinalAgentText in blocks: $blocks")
+        assertTrue(echoIdx >= 0, "expected UserEcho in blocks: $blocks")
+        assertTrue(
+            finalizeIdx < echoIdx,
+            "finalize must precede user echo; finalize=$finalizeIdx echo=$echoIdx",
+        )
+    }
+
+    @Test
     fun `maps usage update to structured usage`() {
         val updates =
-            TranscriptSessionUpdateMapper.mapUpdate(
+            TranscriptEventIngestion.mapUpdate(
                 SessionUpdate.UsageUpdate(
                     used = 1234,
                     size = 128000,
@@ -137,7 +209,7 @@ class TranscriptSessionUpdateMapperTest {
     @Test
     fun `maps usage update with cost to structured usage with cost`() {
         val updates =
-            TranscriptSessionUpdateMapper.mapUpdate(
+            TranscriptEventIngestion.mapUpdate(
                 SessionUpdate.UsageUpdate(
                     used = 5000,
                     size = 128000,
@@ -156,7 +228,7 @@ class TranscriptSessionUpdateMapperTest {
     @Test
     fun `maps available commands update to structured commands`() {
         val updates =
-            TranscriptSessionUpdateMapper.mapUpdate(
+            TranscriptEventIngestion.mapUpdate(
                 SessionUpdate.AvailableCommandsUpdate(
                     availableCommands =
                         listOf(
@@ -180,5 +252,15 @@ class TranscriptSessionUpdateMapperTest {
         assertEquals("query", mapped.commands[0].inputHint)
         assertEquals("plan", mapped.commands[1].name)
         assertNull(mapped.commands[1].inputHint)
+    }
+
+    @Test
+    fun `empty agent chunk produces no updates`() {
+        val updates =
+            TranscriptEventIngestion.ingest(
+                SessionUpdate.AgentMessageChunk(content = ContentBlock.Text("   ")),
+            )
+
+        assertTrue(updates.isEmpty(), "blank agent chunks are filtered: $updates")
     }
 }
