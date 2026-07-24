@@ -3,7 +3,6 @@ package com.oaalto.agent.pty
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.worktree.resume.CursorResumeProbe
 import com.oaalto.agent.worktree.resume.CursorResumeProbeRequest
-import java.util.Locale
 
 internal fun resolvePtyConfiguration(
     configurationId: String,
@@ -16,12 +15,6 @@ internal fun resolvePtyConfiguration(
     return configuration
 }
 
-internal fun resolvePtyExecutionTarget(rawTarget: String): AgentSettingsState.ExecutionTarget {
-    val normalized = rawTarget.trim().uppercase(Locale.ROOT)
-    return AgentSettingsState.ExecutionTarget.entries.firstOrNull { it.name == normalized }
-        ?: AgentSettingsState.ExecutionTarget.LOCAL
-}
-
 internal fun applyCursorResumeFallbackForLocal(
     binaryPath: String,
     arguments: List<String>,
@@ -31,7 +24,7 @@ internal fun applyCursorResumeFallbackForLocal(
         CursorResumeProbeRequest(
             binaryPath = binaryPath,
             arguments = arguments,
-            executionTarget = AgentSettingsState.ExecutionTarget.LOCAL,
+            executionTarget = AgentSettingsState.ExecutionTarget.from("LOCAL"),
             workingDirectory = workingDirectory,
         ),
     )
@@ -47,7 +40,7 @@ internal fun applyCursorResumeFallbackForWsl(
         CursorResumeProbeRequest(
             binaryPath = binaryPath,
             arguments = arguments,
-            executionTarget = AgentSettingsState.ExecutionTarget.WSL,
+            executionTarget = AgentSettingsState.ExecutionTarget.from("WSL"),
             workingDirectory = wslWorkingDirectory,
             wslDistribution = wslDistribution,
             wslWorkingDirectory = wslWorkingDirectory,

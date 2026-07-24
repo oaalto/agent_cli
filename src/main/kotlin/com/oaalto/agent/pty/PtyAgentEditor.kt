@@ -27,11 +27,10 @@ import com.intellij.util.execution.ParametersListUtil
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCommandBuilder
-import com.oaalto.agent.AgentLaunchContext
+import com.oaalto.agent.AgentLaunchResolver
 import com.oaalto.agent.AgentVirtualFile
 import com.oaalto.agent.AgentWslCommandRequest
-import com.oaalto.agent.WorkingDirectoryResolver
-import com.oaalto.agent.WslPathResolver
+import com.oaalto.agent.ResolvedLaunchInputs
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
@@ -187,29 +186,44 @@ class PtyAgentEditor(
                 addAll(parsedArguments)
                 addAll(launchContext.additionalArguments)
             }
-        return when (resolvePtyExecutionTarget(configuration.executionTarget)) {
-            AgentSettingsState.ExecutionTarget.LOCAL ->
-                buildLocalTerminalStartupRequest(
-                    configuration = configuration,
-                    binaryPath = binaryPath,
-                    effectiveArguments = effectiveArguments,
-                    launchContext = launchContext,
-                )
-            AgentSettingsState.ExecutionTarget.WSL ->
-                buildWslTerminalStartupRequest(
-                    configuration = configuration,
-                    binaryPath = binaryPath,
-                    effectiveArguments = effectiveArguments,
-                    launchContext = launchContext,
-                )
+        val resolvedInputs =
+            AgentLaunchResolver.resolveLaunchInputs(
+                configuration = configuration,
+                projectBasePath = project.basePath,
+                workingDirectoryOverride = launchContext.workingDirectoryOverride,
+            )
+        return when {
+            resolvedInputs.isSuccess -> {
+                val inputs = resolvedInputs.getOrThrow()
+                when (inputs) {
+                    is ResolvedLaunchInputs.Local ->
+                        buildLocalTerminalStartupRequest(
+                            binaryPath = binaryPath,
+                            effectiveArguments = effectiveArguments,
+                            useNodeShellWrapper = configuration.useNodeShellWrapper,
+                            inputs = inputs,
+                        )
+                    is ResolvedLaunchInputs.Wsl ->
+                        buildWslTerminalStartupRequest(
+                            binaryPath = binaryPath,
+                            effectiveArguments = effectiveArguments,
+                            useNodeShellWrapper = configuration.useNodeShellWrapper,
+                            inputs = inputs,
+                        )
+                }
+            }
+            else -> {
+                logTerminalFailure(resolvedInputs.exceptionOrNull()?.message ?: "Launch resolution failed")
+                null
+            }
         }
     }
 
     private fun buildLocalTerminalStartupRequest(
-        configuration: AgentSettingsState.AgentCliConfiguration,
         binaryPath: String,
         effectiveArguments: List<String>,
-        launchContext: AgentLaunchContext,
+        useNodeShellWrapper: Boolean,
+        inputs: ResolvedLaunchInputs.Local,
     ): TerminalStartupRequest? =
         when {
             binaryPath.contains("/") && !Files.isExecutable(Path.of(binaryPath)) -> {
@@ -217,96 +231,50 @@ class PtyAgentEditor(
                 null
             }
             else -> {
-                val workingDirectory =
-                    WorkingDirectoryResolver.resolve(
-                        configuredWorkingDirectory = configuration.workingDirectory,
-                        overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                        projectBasePath = project.basePath,
+                val effectiveRunArguments =
+                    applyCursorResumeFallbackForLocal(
+                        binaryPath = binaryPath,
+                        arguments = effectiveArguments,
+                        workingDirectory = inputs.workingDirectory,
                     )
-                when {
-                    !Files.isDirectory(Path.of(workingDirectory)) -> {
-                        logTerminalFailure("Working directory does not exist:\n$workingDirectory")
-                        null
-                    }
-                    else -> {
-                        val effectiveRunArguments =
-                            applyCursorResumeFallbackForLocal(
-                                binaryPath = binaryPath,
-                                arguments = effectiveArguments,
-                                workingDirectory = workingDirectory,
-                            )
-                        buildTerminalCommand {
-                            AgentCommandBuilder.buildLocalCommand(
-                                binaryPath = binaryPath,
-                                arguments = effectiveRunArguments,
-                                useNodeShellWrapper = configuration.useNodeShellWrapper,
-                            )
-                        }?.let { command ->
-                            TerminalStartupRequest(workingDirectory = workingDirectory, command = command)
-                        }
-                    }
+                buildTerminalCommand {
+                    AgentCommandBuilder.buildLocalCommand(
+                        binaryPath = binaryPath,
+                        arguments = effectiveRunArguments,
+                        useNodeShellWrapper = useNodeShellWrapper,
+                    )
+                }?.let { command ->
+                    TerminalStartupRequest(workingDirectory = inputs.workingDirectory, command = command)
                 }
             }
         }
 
     private fun buildWslTerminalStartupRequest(
-        configuration: AgentSettingsState.AgentCliConfiguration,
         binaryPath: String,
         effectiveArguments: List<String>,
-        launchContext: AgentLaunchContext,
+        useNodeShellWrapper: Boolean,
+        inputs: ResolvedLaunchInputs.Wsl,
     ): TerminalStartupRequest? {
-        val resolvedWslWorkingDirectory =
-            WslPathResolver.resolveWslWorkingDirectory(
-                configuredWorkingDirectory = configuration.workingDirectory,
-                overrideWorkingDirectory = launchContext.workingDirectoryOverride,
-                projectBasePath = project.basePath,
-            )
-        val overrideValue = launchContext.workingDirectoryOverride?.trim().orEmpty()
-        val configured = configuration.workingDirectory.trim()
-        val basePath = project.basePath?.trim().orEmpty()
-        val rawPath =
-            when {
-                overrideValue.isNotBlank() -> overrideValue
-                configured.isNotBlank() -> configured
-                basePath.isNotBlank() -> basePath
-                else -> ""
-            }
-        if (rawPath.isNotBlank() && WslPathResolver.mapToWslPath(rawPath) == null) {
-            logTerminalFailure(
-                "Working directory could not be mapped to a WSL path:\n" +
-                    "${configuration.workingDirectory}\n\n" +
-                    "Use one of:\n" +
-                    "- Linux path (for example /home/user/project)\n" +
-                    "- WSL UNC path (for example \\\\wsl.localhost\\Ubuntu\\home\\user\\project)\n" +
-                    "- Windows drive path (for example D:\\project)",
-            )
-            return null
-        }
-        val effectiveDistribution =
-            configuration.wslDistribution
-                .trim()
-                .ifBlank { resolvedWslWorkingDirectory.inferredDistribution.orEmpty() }
-        val hostWorkingDirectory = WslPathResolver.resolveHostWorkingDirectory(project.basePath)
         val effectiveRunArguments =
             applyCursorResumeFallbackForWsl(
                 binaryPath = binaryPath,
                 arguments = effectiveArguments,
-                wslDistribution = effectiveDistribution,
-                wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                hostWorkingDirectory = hostWorkingDirectory,
+                wslDistribution = inputs.wslDistribution,
+                wslWorkingDirectory = inputs.linuxPath,
+                hostWorkingDirectory = inputs.hostWorkingDirectory,
             )
         return buildTerminalCommand {
             AgentCommandBuilder.buildWslCommand(
                 AgentWslCommandRequest(
                     binaryPath = binaryPath,
                     arguments = effectiveRunArguments,
-                    wslDistribution = effectiveDistribution,
-                    wslWorkingDirectory = resolvedWslWorkingDirectory.linuxPath,
-                    useNodeShellWrapper = configuration.useNodeShellWrapper,
+                    wslDistribution = inputs.wslDistribution,
+                    wslWorkingDirectory = inputs.linuxPath,
+                    useNodeShellWrapper = useNodeShellWrapper,
                 ),
             )
         }?.let { command ->
-            TerminalStartupRequest(workingDirectory = hostWorkingDirectory, command = command)
+            TerminalStartupRequest(workingDirectory = inputs.hostWorkingDirectory, command = command)
         }
     }
 
