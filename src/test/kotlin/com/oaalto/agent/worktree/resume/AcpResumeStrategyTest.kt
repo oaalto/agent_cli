@@ -40,7 +40,7 @@ class AcpResumeStrategyTest {
                     acpSessionId = null,
                 ),
             )
-        assertEquals(LaunchResumePlan.AcpPickSession(emptyList()), plan)
+        assertEquals(LaunchResumePlan.AcpResolveSession, plan)
     }
 
     @Test

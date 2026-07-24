@@ -26,6 +26,8 @@
 
 - **Un-ignore `.pi-subagents/`** (`.gitignore`, `.piignore`): Stop excluding the `.pi-subagents/` directory from version control; agents need access to subagent artifacts. made by: Olli Aalto. made with: pi.
 
+- **ACP session resume orchestration** (`worktree/resume/`, `acp/`): Extract resume orchestration from `AcpAgentEditor` into `AcpSessionResumeOrchestrator` in `worktree/resume/`. The editor is now a thin adapter: connect → orchestrator.openSession → map result to transcript lines. Port interfaces (`AcpSessionOperations`, `WorktreeSessionBinder`, `SessionPicker`) and adapters at each seam (`AcpSessionOperationsAdapter`, `WorktreeSessionBinderImpl`, `SessionPickerAdapter`) enable testable orchestration without Swing or live ACP. Plan variant `AcpPickSession` replaced with `AcpResolveSession` to match runtime behavior. Comprehensive orchestrator tests cover all branches with fake ports. made by: Olli Aalto. made with: pi.
+
 ### Removed
 
 - **Orphaned HTML transcript rendering path** (`acp/`): Deleted `TranscriptHtmlAppender`, `TranscriptPaneHtmlOps`, `TranscriptHtmlAppenderStreamingTest`, `TranscriptStreamingCursorTest`; removed HTML cursor helpers (`streamBlockHtml`, `finalizedBlockHtml`, `stripCursor`, `hasCursor`, `CURSOR_HTML`) from `TranscriptStreamingCursor`; removed `userPromptSpan`/`plainLineSpan` helpers from `TranscriptRenderHelpers`. Live `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` path untouched. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

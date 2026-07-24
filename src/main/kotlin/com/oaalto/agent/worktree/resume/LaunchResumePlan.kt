@@ -9,9 +9,7 @@ sealed class LaunchResumePlan {
         val sessionId: String,
     ) : LaunchResumePlan()
 
-    data class AcpPickSession(
-        val candidates: List<SessionSummary>,
-    ) : LaunchResumePlan()
+    data object AcpResolveSession : LaunchResumePlan()
 
     data object AcpNewSession : LaunchResumePlan()
 }

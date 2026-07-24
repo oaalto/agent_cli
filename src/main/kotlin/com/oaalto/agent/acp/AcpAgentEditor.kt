@@ -17,6 +17,7 @@ import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.AgentVirtualFile
+import com.oaalto.agent.acp.AcpSessionOperationsAdapter
 import com.oaalto.agent.acp.auth.AuthPromptResult
 import com.oaalto.agent.acp.auth.AuthPromptUi
 import com.oaalto.agent.acp.filesystem.SessionScopeResolver
@@ -25,13 +26,14 @@ import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.acp.ui.AuthPromptPanel
 import com.oaalto.agent.acp.ui.PermissionPromptPanel
 import com.oaalto.agent.acp.ui.PromptInputBar
-import com.oaalto.agent.acp.ui.SessionPickerDialog
+import com.oaalto.agent.acp.ui.SessionPickerAdapter
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
-import com.oaalto.agent.worktree.AgentWorktreeStateService
+import com.oaalto.agent.worktree.WorktreeSessionBinderImpl
+import com.oaalto.agent.worktree.resume.AcpSessionOpenResult
+import com.oaalto.agent.worktree.resume.AcpSessionResumeOrchestrator
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
-import com.oaalto.agent.worktree.resume.SessionSummary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -306,7 +308,13 @@ class AcpAgentEditor(
                     authPromptUi = authPromptUi,
                 )
             sessionController.connect(launchPlan, editorContext)
-            openSessionFromResumePlan(launchPlan.sessionWorkingDirectory)
+            val result =
+                orchestrator.openSession(
+                    plan = file.launchContext.resumePlan ?: LaunchResumePlan.AcpNewSession,
+                    sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
+                    worktreeRecordId = file.launchContext.worktreeId,
+                )
+            mapResultToTranscript(result)
             transcriptViewController.appendPlainLine("Connected to ${typedConfig.name}.")
             runOnEdt {
                 promptInputBar.setEnabled(true)
@@ -322,123 +330,30 @@ class AcpAgentEditor(
         }
     }
 
-    private suspend fun openSessionFromResumePlan(sessionWorkingDirectory: String) {
-        when (val plan = file.launchContext.resumePlan) {
-            is LaunchResumePlan.AcpLoad -> {
-                runCatching {
-                    sessionController.loadSession(plan.sessionId)
-                    persistBoundSessionId(plan.sessionId)
-                    sessionTranscript.restoreIfPresent(plan.sessionId)
-                    sessionTranscript.bindSession(plan.sessionId)
-                }.onFailure { throwable ->
-                    rethrowIfCancellation(throwable)
-                    log.warn(
-                        message =
-                            "ACP resume degraded: stored session load failed for ${plan.sessionId}: " +
-                                (throwable.message ?: "load failed"),
-                        throwable = throwable,
-                        context = logContext(sessionId = plan.sessionId),
-                    )
-                    transcriptViewController.appendPlainLine(
-                        "Stored session is unavailable (${throwable.message ?: "load failed"}). " +
-                            "Choose a session to resume or start fresh.",
-                    )
-                    pickSessionOrStartFresh(sessionWorkingDirectory)
+    private fun mapResultToTranscript(result: AcpSessionOpenResult) {
+        when (result) {
+            is AcpSessionOpenResult.Success -> {
+                sessionTranscript.restoreIfPresent(result.sessionId)
+                sessionTranscript.bindSession(result.sessionId)
+                if (result.pickerShown) {
+                    transcriptViewController.appendPlainLine("Resumed session ${result.sessionId}.")
                 }
             }
-            is LaunchResumePlan.AcpPickSession -> {
-                if (plan.candidates.isNotEmpty()) {
-                    pickSessionFromCandidates(plan.candidates)
-                } else {
-                    transcriptViewController.appendPlainLine(
-                        "No stored ACP session for this worktree. Choose a session to resume or start fresh.",
-                    )
-                    pickSessionOrStartFresh(sessionWorkingDirectory)
-                }
+            is AcpSessionOpenResult.Fallback -> {
+                transcriptViewController.appendPlainLine(result.reason)
             }
-            LaunchResumePlan.AcpNewSession, null -> {
-                sessionController.newSession()
-                persistCurrentSessionId()
-                sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
+            AcpSessionOpenResult.StartFresh -> {
+                transcriptViewController.appendPlainLine("Started a new ACP session.")
             }
-            is LaunchResumePlan.Pty -> error("PTY resume plan is not valid for ACP editor")
         }
     }
 
-    private suspend fun pickSessionOrStartFresh(sessionWorkingDirectory: String) {
-        val sessions =
-            runCatching {
-                sessionController.listSessions(sessionWorkingDirectory)
-            }.getOrElse { throwable ->
-                rethrowIfCancellation(throwable)
-                log.warn(
-                    message =
-                        "ACP resume degraded: listSessions failed: " +
-                            (throwable.message ?: "list failed"),
-                    throwable = throwable,
-                    context = logContext(),
-                )
-                transcriptViewController.appendError(
-                    throwable.message ?: "Failed to list sessions",
-                )
-                emptyList()
-            }
-        pickSessionFromCandidates(sessions)
-    }
-
-    private suspend fun pickSessionFromCandidates(candidates: List<SessionSummary>) {
-        if (candidates.isEmpty()) {
-            sessionController.newSession()
-            persistCurrentSessionId()
-            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
-            transcriptViewController.appendPlainLine("Started a new ACP session.")
-            return
-        }
-        val selectedId =
-            onEdtAsync {
-                SessionPickerDialog.show(project, candidates)
-            }
-        if (selectedId == null) {
-            sessionController.newSession()
-            persistCurrentSessionId()
-            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
-            transcriptViewController.appendPlainLine("Started a new ACP session.")
-            return
-        }
-        runCatching {
-            sessionController.loadSession(selectedId)
-            persistBoundSessionId(selectedId)
-            sessionTranscript.restoreIfPresent(selectedId)
-            sessionTranscript.bindSession(selectedId)
-            transcriptViewController.appendPlainLine("Resumed session $selectedId.")
-        }.onFailure { throwable ->
-            rethrowIfCancellation(throwable)
-            log.warn(
-                message =
-                    "ACP resume degraded: selected session load failed for $selectedId; starting new session: " +
-                        (throwable.message ?: "load failed"),
-                throwable = throwable,
-                context = logContext(sessionId = selectedId),
-            )
-            transcriptViewController.appendError(
-                throwable.message ?: "Failed to load selected session",
-            )
-            sessionController.newSession()
-            persistCurrentSessionId()
-            sessionController.currentSessionId()?.let { sessionTranscript.bindSession(it) }
-        }
-    }
-
-    private fun persistCurrentSessionId() {
-        val sessionId = sessionController.currentSessionId() ?: return
-        persistBoundSessionId(sessionId)
-        sessionTranscript.bindSession(sessionId)
-    }
-
-    private fun persistBoundSessionId(sessionId: String) {
-        val recordId = file.launchContext.worktreeId ?: return
-        AgentWorktreeStateService.getInstance().setAcpSessionId(recordId, sessionId)
-    }
+    private val orchestrator =
+        AcpSessionResumeOrchestrator(
+            AcpSessionOperationsAdapter(sessionController),
+            WorktreeSessionBinderImpl(),
+            SessionPickerAdapter(project),
+        )
 
     private fun runOnEdt(action: () -> Unit) {
         if (SwingUtilities.isEventDispatchThread()) {

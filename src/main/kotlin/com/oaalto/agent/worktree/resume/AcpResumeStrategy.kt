@@ -12,7 +12,7 @@ object AcpResumeStrategy : ResumeStrategy {
         val storedId = record?.acpSessionId?.trim().orEmpty()
         return when {
             storedId.isNotBlank() -> LaunchResumePlan.AcpLoad(storedId)
-            else -> LaunchResumePlan.AcpPickSession(emptyList())
+            else -> LaunchResumePlan.AcpResolveSession
         }
     }
 }

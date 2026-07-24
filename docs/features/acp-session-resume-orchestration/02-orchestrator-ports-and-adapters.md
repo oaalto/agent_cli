@@ -6,13 +6,13 @@
 
 **Blocked by:** 01 — Prefactor LaunchResumePlan ACP resolve variant
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Port interfaces exist in **worktree/resume/**: `AcpSessionOperations` (`newSession`, `loadSession`, `listSessions`, `currentSessionId`), `WorktreeSessionBinder` (`persistSessionId`), `SessionPicker` (`pickSession` returning session ID or null for start-fresh)
-- [ ] `AcpSessionOpenResult` sealed type captures opened session ID, whether the picker was shown, and user-visible status events or fallback reasons for **Transcript** mapping
-- [ ] Optional `ResumeNotifier` port (or equivalent events on the result) allows tests to run without Swing
-- [ ] `AcpSessionOperationsAdapter` in **acp/** delegates to `AcpSessionController` without changing protocol behavior
-- [ ] `WorktreeSessionBinderImpl` in **worktree/** delegates to `AgentWorktreeStateService.setAcpSessionId`
-- [ ] `SessionPickerAdapter` in **acp/ui/** delegates to `SessionPickerDialog` on the EDT
-- [ ] **worktree/** does not import **acp/** types; **acp/** may depend on **worktree/resume/** port interfaces only
-- [ ] Project compiles; existing tests still pass
+- [x] Port interfaces exist in **worktree/resume/**: `AcpSessionOperations` (`newSession`, `loadSession`, `listSessions`, `currentSessionId`), `WorktreeSessionBinder` (`persistSessionId`), `SessionPicker` (`pickSession` returning session ID or null for start-fresh)
+- [x] `AcpSessionOpenResult` sealed type captures opened session ID, whether the picker was shown, and user-visible status events or fallback reasons for **Transcript** mapping
+- [x] Optional `ResumeNotifier` port (or equivalent events on the result) allows tests to run without Swing
+- [x] `AcpSessionOperationsAdapter` in **acp/** delegates to `AcpSessionController` without changing protocol behavior
+- [x] `WorktreeSessionBinderImpl` in **worktree/** delegates to `AgentWorktreeStateService.setAcpSessionId`
+- [x] `SessionPickerAdapter` in **acp/ui/** delegates to `SessionPickerDialog` on the EDT
+- [x] **worktree/** does not import **acp/** types; **acp/** may depend on **worktree/resume/** port interfaces only
+- [x] Project compiles; existing tests still pass

@@ -6,12 +6,12 @@
 
 **Blocked by:** 03 — AcpSessionResumeOrchestrator with full decision tree and unit tests
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AcpAgentEditor.launchAndConnect` calls `orchestrator.openSession(file.launchContext.resumePlan, sessionWorkingDirectory, file.launchContext.worktreeId)` after `sessionController.connect`
-- [ ] Private methods `openSessionFromResumePlan`, `pickSessionOrStartFresh`, `pickSessionFromCandidates`, `persistCurrentSessionId`, and `persistBoundSessionId` are deleted from the editor
-- [ ] The editor no longer imports or calls `AgentWorktreeStateService` directly for session binding
-- [ ] Orchestrator is injectable via constructor (with sensible defaults for production) so tests can substitute a fake
-- [ ] **Transcript** lines for load failure, picker prompt, started fresh, and resumed session match prior user-visible copy (no UX change)
-- [ ] Manual verification: resuming a **Worktree** with stored `acpSessionId` in **ACP Client** **Launch Mode** still loads the session; stale ID shows picker; non-worktree launch (`worktreeId == null`) opens without persistence errors
-- [ ] `CHANGELOG.md` updated under `### Changed`; `./gradlew qualityGate` passes
+- [x] `AcpAgentEditor.launchAndConnect` calls `orchestrator.openSession(file.launchContext.resumePlan, sessionWorkingDirectory, file.launchContext.worktreeId)` after `sessionController.connect`
+- [x] Private methods `openSessionFromResumePlan`, `pickSessionOrStartFresh`, `pickSessionFromCandidates`, `persistCurrentSessionId`, and `persistBoundSessionId` are deleted from the editor
+- [x] The editor no longer imports or calls `AgentWorktreeStateService` directly for session binding
+- [x] Orchestrator is injectable via constructor (with sensible defaults for production) so tests can substitute a fake
+- [x] **Transcript** lines for load failure, picker prompt, started fresh, and resumed session match prior user-visible copy (no UX change)
+- [x] Manual verification: resuming a **Worktree** with stored `acpSessionId` in **ACP Client** **Launch Mode** still loads the session; stale ID shows picker; non-worktree launch (`worktreeId == null`) opens without persistence errors
+- [x] `CHANGELOG.md` updated under `### Changed`; `./gradlew qualityGate` passes
