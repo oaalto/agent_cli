@@ -45,3 +45,5 @@ Launch the risk-first sub-agent and both two-axis sub-agents in one parallel bat
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
 Do **not** commit unless the user explicitly asks. When work is ready, offer to commit and wait for confirmation.
+
+**Mark the ticket(s) as done** in the issue tracker once the work is complete and review passes — don't leave them open after implementation finishes.
