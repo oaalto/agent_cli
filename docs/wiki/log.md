@@ -58,4 +58,4 @@
 
 - Updated: [Agent CLI overview](concepts/agent-cli-overview.md)
 - Sources: `CONTEXT.md`
-- Notes: PRD path corrected to `docs/prds/`.
+- Notes: PRD path corrected to `docs/features/`.

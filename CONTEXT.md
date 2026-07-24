@@ -11,7 +11,7 @@ Agent instruction: use this file for **domain vocabulary** before naming concept
 | ACP transcript model | [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) |
 | Worktrees | [`docs/wiki/subsystems/worktree.md`](docs/wiki/subsystems/worktree.md) |
 | Quality gates & CI | [`docs/wiki/workflows/quality-gate.md`](docs/wiki/workflows/quality-gate.md), [`docs/agent-commands.md`](docs/agent-commands.md) |
-| Planning artifacts | [`docs/prds/`](docs/prds/) |
+| Planning artifacts | [`docs/features/`](docs/features/) |
 | Plugin source | [`src/main/kotlin/com/oaalto/agent/`](src/main/kotlin/com/oaalto/agent/) |
 | Structural topology | `graphify query` / `graphify path` (see `.agents/rules/graphify-consultation.md`) |
 
@@ -70,4 +70,4 @@ ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry poin
 
 ### PRD
 
-Product requirements document under `docs/prds/` (not `docs/prd/`).
+Product requirements document under `docs/features/` (not `docs/prd/`).

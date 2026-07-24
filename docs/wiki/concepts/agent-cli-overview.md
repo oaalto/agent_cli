@@ -10,7 +10,7 @@ sources:
 ---
 ## Summary
 
-This page explains the purpose and high-level design of the Agent CLI plugin in this repository. The plugin constructs and runs external agent CLI binaries, manages isolated worktree sessions, and integrates planning artifacts (PRDs) under `docs/prds/`.
+This page explains the purpose and high-level design of the Agent CLI plugin in this repository. The plugin constructs and runs external agent CLI binaries, manages isolated worktree sessions, and integrates planning artifacts (PRDs) under `docs/features/`.
 
 ## Verified Facts
 

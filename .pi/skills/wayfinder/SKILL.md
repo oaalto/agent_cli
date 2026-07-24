@@ -12,6 +12,26 @@ The destination varies per effort, and naming it is the first act of charting �
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear — nothing left to decide before someone goes and does the thing. The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off. An effort can override this in its **Notes** — carrying execution into the map itself — but absent that, produce decisions, not deliverables.
 
+## Producing specs and PRDs
+
+When the **destination** is a spec or PRD — or a ticket resolution should leave one behind — do **not** draft the document inline. Load and follow the **`/to-spec`** skill (`.pi/skills/to-spec/SKILL.md`).
+
+`/to-spec` synthesizes the conversation and exploration into the project spec template and publishes to the issue tracker. Wayfinder owns *which* decisions must be settled before the spec is written; `/to-spec` owns *how* the spec is written.
+
+**Use `/to-spec` when:**
+
+- The map **destination** is a spec or PRD to hand off for implementation.
+- A closed ticket's answer is a spec (not just a one-line decision) — e.g. a grilling or prototype ticket that crystallized enough to spec.
+- The frontier is clear and the next step is publishing the accumulated decisions as one spec.
+
+**Wayfinder still owns:**
+
+- The map index and ticket graph until the way is clear.
+- Linking the published spec from the map or closing ticket (path or tracker link — not pasting the spec body into the map).
+- Recording a one-line gist in **Decisions so far** that points at the spec.
+
+**Do not use `/to-spec` for:** map bodies, ticket questions, resolution comments that are only a decision gist, research summaries on throwaway branches, or prototype assets — those stay in the tracker workflow above.
+
 ## Refer by name
 
 Every map and ticket is an issue, so it has a **name** — its title. In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. The id and URL don't vanish — a name wraps its link — but they ride *inside* the name, never stand in for it.
@@ -22,7 +42,7 @@ The map is a single issue on this repo's issue tracker, labelled `wayfinder:map`
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** The issue tracker should have been provided to you — run `/setup-matt-pocock-skills` if not. Consult the tracker doc's "Wayfinding operations" section for how _this_ repo expresses them. If no tracker has been provided, default to the local-markdown tracker.
+**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** The issue tracker should have been provided to you. Consult the tracker doc's "Wayfinding operations" section for how _this_ repo expresses them. If no tracker has been provided, default to the local-markdown tracker.
 
 ### The map body
 
@@ -35,7 +55,7 @@ The whole map at low resolution, loaded once per session. Open tickets are **not
 
 ## Notes
 
-<domain; skills every session should consult; standing preferences for this effort>
+<domain; skills every session should consult — include `/to-spec` when the destination is a spec or PRD; standing preferences for this effort>
 
 ## Decisions so far
 
@@ -108,7 +128,7 @@ Two modes. Either way, **never resolve more than one ticket per session** — wi
 
 User invokes with a loose idea.
 
-1. **Name the destination.** Run a `/grilling` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
+1. **Name the destination.** Run a `/grilling` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first. If the destination is a **spec or PRD**, record `/to-spec` in the map's **Notes** — charting decides *what* must be decided; `/to-spec` publishes the spec once the way is clear.
 2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
 3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
 4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
@@ -121,8 +141,8 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
 
 1. Load the **map** — the low-res view, not every ticket body.
 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
-3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
-4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
+3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`. When the ticket's answer is a **spec or PRD**, load **`/to-spec`** and publish through that skill — do not write the spec ad hoc.
+4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far. If `/to-spec` produced a document, the pointer is a link to that published path — not a restatement of the spec.
 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 
 The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.

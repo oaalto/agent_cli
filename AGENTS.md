@@ -370,7 +370,7 @@ Review and extend the restricted command list for infrastructure and tooling spe
 
 ### Issue tracker
 
-Planning artifacts in Git; aligns with `/to-spec` + `docs/prds/<feature_name>/` and `/to-tickets` + `docs/issues/<feature_name>/`. See `docs/agents/issue-tracker.md`.
+Planning artifacts in Git; aligns with `/to-spec` + `docs/features/<feature_name>/` and `/to-tickets` + `docs/issues/<feature_name>/`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

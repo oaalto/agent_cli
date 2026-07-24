@@ -4,7 +4,25 @@
 
 ### Documentation
 
+- **Architecture deepening tickets** (`docs/features/*/0*.md`): Split seven feature PRDs into 29 tracer-bullet implementation tickets via `/to-tickets` (same directory as each `prd.md`, `ready-for-agent`). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Planning artifacts path** (`docs/features/`, `.gitignore`, `.piignore`, `CONTEXT.md`, `AGENTS.md`, `docs/agents/issue-tracker.md`): Rename `docs/prds/` to `docs/features/` to align with `/to-spec` and `/to-tickets`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Wayfinder skill** (`.pi/skills/wayfinder/SKILL.md`): Route spec/PRD production through `/to-spec` instead of ad-hoc drafting; document when to invoke it during map work and ticket resolution. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Wiki update** (`docs/wiki/`): Refresh ACP client, context, quality-gate, and agent-cli overview pages with transcript color provider, footer, plan visualization, slash-command autocomplete, Markdown rendering, and pre-commit workflow. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Worktree pending-launch handoff PRD** (`docs/features/worktree-pending-launch-handoff/prd.md`): Architecture deepening candidate documenting the cross-project enqueue → persist → consume → editor lifecycle and proposing a deep `WorktreePendingLaunchHandoff` module. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP session resume orchestration PRD** (`docs/features/acp-session-resume-orchestration/prd.md`): Deep analysis of scattered resume/load/picker/persist logic; proposes `AcpSessionResumeOrchestrator` with port adapters. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Unified launch resolution PRD** (`docs/features/unified-launch-resolution/prd.md`): Deep analysis of duplicated PTY/ACP/worktree launch path resolution; proposes kernel `AgentLaunchResolver` module. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Transcript pipeline consolidation PRD** (`docs/features/transcript-pipeline-consolidation/prd.md`): Deep analysis of dual rendering paths and shallow transcript modules; proposes dead-path deletion and ingestion deepening. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP client operations wiring PRD** (`docs/features/acp-client-operations-wiring/prd.md`): Deep analysis of shallow `AcpClientSessionOperationsImpl` and untested VFS access; proposes `SessionFilesystemOperations` seam. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP session controller deepening PRD** (`docs/features/acp-session-controller-deepening/prd.md`): Deep analysis of shallow eight-method controller interface; proposes four-method editor API and internal transport/lifecycle modules. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ## 2026-07-23
 
@@ -20,13 +38,13 @@
 
 - **to-issues skill** (`.agents/skills/to-issues/SKILL.md`): Add Agent CLI project context (slices, ADRs, glossary, triage labels, quality gate) and save implementation slices to `docs/issues/<feature_name>/<slice-slug>.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
-- **to-prd skill** (`.agents/skills/to-prd/SKILL.md`): Add Agent CLI project context (slices, ADRs, glossary, quality gate) and save PRDs to `docs/prds/<feature_name>/prd.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+- **to-prd skill** (`.agents/skills/to-prd/SKILL.md`): Add Agent CLI project context (slices, ADRs, glossary, quality gate) and save PRDs to `docs/features/<feature_name>/prd.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Agent commands cleanup** (`docs/agent-commands.md`): Remove obsolete To Complete checklist; gates confirmed from Gradle/CI. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Wiki log backfill** (`docs/wiki/log.md`): Ingest entries for five existing wiki pages; ADC post-update history repair. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
-- **CONTEXT glossary trim** (`CONTEXT.md`, `docs/wiki/concepts/context.md`): Replace 1.3k-line code dump with domain glossary and wiki/source pointers; fix stale `docs/prd/` path in agent-cli overview → `docs/prds/`; add `qualityGate` one-liner to agent-commands. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+- **CONTEXT glossary trim** (`CONTEXT.md`, `docs/wiki/concepts/context.md`): Replace 1.3k-line code dump with domain glossary and wiki/source pointers; fix stale `docs/prd/` path in agent-cli overview → `docs/features/`; add `qualityGate` one-liner to agent-commands. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Changed
 

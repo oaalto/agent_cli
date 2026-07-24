@@ -228,7 +228,7 @@
   "autoIncluded": [
     "USAGE.md",
     "docs/agent-commands.md",
-    "docs/prds/",
+    "docs/features/",
     "docs/issues/",
     "CONTEXT.md",
     "docs/adr/",
@@ -247,7 +247,7 @@
     "docs/agents/triage-labels.md",
     "docs/agents/domain.md",
     "AGENTS.md",
-    "docs/prds/.gitkeep",
+    "docs/features/.gitkeep",
     "docs/issues/.gitkeep"
   ],
   "targetAgent": {
