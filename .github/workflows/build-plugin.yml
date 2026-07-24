@@ -32,7 +32,7 @@ jobs:
         run: node scripts/wiki-lint.mjs
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run quality gate and verify plugin
         run: |
