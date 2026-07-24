@@ -4,9 +4,9 @@ Planning artifacts for this repo live as markdown PRDs under `docs/features/<fea
 
 ## Conventions
 
-- **Create a PRD**: `/to-prd` writes `docs/features/<feature_name>/prd.md` using the process PRD template.
+- **Create a PRD**: `/to-spec` writes `docs/features/<feature_name>/prd.md` using the process PRD template.
 - **Read a PRD**: open the file under `docs/features/<feature_name>/`; treat content as **historical for behavior claims** until verified against code, tests, and `CONTEXT.md`.
-- **Split work**: `/to-issues` produces implementation slices under `docs/issues/<feature_name>/<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
+- **Split work**: `/to-tickets` produces implementation slices under `docs/issues/<feature_name>/<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
 - **Status**: record planning status in the PRD (draft / in review / accepted / superseded) in a `## Status` section near the top.
 
 ## When a skill says "publish to the issue tracker"
