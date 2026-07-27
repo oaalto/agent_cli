@@ -50,6 +50,10 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 Do NOT close or modify any parent issue.
 
+### 5. Ensure the feature is in the master list
+
+Add the feature to the **Active (implementation order)** section of `docs/features/FEATURES.md` if it is not already there (use the status from the parent spec's `## Status` section). Read PRDs, ticket blocking edges, and ADRs; insert or re-order at the correct priority position (top = next to ship). See `docs/agents/issue-tracker.md` for the master list rules.
+
 <local-ticket-template>
 
 # <NN> — <Ticket title>

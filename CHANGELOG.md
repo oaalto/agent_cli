@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-27
+
+### Documentation
+
+- **Feature master list ordering** (`docs/features/FEATURES.md`, `docs/agents/issue-tracker.md`, `.pi/skills/`): Split FEATURES.md into Active (implementation order) and Implemented sections; skills now require agents to infer and maintain priority order from PRDs and dependencies rather than appending or asking the human. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **acp-session-transcript-persistence status** (`docs/features/`): Mark PRD `implemented` and move feature from Active to Implemented in FEATURES.md — all slices were already done. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-07-24
 
 ### Added

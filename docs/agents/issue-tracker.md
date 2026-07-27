@@ -8,6 +8,15 @@ Planning artifacts for this repo live as markdown PRDs under `docs/features/<fea
 - **Read a PRD**: open the file under `docs/features/<feature_name>/`; treat content as **historical for behavior claims** until verified against code, tests, and `CONTEXT.md`.
 - **Split work**: `/to-tickets` produces implementation slices under `docs/issues/<feature_name>/<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
 - **Status**: record planning status in the PRD (draft / in review / accepted / superseded) in a `## Status` section near the top.
+- **Master list**: keep `docs/features/FEATURES.md` in sync with every PRD — it is the single source of truth for the feature portfolio.
+  - Two sections: **Active (implementation order)** and **Implemented**. Top of Active = next to ship.
+  - **Ordering**: agents determine and maintain implementation order from PRDs, ticket blocking edges, ADRs, and cross-feature dependencies. Do not ask the human to set order; re-order Active when adding or when dependencies change.
+  - `/to-spec`: add a row to **Active** (status = `draft`, one-line description from the PRD problem statement) at the correct priority position.
+  - `/to-tickets`: if the feature has no row yet, add it to **Active** (status from the PRD's `## Status`) at the correct priority position; re-order Active if ticket edges reveal a better sequence.
+  - `/tdd` (implement): when slices are all done, mark the PRD `## Status` as `implemented`, **remove** the row from **Active**, and **add** it to **Implemented** (most recently completed first). Re-order **Active** if remaining priorities shift.
+  - When the PRD status changes for any other reason: update the row's status column in **Active** (or move to **Implemented** when status becomes `implemented`).
+  - When a PRD is deleted or superseded: remove the row from whichever section it is in.
+  - Status vocabulary: `draft`, `accepted`, `ready-for-agent`, `implemented`, `superseded`.
 
 ## When a skill says "publish to the issue tracker"
 

@@ -46,4 +46,9 @@ Run typechecking regularly, single test files regularly, and the full test suite
 
 Do **not** commit unless the user explicitly asks. When work is ready, offer to commit and wait for confirmation.
 
-**Check off each ticket's items and set `**Status:** done` once review passes.
+**Check off each ticket's items and set `**Status:** done` once review passes.**
+
+### After review
+
+- Update the parent PRD's `## Status` to `implemented`.
+- Move the feature in `docs/features/FEATURES.md`: remove its row from **Active (implementation order)** and add it to **Implemented** (most recently completed first). Re-order remaining **Active** rows if dependencies or priorities shifted. See `docs/agents/issue-tracker.md` for the master list rules.
