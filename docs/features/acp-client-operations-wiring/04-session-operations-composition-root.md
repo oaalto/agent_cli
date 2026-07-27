@@ -6,7 +6,7 @@
 
 **Blocked by:** 03 — SDK adapter filesystem delegation
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] `AcpClientSessionOperationsFactory` (name may vary during implementation) accepts editor context and returns a fully wired `ClientSessionOperations`.
 - [ ] The factory constructs the deep filesystem module and passes it into the SDK adapter; inline dependency construction is removed from the adapter companion.

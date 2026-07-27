@@ -6,7 +6,7 @@
 
 **Blocked by:** 01 — ScopedFileSystemAccess VFS seam
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] `SessionFilesystemOperations` exposes `readText` and `writeText` and returns a sealed result distinguishing success, out-of-scope, permission-denied, and VFS failure.
 - [ ] The implementation composes scope resolution, write permission, and VFS access internally; line slicing lives with this module, not split across callers.

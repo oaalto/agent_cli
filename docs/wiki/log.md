@@ -101,3 +101,9 @@
 - Updated: [Agent CLI overview](concepts/agent-cli-overview.md)
 - Sources: `CONTEXT.md`
 - Notes: PRD path corrected to `docs/features/`.
+
+## [2026-07-28] update | ACP client session operations deep module
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `docs/features/acp-client-operations-wiring/prd.md`
+- Notes: Session operations section now references `SessionFilesystemOperations` deep module, `AcpClientSessionOperationsFactory` composition root, and `ScopedFileSystemAccess` VFS seam. Test surface at deep module interface documented.

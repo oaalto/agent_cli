@@ -15,8 +15,8 @@ import com.agentclientprotocol.model.WaitForTerminalExitResponse
 import com.agentclientprotocol.model.WriteTextFileResponse
 import com.agentclientprotocol.protocol.JsonRpcException
 import com.agentclientprotocol.rpc.JsonRpcErrorCode
-import com.oaalto.agent.acp.filesystem.IdeScopedFileSystemAccess
-import com.oaalto.agent.acp.filesystem.ScopedFileSystemOperations
+import com.oaalto.agent.acp.filesystem.SessionFilesystemOperations
+import com.oaalto.agent.acp.filesystem.SessionFilesystemResult
 import com.oaalto.agent.acp.permission.PermissionCoordinator
 import com.oaalto.agent.acp.terminal.TerminalSessionRegistry
 import com.oaalto.agent.acp.ui.ShellPaneHost
@@ -26,8 +26,7 @@ import org.jetbrains.plugins.terminal.TerminalUtil
 
 class AcpClientSessionOperationsImpl(
     private val editorContext: AcpEditorContext,
-    private val scopedFileSystem: ScopedFileSystemOperations,
-    private val fileSystemAccess: IdeScopedFileSystemAccess,
+    private val sessionFilesystemOperations: SessionFilesystemOperations,
     private val permissionCoordinator: PermissionCoordinator,
     private val terminalSessionRegistry: TerminalSessionRegistry,
 ) : ClientSessionOperations {
@@ -52,48 +51,21 @@ class AcpClientSessionOperationsImpl(
         line: UInt?,
         limit: UInt?,
         _meta: JsonElement?,
-    ): ReadTextFileResponse {
-        when (val scope = scopedFileSystem.resolveForRead(path)) {
-            is ScopedFileSystemOperations.ScopeResult.OutOfScope ->
-                throw fsError(scope.message)
-            is ScopedFileSystemOperations.ScopeResult.InScope -> {
-                val readResult = fileSystemAccess.readText(scope.resolved)
-                return when (readResult) {
-                    is IdeScopedFileSystemAccess.AccessResult.Failure ->
-                        throw fsError(readResult.message)
-                    is IdeScopedFileSystemAccess.AccessResult.Success -> {
-                        val content = sliceLines(readResult.content, line, limit)
-                        ReadTextFileResponse(content = content)
-                    }
-                }
-            }
+    ): ReadTextFileResponse =
+        when (val result = sessionFilesystemOperations.readText(path, line, limit)) {
+            is SessionFilesystemResult.Success -> ReadTextFileResponse(content = result.content)
+            is SessionFilesystemResult.Failure -> throw fsError(result.message)
         }
-    }
 
     override suspend fun fsWriteTextFile(
         path: String,
         content: String,
         _meta: JsonElement?,
-    ): WriteTextFileResponse {
-        when (val scope = scopedFileSystem.resolveForWrite(path)) {
-            is ScopedFileSystemOperations.ScopeResult.OutOfScope ->
-                throw fsError(scope.message)
-            is ScopedFileSystemOperations.ScopeResult.InScope -> {
-                fileSystemAccess.isBlockedForWrite(scope.resolved)?.let { message ->
-                    throw fsError(message)
-                }
-                if (!permissionCoordinator.requestWritePermission(path)) {
-                    throw fsError("Write permission denied for $path")
-                }
-                return when (val writeResult = fileSystemAccess.writeText(scope.resolved, content)) {
-                    is IdeScopedFileSystemAccess.AccessResult.Failure ->
-                        throw fsError(writeResult.message)
-                    is IdeScopedFileSystemAccess.AccessResult.Success ->
-                        WriteTextFileResponse()
-                }
-            }
+    ): WriteTextFileResponse =
+        when (val result = sessionFilesystemOperations.writeText(path, content)) {
+            is SessionFilesystemResult.Success -> WriteTextFileResponse()
+            is SessionFilesystemResult.Failure -> throw fsError(result.message)
         }
-    }
 
     override suspend fun terminalCreate(
         command: String,
@@ -190,43 +162,9 @@ class AcpClientSessionOperationsImpl(
         }.getOrNull()
     }
 
-    private fun sliceLines(
-        content: String,
-        line: UInt?,
-        limit: UInt?,
-    ): String {
-        if (line == null && limit == null) return content
-        val lines = content.lines()
-        val start = line?.toInt() ?: 0
-        val end =
-            if (limit != null) {
-                (start + limit.toInt()).coerceAtMost(lines.size)
-            } else {
-                lines.size
-            }
-        return lines.drop(start).take(end - start).joinToString("\n")
-    }
-
     private fun fsError(message: String): JsonRpcException =
         JsonRpcException(
             code = JsonRpcErrorCode.RESOURCE_NOT_FOUND.code,
             message = message,
         )
-
-    companion object {
-        fun create(editorContext: AcpEditorContext): AcpClientSessionOperationsImpl {
-            val scoped =
-                ScopedFileSystemOperations.create(
-                    scopeRoot = editorContext.scopeRoot,
-                    projectBasePath = editorContext.project.basePath,
-                )
-            return AcpClientSessionOperationsImpl(
-                editorContext = editorContext,
-                scopedFileSystem = scoped,
-                fileSystemAccess = IdeScopedFileSystemAccess(editorContext.project),
-                permissionCoordinator = editorContext.permissionCoordinator(),
-                terminalSessionRegistry = editorContext.terminalSessionRegistry,
-            )
-        }
-    }
 }

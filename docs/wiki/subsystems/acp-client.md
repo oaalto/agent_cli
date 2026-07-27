@@ -5,7 +5,11 @@ status: current
 updated: 2026-07-24
 sources:
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
+  - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsFactory.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
+  - src/main/kotlin/com/oaalto/agent/acp/AcpSessionControllerImpl.kt
+  - src/main/kotlin/com/oaalto/agent/acp/filesystem/ScopedFileSystemAccess.kt
+  - src/main/kotlin/com/oaalto/agent/acp/filesystem/SessionFilesystemOperations.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpEditorLayout.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptViewController.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptModel.kt
@@ -72,15 +76,26 @@ The transcript renders via a vertical `BoxLayout` column of block rows inside a 
 - `ingestPromptCompleted()` returns a single `FinalizeAgentStream`.
 - Agent message chunks stream in place without finalization.
 
-### Session operations (`AcpClientSessionOperationsImpl`)
+### Session operations (deep module: `SessionFilesystemOperations`)
 
-Implements `com.agentclientprotocol.common.ClientSessionOperations`:
+Filesystem policy is owned by `SessionFilesystemOperations` — a single deep module that concentrates scope → permission → VFS → line-slicing logic behind one seam.
 
+- **`fsReadTextFile()` / `fsWriteTextFile()`** — delegated to `SessionFilesystemOperations`. The SDK adapter (`AcpClientSessionOperationsImpl`) maps sealed results to `ReadTextFileResponse` / `WriteTextFileResponse` / `JsonRpcException`.
 - **`notify(notification, _meta)`** — routes `SessionUpdate` events through `TranscriptEventIngestion.ingest()`.
 - **`requestPermissions()`** — delegates to `PermissionCoordinator.requestSessionPermission()`.
-- **`fsReadTextFile()`** — resolves scope via `ScopedFileSystemOperations`, reads via `IdeScopedFileSystemAccess`.
-- **`fsWriteTextFile()`** — resolves scope, checks write permission via `PermissionCoordinator`, writes via `IdeScopedFileSystemAccess`.
 - **`terminalCreate()` / `terminalOutput()` / `terminalRelease()`** — manage terminal sessions via `TerminalSessionRegistry` and `ShellPaneHost`.
+
+#### Composition root (`AcpClientSessionOperationsFactory`)
+
+`AcpClientSessionOperationsFactory` (implemented by `AcpDefaultClientSessionOperationsFactory`) is the visible composition root for all `ClientSessionOperations` dependencies. `AcpSessionControllerImpl.openSession()` delegates to this factory rather than constructing dependencies inline.
+
+#### VFS seam (`ScopedFileSystemAccess`)
+
+`IdeScopedFileSystemAccess` is the production adapter behind the `ScopedFileSystemAccess` interface. An in-memory test adapter (`InMemoryScopedFileSystemAccess`) enables policy tests without IntelliJ platform fixtures.
+
+#### Test surface
+
+The deep module interface is the primary test seam — `SessionFilesystemOperationsTest` covers in-scope reads, out-of-scope rejections, permission denials, VFS read-only/ignored blocks, and line/limit slicing with the in-memory adapter.
 
 ### Event ingestion (`TranscriptEventIngestion`)
 

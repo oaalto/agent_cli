@@ -6,7 +6,7 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] A `ScopedFileSystemAccess` interface exposes read and write against resolved paths, returning the existing success/failure result shape (or a platform-neutral equivalent).
 - [ ] The current IDE VFS implementation is a thin production adapter with no intentional behaviour change.

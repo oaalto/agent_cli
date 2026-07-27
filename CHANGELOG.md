@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-28
+
+### Changed
+
+- **ACP client session operations deepening** (`acp/`): Introduce `SessionFilesystemOperations` deep module owning scope → permission → VFS → line-slicing policy behind one seam. Extract `ScopedFileSystemAccess` VFS interface with `IdeScopedFileSystemAccess` as production adapter and `InMemoryScopedFileSystemAccess` test double. Extract `AcpClientSessionOperationsFactory` composition root replacing the inline companion `create()` in `AcpClientSessionOperationsImpl`. `AcpSessionControllerImpl` depends on the factory interface; `openSession()` invokes the injected factory. Tests at the deep module interface cover in-scope reads, out-of-scope rejections, permission denials, VFS read-only/ignored blocks, and line/limit slicing. Wiki updated. made by: Olli Aalto. made with: pi.
+
 ## 2026-07-27
 
 ### Documentation

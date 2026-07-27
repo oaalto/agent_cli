@@ -15,37 +15,30 @@ import java.nio.file.Path
 
 class IdeScopedFileSystemAccess(
     private val project: Project,
-) {
-    sealed class AccessResult {
-        data class Success(
-            val content: String = "",
-        ) : AccessResult()
-
-        data class Failure(
-            val message: String,
-        ) : AccessResult()
-    }
-
-    fun readText(resolved: Path): AccessResult {
+) : ScopedFileSystemAccess {
+    override fun readText(resolved: Path): ScopedFileSystemAccess.AccessResult {
         val virtualFile =
             findVirtualFile(resolved)
-                ?: return AccessResult.Failure("File not found in IDE VFS: $resolved")
+                ?: return ScopedFileSystemAccess.AccessResult.Failure("File not found in IDE VFS: $resolved")
         return runRead {
             val document = FileDocumentManager.getInstance().getDocument(virtualFile)
             val text = document?.text ?: String(virtualFile.contentsToByteArray(), StandardCharsets.UTF_8)
-            AccessResult.Success(text)
+            ScopedFileSystemAccess.AccessResult.Success(text)
         }
     }
 
-    fun writeText(
+    override fun writeText(
         resolved: Path,
         content: String,
-    ): AccessResult {
+    ): ScopedFileSystemAccess.AccessResult {
         val virtualFile = findOrCreateVirtualFile(resolved)
         val blockedReason = virtualFile?.let { file -> writeBlockReason(file, resolved) }
         return when {
-            virtualFile == null -> AccessResult.Failure("Could not resolve file in IDE VFS: $resolved")
-            blockedReason != null -> AccessResult.Failure(blockedReason)
+            virtualFile == null ->
+                ScopedFileSystemAccess.AccessResult.Failure(
+                    "Could not resolve file in IDE VFS: $resolved",
+                )
+            blockedReason != null -> ScopedFileSystemAccess.AccessResult.Failure(blockedReason)
             else ->
                 runWrite {
                     val document = FileDocumentManager.getInstance().getDocument(virtualFile)
@@ -55,12 +48,12 @@ class IdeScopedFileSystemAccess(
                     } else {
                         virtualFile.setBinaryContent(content.toByteArray(StandardCharsets.UTF_8))
                     }
-                    AccessResult.Success()
+                    ScopedFileSystemAccess.AccessResult.Success()
                 }
         }
     }
 
-    fun isBlockedForWrite(resolved: Path): String? {
+    override fun isBlockedForWrite(resolved: Path): String? {
         val virtualFile = findVirtualFile(resolved) ?: findOrCreateVirtualFile(resolved)
         return virtualFile?.let { file -> writeBlockReason(file, resolved) }
             ?: "Could not resolve file in IDE VFS: $resolved"

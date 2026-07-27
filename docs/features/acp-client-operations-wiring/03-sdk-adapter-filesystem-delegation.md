@@ -6,7 +6,7 @@
 
 **Blocked by:** 02 — SessionFilesystemOperations deep module
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] Filesystem SDK methods delegate to `SessionFilesystemOperations`; scope/permission/VFS chaining is no longer duplicated in the adapter.
 - [ ] Success maps to `ReadTextFileResponse` / `WriteTextFileResponse`; failures map to `JsonRpcException` with appropriate messages.

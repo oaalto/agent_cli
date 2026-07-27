@@ -6,7 +6,7 @@
 
 **Blocked by:** 05 — Session controller factory injection
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] The ACP client subsystem wiki page references `SessionFilesystemOperations` as the deep module for filesystem I/O policy.
 - [ ] The wiki describes the composition root as the place where `ClientSessionOperations` dependencies are assembled.

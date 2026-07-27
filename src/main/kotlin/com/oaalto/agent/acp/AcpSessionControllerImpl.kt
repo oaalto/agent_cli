@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit
 class AcpSessionControllerImpl(
     private val listener: AcpSessionListener,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val sessionOperationsFactory: AcpClientSessionOperationsFactory,
 ) : AcpSessionController {
     private var process: Process? = null
     private var protocol: Protocol? = null
@@ -172,7 +173,7 @@ class AcpSessionControllerImpl(
         val mcpServers = activeLaunchPlan.sessionMcpServers()
         val operationsFactory =
             ClientOperationsFactory { _, _ ->
-                AcpClientSessionOperationsImpl.create(context)
+                sessionOperationsFactory.create(context)
             }
         runCatching {
             session =

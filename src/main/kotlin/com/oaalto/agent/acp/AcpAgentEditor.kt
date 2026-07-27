@@ -52,7 +52,12 @@ import kotlin.coroutines.resume
 class AcpAgentEditor(
     private val project: Project,
     private val file: AgentVirtualFile,
-    private val sessionControllerFactory: (AcpSessionListener) -> AcpSessionController = ::defaultSessionController,
+    private val sessionControllerFactory: (AcpSessionListener) -> AcpSessionController = { listener ->
+        AcpSessionControllerImpl(
+            listener = listener,
+            sessionOperationsFactory = AcpDefaultClientSessionOperationsFactory(project),
+        )
+    },
 ) : FileEditor,
     Disposable {
     private val propertyChangeSupport = PropertyChangeSupport(this)
@@ -384,9 +389,6 @@ class AcpAgentEditor(
 
     companion object {
         private val log = AgentCliLog.getInstance(AcpAgentEditor::class.java)
-
-        private fun defaultSessionController(listener: AcpSessionListener): AcpSessionController =
-            AcpSessionControllerImpl(listener)
 
         private fun rethrowIfCancellation(throwable: Throwable) {
             if (throwable is CancellationException) throw throwable

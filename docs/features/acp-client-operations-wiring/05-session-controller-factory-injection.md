@@ -6,7 +6,7 @@
 
 **Blocked by:** 04 — Session operations composition root
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] `AcpSessionControllerImpl` receives the session operations factory via constructor or editor context — not by calling the adapter companion directly.
 - [ ] `openSession` builds `ClientOperationsFactory` from the injected factory's `create(context)` call.
