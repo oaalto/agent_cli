@@ -10,7 +10,6 @@ Master list of features tracked in `docs/features/`. Statuses are documented in 
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-
 | [acp-transcript-block-alignment-fix](acp-transcript-block-alignment-fix/prd.md) | draft | Fix block content (code, tables, blockquotes) rendering shifted right in the ACP transcript pane |
 | [acp-client-operations-wiring](acp-client-operations-wiring/prd.md) | draft | Deepen filesystem client-ops into a single deep module with an explicit composition root |
 | [acp-session-controller-deepening](acp-session-controller-deepening/prd.md) | draft | Shrink AcpSessionController interface, extract transport/lifecycle internals, move session-resume orchestration into the controller |
