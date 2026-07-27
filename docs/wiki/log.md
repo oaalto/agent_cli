@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-07-24] skip | ACP transcript block alignment fix
+
+- Reason: Visual layout fix only; no behavioral or architectural facts changed in the wiki.
+
 ## [2026-07-24] update | Remove dead `onTranscriptHtml`/`onTranscriptPlainLine` references from context wiki
 
 - Updated: [Domain context & ACP transcript model](concepts/context.md)

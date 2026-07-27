@@ -10,7 +10,6 @@ Master list of features tracked in `docs/features/`. Statuses are documented in 
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| [acp-transcript-block-alignment-fix](acp-transcript-block-alignment-fix/prd.md) | draft | Fix block content (code, tables, blockquotes) rendering shifted right in the ACP transcript pane |
 | [acp-client-operations-wiring](acp-client-operations-wiring/prd.md) | draft | Deepen filesystem client-ops into a single deep module with an explicit composition root |
 | [acp-session-controller-deepening](acp-session-controller-deepening/prd.md) | draft | Shrink AcpSessionController interface, extract transport/lifecycle internals, move session-resume orchestration into the controller |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/prd.md) | draft | Consolidate resume planning, attach, and execution from three scattered modules into a single deep module |
@@ -22,6 +21,6 @@ Master list of features tracked in `docs/features/`. Statuses are documented in 
 | Feature | Description |
 |---------|-------------|
 | [acp-session-transcript-persistence](acp-session-transcript-persistence/prd.md) | Persist ACP session conversations as workspace-local plain-text transcript files with correlation tokens and copy-diagnostics action |
-| [settings-observability-help](settings-observability-help/prd.md) | Add session logs & transcripts help section to the Agent CLI settings page |
+| [acp-transcript-block-alignment-fix](acp-transcript-block-alignment-fix/prd.md) | Fix block content (code, tables, blockquotes) rendering shifted right in the ACP transcript pane |
 | [unified-launch-resolution](unified-launch-resolution/prd.md) | Extract shared launch-resolution logic into a single module used by all three launch paths |
 | [tiered-session-diagnostics](tiered-session-diagnostics/prd.md) | Tiered IDE logging via AgentCliLog with session diagnostics context and dialog-only failure logging |
