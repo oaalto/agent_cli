@@ -6,10 +6,10 @@
 
 **Blocked by:** 06 — Shrink public interface and compose start()
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `launchAndConnect` calls `start()` once; no direct `connect` / `newSession` / `loadSession` / `listSessions` / `currentSessionId` usage remains in the editor.
-- [ ] Resume flows (stored session load, picker, start fresh) produce the same transcript messages and session outcomes as before refactoring.
-- [ ] Worktree session ID is persisted from `result.sessionId` after successful start; `AgentWorktreeStateService` calls stay in the editor.
-- [ ] Error handling on start failure appends error and disables prompt bar — unchanged UX.
-- [ ] `./gradlew qualityGate` passes; update `CHANGELOG.md` under `### Changed` when code ships.
+- [x] `launchAndConnect` calls `start()` once; no direct `connect` / `newSession` / `loadSession` / `listSessions` / `currentSessionId` usage remains in the editor.
+- [x] Resume flows (stored session load, picker, start fresh) produce the same transcript messages and session outcomes as before refactoring.
+- [x] Worktree session ID is persisted from `result.sessionId` after successful start; `AgentWorktreeStateService` calls stay in the editor.
+- [x] Error handling on start failure appends error and disables prompt bar — unchanged UX.
+- [x] `./gradlew qualityGate` passes; CHANGELOG updated under `### Changed`.

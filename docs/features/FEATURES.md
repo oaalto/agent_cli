@@ -10,7 +10,6 @@ Master list of features tracked in `docs/features/`. Statuses are documented in 
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| [acp-session-controller-deepening](acp-session-controller-deepening/prd.md) | draft | Shrink AcpSessionController interface, extract transport/lifecycle internals, move session-resume orchestration into the controller |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/prd.md) | draft | Consolidate resume planning, attach, and execution from three scattered modules into a single deep module |
 | [worktree-pending-launch-handoff](worktree-pending-launch-handoff/prd.md) | draft | Consolidate cross-project worktree handoff (enqueue → open → consume) into a deep module with explicit contract |
 | [transcript-pipeline-consolidation](transcript-pipeline-consolidation/prd.md) | draft | Consolidate fragmented transcript rendering stack, remove dead HTML path, reduce shallow-module fragmentation |
@@ -19,6 +18,7 @@ Master list of features tracked in `docs/features/`. Statuses are documented in 
 
 | Feature | Description |
 |---------|-------------|
+| [acp-session-controller-deepening](acp-session-controller-deepening/prd.md) | Shrink AcpSessionController interface from eight methods to four (`start`, `prompt`, `cancelPrompt`, `dispose`); extract transport (`AcpProcessTransport`), bootstrap (`AcpConnectionBootstrap`), lifecycle (`AcpSessionLifecycle`), and prompt executor (`AcpPromptExecutor`) internals; move resume orchestration into lifecycle with injected `SessionPicker`; editor startup is now a single `start()` call. |
 | [acp-client-operations-wiring](acp-client-operations-wiring/prd.md) | Deep filesystem client-ops module (`SessionFilesystemOperations`) with scoped VFS seam, composition root factory, and in-memory test adapter |
 | [acp-session-transcript-persistence](acp-session-transcript-persistence/prd.md) | Persist ACP session conversations as workspace-local plain-text transcript files with correlation tokens and copy-diagnostics action |
 | [acp-transcript-block-alignment-fix](acp-transcript-block-alignment-fix/prd.md) | Fix block content (code, tables, blockquotes) rendering shifted right in the ACP transcript pane |

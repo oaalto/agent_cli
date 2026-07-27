@@ -8,6 +8,12 @@
 
 ## 2026-07-27
 
+### Changed
+
+- **ACP start result parity** (`acp/`): Add `restoreTranscript` to `AcpSessionStartResult` so transcript restore/bind runs only on successful load/resume; track `activeSessionId` in `AcpAgentEditor` for post-start log context. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP session controller deepening (tickets 05–07)** (`acp/`): Move resume orchestration from `AcpAgentEditor` into `AcpSessionLifecycle` driven by injected `SessionPicker`; shrink `AcpSessionController` interface from eight methods (`connect`, `newSession`, `loadSession`, `listSessions`, `currentSessionId`, `prompt`, `cancelPrompt`, `dispose`) to four (`start`, `prompt`, `cancelPrompt`, `dispose`); introduce `AcpSessionStartRequest` and `AcpSessionStartResult` so editor startup is a single call; `AcpSessionControllerImpl` becomes a thin coordinator composing `AcpProcessTransport`, `AcpConnectionBootstrap`, `AcpSessionLifecycle`, and `AcpPromptExecutor`. `AcpAgentEditor.launchAndConnect` now calls `sessionController.start()` once; worktree session persistence stays in the editor. Delete `AcpSessionOperationsAdapter` (no longer needed). `RecordingSessionController` test fake updated to new interface. `./gradlew qualityGate` passes. made by: Olli Aalto. made with: pi.
+
 ### Documentation
 
 - **Feature master list ordering** (`docs/features/FEATURES.md`, `docs/agents/issue-tracker.md`, `.pi/skills/`): Split FEATURES.md into Active (implementation order) and Implemented sections; skills now require agents to infer and maintain priority order from PRDs and dependencies rather than appending or asking the human. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

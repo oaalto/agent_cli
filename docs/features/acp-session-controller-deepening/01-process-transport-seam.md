@@ -6,10 +6,10 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] An `AcpProcessTransport` abstraction owns process spawn, stdio transport lifecycle, stderr monitoring, exit monitoring, and dispose/teardown (including the deprecated `StdioTransport` constructor suppression and comment).
-- [ ] A production adapter (`ProcessStdioTransport` or equivalent) reproduces today's connect/dispose transport behavior with no UX or transcript change.
-- [ ] A test adapter (`InMemoryTransport` or SDK test-util wrapper) completes a smoke test proving protocol init can run without spawning a subprocess.
-- [ ] `AcpSessionControllerImpl` delegates transport concerns to the seam; existing eight-method public interface and editor call sites still work.
-- [ ] `./gradlew qualityGate` passes.
+- [x] An `AcpProcessTransport` abstraction owns process spawn, stdio transport lifecycle, stderr monitoring, exit monitoring, and dispose/teardown (including the deprecated `StdioTransport` constructor suppression and comment).
+- [x] A production adapter (`ProcessStdioTransport` or equivalent) reproduces today's connect/dispose transport behavior with no UX or transcript change.
+- [x] A test adapter (`InMemoryTransport` or SDK test-util wrapper) completes a smoke test proving protocol init can run without spawning a subprocess.
+- [x] `AcpSessionControllerImpl` delegates transport concerns to the seam; existing eight-method public interface and editor call sites still work.
+- [x] `./gradlew qualityGate` passes.

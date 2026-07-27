@@ -17,7 +17,6 @@ import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.AgentVirtualFile
-import com.oaalto.agent.acp.AcpSessionOperationsAdapter
 import com.oaalto.agent.acp.auth.AuthPromptResult
 import com.oaalto.agent.acp.auth.AuthPromptUi
 import com.oaalto.agent.acp.filesystem.SessionScopeResolver
@@ -31,8 +30,6 @@ import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
 import com.oaalto.agent.worktree.WorktreeSessionBinderImpl
-import com.oaalto.agent.worktree.resume.AcpSessionOpenResult
-import com.oaalto.agent.worktree.resume.AcpSessionResumeOrchestrator
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -186,6 +183,8 @@ class AcpAgentEditor(
             }
         }
     private val sessionController: AcpSessionController = sessionControllerFactory(sessionListener)
+    private val worktreeBinder = WorktreeSessionBinderImpl()
+    private var activeSessionId: String? = null
 
     init {
         transcriptViewController.errorMessageDecorator = sessionTranscript::decorateError
@@ -295,36 +294,17 @@ class AcpAgentEditor(
 
         transcriptViewController.appendPlainLine("Connecting to ${typedConfig.name}...")
         runCatching {
-            val scopeRoot =
-                SessionScopeResolver.hostScopeRoot(
-                    sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
-                    projectBasePath = project.basePath,
-                    workingDirectoryOverride = file.launchContext.workingDirectoryOverride,
-                )
-            val editorContext =
-                AcpEditorContext(
-                    project = project,
-                    configurationId = file.configurationId,
-                    launchContext = file.launchContext,
-                    scopeRoot = scopeRoot,
-                    listener = sessionListener,
-                    shellPaneHost = shellPaneHost,
-                    permissionPromptUi = permissionPromptUi,
-                    authPromptUi = authPromptUi,
-                )
-            sessionController.connect(launchPlan, editorContext)
-            val result =
-                orchestrator.openSession(
-                    plan = file.launchContext.resumePlan ?: LaunchResumePlan.AcpNewSession,
-                    sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
-                    worktreeRecordId = file.launchContext.worktreeId,
-                )
-            mapResultToTranscript(result)
-            transcriptViewController.appendPlainLine("Connected to ${typedConfig.name}.")
-            runOnEdt {
-                promptInputBar.setEnabled(true)
-                promptInputBar.requestFocus()
-            }
+            applyStartResult(
+                sessionController.start(
+                    AcpSessionStartRequest(
+                        launchPlan = launchPlan,
+                        editorContext = buildEditorContext(launchPlan),
+                        resumePlan = file.launchContext.resumePlan ?: LaunchResumePlan.AcpNewSession,
+                        sessionPicker = SessionPickerAdapter(project),
+                    ),
+                ),
+                typedConfig.name,
+            )
         }.onFailure { throwable ->
             rethrowIfCancellation(throwable)
             log.warn("Failed to start ACP session", throwable, logContext())
@@ -335,30 +315,53 @@ class AcpAgentEditor(
         }
     }
 
-    private fun mapResultToTranscript(result: AcpSessionOpenResult) {
-        when (result) {
-            is AcpSessionOpenResult.Success -> {
-                sessionTranscript.restoreIfPresent(result.sessionId)
-                sessionTranscript.bindSession(result.sessionId)
-                if (result.pickerShown) {
-                    transcriptViewController.appendPlainLine("Resumed session ${result.sessionId}.")
-                }
+    private fun buildEditorContext(launchPlan: AcpLaunchPlan): AcpEditorContext {
+        val scopeRoot =
+            SessionScopeResolver.hostScopeRoot(
+                sessionWorkingDirectory = launchPlan.sessionWorkingDirectory,
+                projectBasePath = project.basePath,
+                workingDirectoryOverride = file.launchContext.workingDirectoryOverride,
+            )
+        return AcpEditorContext(
+            project = project,
+            configurationId = file.configurationId,
+            launchContext = file.launchContext,
+            scopeRoot = scopeRoot,
+            listener = sessionListener,
+            shellPaneHost = shellPaneHost,
+            permissionPromptUi = permissionPromptUi,
+            authPromptUi = authPromptUi,
+        )
+    }
+
+    private fun applyStartResult(
+        result: AcpSessionStartResult,
+        configurationName: String,
+    ) {
+        activeSessionId = result.sessionId
+        if (result.restoreTranscript) {
+            result.sessionId?.let { sessionId ->
+                sessionTranscript.restoreIfPresent(sessionId)
+                sessionTranscript.bindSession(sessionId)
             }
-            is AcpSessionOpenResult.Fallback -> {
-                transcriptViewController.appendPlainLine(result.reason)
-            }
-            AcpSessionOpenResult.StartFresh -> {
-                transcriptViewController.appendPlainLine("Started a new ACP session.")
-            }
+        }
+        persistWorktreeSessionId(result.sessionId)
+        if (result.statusMessage.isNotBlank()) {
+            transcriptViewController.appendPlainLine(result.statusMessage)
+        }
+        transcriptViewController.appendPlainLine("Connected to $configurationName.")
+        runOnEdt {
+            promptInputBar.setEnabled(true)
+            promptInputBar.requestFocus()
         }
     }
 
-    private val orchestrator =
-        AcpSessionResumeOrchestrator(
-            AcpSessionOperationsAdapter(sessionController),
-            WorktreeSessionBinderImpl(),
-            SessionPickerAdapter(project),
-        )
+    private fun persistWorktreeSessionId(sessionId: String?) {
+        if (sessionId == null) return
+        file.launchContext.worktreeId?.let { recordId ->
+            worktreeBinder.persistSessionId(recordId, sessionId)
+        }
+    }
 
     private fun runOnEdt(action: () -> Unit) {
         if (SwingUtilities.isEventDispatchThread()) {
@@ -379,7 +382,7 @@ class AcpAgentEditor(
 
     fun buildDiagnosticsClipboardText(): String = sessionTranscript.clipboardText()
 
-    private fun logContext(sessionId: String? = sessionController.currentSessionId()): AgentCliSessionContext =
+    private fun logContext(sessionId: String? = activeSessionId): AgentCliSessionContext =
         AgentCliSessionContext(
             configId = file.configurationId,
             sessionId = sessionId,

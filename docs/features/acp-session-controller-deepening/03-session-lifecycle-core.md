@@ -6,10 +6,10 @@
 
 **Blocked by:** 02 — Connection bootstrap extraction
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AcpSessionLifecycle` owns `sessionReady`, session open/load/list, operations factory creation, and post-bootstrap `editorContext` / `launchPlan` retention.
-- [ ] `prompt()` still awaits session readiness before sending — same semantics as today's `awaitOpenSession()`.
-- [ ] `listSessions` maps SDK session info to `SessionSummary` as today.
-- [ ] `AcpSessionControllerImpl` delegates session primitives to lifecycle; eight-method public interface unchanged.
-- [ ] `./gradlew qualityGate` passes.
+- [x] `AcpSessionLifecycle` owns `sessionReady`, session open/load/list, operations factory creation, and post-bootstrap `editorContext` / `launchPlan` retention.
+- [x] `prompt()` still awaits session readiness before sending — same semantics as today's `awaitOpenSession()`.
+- [x] `listSessions` maps SDK session info to `SessionSummary` as today.
+- [x] `AcpSessionControllerImpl` delegates session primitives to lifecycle; eight-method public interface unchanged.
+- [x] `./gradlew qualityGate` passes.

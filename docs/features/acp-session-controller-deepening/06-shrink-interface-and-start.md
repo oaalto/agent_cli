@@ -6,11 +6,11 @@
 
 **Blocked by:** 04 — Prompt executor extraction; 05 — Resume orchestration in session lifecycle
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Public interface exposes only `start(request)`, `prompt(text)`, `cancelPrompt()`, and `dispose()` plus the new request/result/picker types.
-- [ ] `start()` composes transport → bootstrap → lifecycle resume → returns `AcpSessionStartResult` with correct `sessionId` and status message for each resume path.
-- [ ] `prompt`, `cancelPrompt`, and `dispose` delegate to the prompt executor; dispose remains synchronous and idempotent.
-- [ ] `RecordingSessionController` and `AcpSessionControllerTest` updated; tests assert `start()` result for at least new-session and one resume variant.
-- [ ] `AcpAgentEditor` may still call old methods if not yet migrated — if so, keep a temporary internal bridge or land editor migration in the same PR only when both tickets ship together; prefer leaving editor on old API until ticket 07 if needed for green CI between tickets.
-- [ ] `./gradlew qualityGate` passes.
+- [x] Public interface exposes only `start(request)`, `prompt(text)`, `cancelPrompt()`, and `dispose()` plus the new request/result/picker types.
+- [x] `start()` composes transport → bootstrap → lifecycle resume → returns `AcpSessionStartResult` with correct `sessionId` and status message for each resume path.
+- [x] `prompt`, `cancelPrompt`, and `dispose` delegate to the prompt executor; dispose remains synchronous and idempotent.
+- [x] `RecordingSessionController` and `AcpSessionControllerTest` updated; tests assert `start()` result for at least new-session and one resume variant.
+- [x] `AcpAgentEditor` migrated to new API in this same PR.
+- [x] `./gradlew qualityGate` passes.

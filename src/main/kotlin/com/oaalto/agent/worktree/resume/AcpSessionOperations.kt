@@ -3,8 +3,8 @@ package com.oaalto.agent.worktree.resume
 /**
  * Port for ACP session protocol operations.
  *
- * Implemented by adapters in the `acp/` slice that delegate to [com.oaalto.agent.acp.AcpSessionController].
- * The orchestrator in this slice depends only on this interface — never on the controller directly.
+ * Implemented by lifecycle adapters in the `acp/` slice (for example [com.oaalto.agent.acp.AcpSessionLifecycle]).
+ * The orchestrator in this slice depends only on this interface — never on the editor-facing controller directly.
  */
 interface AcpSessionOperations {
     suspend fun newSession()

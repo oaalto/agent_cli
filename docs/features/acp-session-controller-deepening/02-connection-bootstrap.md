@@ -6,10 +6,10 @@
 
 **Blocked by:** 01 — Process transport seam
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AcpConnectionBootstrap` encapsulates protocol start, client initialize, and `AuthFlowCoordinator.authenticateIfRequired()` for a connected transport.
-- [ ] Bootstrap failures complete session-ready exceptionally and dispose transport, matching current error recovery.
-- [ ] `AcpSessionControllerImpl` calls bootstrap through the transport seam from ticket 01; connect still works end-to-end.
-- [ ] No change to auth method support, capabilities negotiation, or transcript messages during connect.
-- [ ] `./gradlew qualityGate` passes.
+- [x] `AcpConnectionBootstrap` encapsulates protocol start, client initialize, and `AuthFlowCoordinator.authenticateIfRequired()` for a connected transport.
+- [x] Bootstrap failures complete session-ready exceptionally and dispose transport, matching current error recovery.
+- [x] `AcpSessionControllerImpl` calls bootstrap through the transport seam from ticket 01; connect still works end-to-end.
+- [x] No change to auth method support, capabilities negotiation, or transcript messages during connect.
+- [x] `./gradlew qualityGate` passes.

@@ -8,10 +8,10 @@
 
 **Blocked by:** 03 — Session lifecycle core
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `SessionPicker` type and production/test adapters exist; controller resume logic calls the picker without importing Swing.
-- [ ] `AcpSessionLifecycle.startSession(resumePlan, picker)` implements all branches currently in `openSessionFromResumePlan`, `pickSessionOrStartFresh`, and `pickSessionFromCandidates` with matching fallback behavior.
-- [ ] Unit tests cover each `LaunchResumePlan` variant and key fallbacks (load failure → picker returns null → new session; picker returns id → load attempted) using injected picker doubles and a fake client.
-- [ ] Editor still owns resume orchestration call sites until ticket 07; this ticket may temporarily expose lifecycle resume via existing granular methods or an internal entry point — behavior must be verifiable in tests.
-- [ ] `./gradlew qualityGate` passes.
+- [x] `SessionPicker` type and production/test adapters exist; controller resume logic calls the picker without importing Swing.
+- [x] `AcpSessionLifecycle.startSession(resumePlan, picker)` implements all branches currently in `openSessionFromResumePlan`, `pickSessionOrStartFresh`, and `pickSessionFromCandidates` with matching fallback behavior.
+- [x] Unit tests cover each `LaunchResumePlan` variant and key fallbacks (load failure → picker returns null → new session; picker returns id → load attempted) using injected picker doubles and a fake client.
+- [x] Editor still owns resume orchestration call sites until ticket 07; this ticket may temporarily expose lifecycle resume via existing granular methods or an internal entry point — behavior must be verifiable in tests.
+- [x] `./gradlew qualityGate` passes.

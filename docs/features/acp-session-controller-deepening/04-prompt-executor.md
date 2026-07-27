@@ -6,10 +6,10 @@
 
 **Blocked by:** 03 — Session lifecycle core
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AcpPromptExecutor` owns prompt job lifecycle: await session readiness, launch prompt coroutine, join, cancel, and `Event` → `StructuredUpdate` dispatch via existing dispatcher.
-- [ ] `cancelPrompt()` and `dispose()` cancel active prompt work and finalize agent stream — existing `AcpSessionControllerTest` updated and still passes.
-- [ ] `dispose()` remains synchronous and idempotent (IntelliJ `Disposable` contract preserved).
-- [ ] `AcpSessionControllerImpl` delegates prompt/cancel to the executor; eight-method public interface unchanged.
-- [ ] `./gradlew qualityGate` passes.
+- [x] `AcpPromptExecutor` owns prompt job lifecycle: await session readiness, launch prompt coroutine, join, cancel, and `Event` → `StructuredUpdate` dispatch via existing dispatcher.
+- [x] `cancelPrompt()` and `dispose()` cancel active prompt work and finalize agent stream — existing `AcpSessionControllerTest` updated and still passes.
+- [x] `dispose()` remains synchronous and idempotent (IntelliJ `Disposable` contract preserved).
+- [x] `AcpSessionControllerImpl` delegates prompt/cancel to the executor; eight-method public interface unchanged.
+- [x] `./gradlew qualityGate` passes.
