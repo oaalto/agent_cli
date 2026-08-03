@@ -14,7 +14,7 @@ Wayfinder is **planning** by default: each ticket resolves a decision, and the m
 
 ## Producing specs and PRDs
 
-When the **destination** is a spec or PRD — or a ticket resolution should leave one behind — do **not** draft the document inline. Load and follow the **`/to-spec`** skill (`.pi/skills/to-spec/SKILL.md`).
+When the **destination** is a spec or PRD — or a ticket resolution should leave one behind — do **not** draft the document inline. Load and follow the **`/to-spec`** skill (`.agents/skills/to-spec/SKILL.md`).
 
 `/to-spec` synthesizes the conversation and exploration into the project spec template and publishes to the issue tracker. Wayfinder owns *which* decisions must be settled before the spec is written; `/to-spec` owns *how* the spec is written.
 

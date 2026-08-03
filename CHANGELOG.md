@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **to-spec / to-tickets skill collisions** (`.pi/skills/`, `skills-lock.json`, `.pi/skills/wayfinder/SKILL.md`): Removed upstream mattpocock copies; bundled tailored skills at `.agents/skills/to-spec/SKILL.md` and `.agents/skills/to-tickets/SKILL.md` are canonical. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Worktree pending-launch handoff** (`worktree/`): Introduced `WorktreePendingLaunchHandoff` deep module owning cross-project enqueue → open → consume → editor orchestration; `RunAgentSplitButtonAction` and `AgentPendingLaunchStartupActivity` are thin delegates. Unified `touch` to handoff completion only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Feature master list consolidation** (`docs/features/FEATURES.md`, `docs/agents/issue-tracker.md`, `.pi/skills/`, `.agents/skills/`): Merged `STATUS.md` into `FEATURES.md` (summary counts, per-feature ticket tables, upkeep rules); removed duplicate `STATUS.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
