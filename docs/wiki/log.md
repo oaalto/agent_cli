@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-03] skip | ACP fresh-session transcript bind fix
+
+- Reason: Bug fix in `applyStartResult` only; transcript persistence behavior already documented in ACP client wiki.
+
 ## [2026-08-03] update | ACP inline closing fence normalization
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md)

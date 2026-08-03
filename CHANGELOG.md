@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **ACP fresh-session transcript persistence** (`acp/AcpAgentEditor.kt`): Bind transcript snapshot writer for every started session, not only when restoring a resumed session, so new ACP sessions write to `.idea/agent-cli/transcripts/`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript fenced code blocks** (`acp/TranscriptCodeBlockViewFactory.kt`, `acp/TranscriptColumnSizing.kt`): Reflow embedded read-only Editors and monospace fallbacks on transcript resize so finalized fenced code shows text instead of blank lines. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript inline closing fences** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptMarkdownRenderer.kt`): Normalize agent markdown when closing ``` shares a line with code or trailing prose so example text renders outside the code block. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

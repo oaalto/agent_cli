@@ -339,11 +339,11 @@ class AcpAgentEditor(
         configurationName: String,
     ) {
         activeSessionId = result.sessionId
-        if (result.restoreTranscript) {
-            result.sessionId?.let { sessionId ->
+        result.sessionId?.let { sessionId ->
+            if (result.restoreTranscript) {
                 sessionTranscript.restoreIfPresent(sessionId)
-                sessionTranscript.bindSession(sessionId)
             }
+            sessionTranscript.bindSession(sessionId)
         }
         persistWorktreeSessionId(result.sessionId)
         if (result.statusMessage.isNotBlank()) {
