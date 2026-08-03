@@ -16,7 +16,7 @@ class WorktreeLaunchCoordinatorTest {
         val configuration =
             AgentSettingsState.AgentCliConfiguration().apply {
                 id = "cfg-pty"
-                binaryPath = "cursor-agent"
+                binaryPath = "claude"
                 launchMode = "PTY_PASSTHROUGH"
             }
         val context =

@@ -12,7 +12,9 @@
 
 ### Fixed
 
-- **Settings help text wrapping** (`settings/AgentSettingsUiFactory.kt`): Hint labels in Tools → Agent CLI settings use `JBLabel` HTML auto-wrapping so long MCP, environment, and observability copy wraps within the panel width. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+- **PTY resume coordinator test** (`WorktreeLaunchCoordinatorTest`): Use `claude` binary so the test does not depend on a live `cursor-agent` resume probe stripping `--continue`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Settings observability hints** (`settings/`): Removed auto-wrapping layout workarounds; session diagnostics and transcript help copy are split across shorter hint lines with spacing between groups, and the transcript-folder button line names the open project. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **WSL resume context test on Linux** (`WorktreeLaunchCoordinatorTest`): Use a Windows drive-letter worktree path so kernel `/mnt/` mapping is asserted portably instead of a Linux temp path. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

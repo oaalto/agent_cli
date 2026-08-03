@@ -16,4 +16,5 @@ internal object AgentConfigsTableColumns {
     const val SETTINGS_PANEL_INSET = 8
     const val ENV_TABLE_ROW_HEIGHT = 22
     const val DETAIL_PANEL_TOP_INSET = 8
+    const val HINT_SPACER_HEIGHT = 4
 }

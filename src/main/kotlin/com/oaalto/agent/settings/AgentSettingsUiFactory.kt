@@ -23,9 +23,13 @@ import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
 private fun createSettingsHintLabel(text: String): JBLabel =
-    JBLabel("<html>$text</html>").apply {
+    JBLabel(text).apply {
         foreground = JBUI.CurrentTheme.Label.disabledForeground()
-        setAllowAutoWrapping(true)
+    }
+
+private fun createSettingsHintSpacer(): JPanel =
+    JPanel().apply {
+        border = JBUI.Borders.empty(AgentConfigsTableColumns.HINT_SPACER_HEIGHT, 0)
     }
 
 internal object AgentSettingsUiFactory {
@@ -136,10 +140,10 @@ internal object AgentSettingsUiFactory {
         val focusedProject = projectManager.openProjects.firstOrNull()
         val hasBasePath = focusedProject?.basePath?.isNotBlank() == true
 
-        val sessionDiagnosticsHint = createSessionDiagnosticsHint()
-        val transcriptHint = createTranscriptHint(focusedProject, hasBasePath)
+        val sessionDiagnosticsHints = createSessionDiagnosticsHints()
+        val transcriptHints = createTranscriptHints(focusedProject, hasBasePath)
         val openButton = createOpenTranscriptButton(focusedProject, hasBasePath)
-        val panel = buildObservabilityPanel(sessionDiagnosticsHint, transcriptHint, openButton)
+        val panel = buildObservabilityPanel(sessionDiagnosticsHints, transcriptHints, openButton)
 
         return ObservationHelpPanel(
             panel = panel,
@@ -147,31 +151,40 @@ internal object AgentSettingsUiFactory {
         )
     }
 
-    private fun createSessionDiagnosticsHint(): JBLabel =
-        createSettingsHintLabel(
-            "Session diagnostics are written to the IDE log file idea.log. " +
-                "Open the log folder via Help > Show Log in Explorer " +
-                "(macOS: Show Log in Finder). " +
+    private fun createSessionDiagnosticsHints(): List<JComponent> =
+        listOf(
+            createSettingsHintLabel("Session diagnostics are written to the IDE log file idea.log."),
+            createSettingsHintSpacer(),
+            createSettingsHintLabel(
+                "Open the log folder via Help > Show Log in Explorer (macOS: Show Log in Finder).",
+            ),
+            createSettingsHintLabel(
                 "Grep idea.log for [agent-cli:...] to match transcript errors to log detail.",
+            ),
         )
 
-    private fun createTranscriptHint(
+    private fun createTranscriptHints(
         focusedProject: com.intellij.openapi.project.Project?,
         hasBasePath: Boolean,
-    ): JBLabel {
-        val projectDisplayName = focusedProject?.name
-        return createSettingsHintLabel(
-            buildString {
-                append("Session transcript file is ACP Client only. ")
-                append("Files live at .idea/agent-cli/transcripts/ (workspace-local, not VCS). ")
-                append("Terminal (PTY Passthrough) does not create plugin transcript files — ")
-                append("use terminal scrollback or the external agent CLI. ")
-                if (hasBasePath) {
-                    append("For the focused project ").append(projectDisplayName).append(".")
-                } else {
-                    append("Open a project to view the transcript folder.")
-                }
-            },
+    ): List<JComponent> {
+        val openFolderLine =
+            if (hasBasePath) {
+                "Open transcript folder below reveals .idea/agent-cli/transcripts/ for ${focusedProject?.name}."
+            } else {
+                "Open a project to enable Open transcript folder."
+            }
+        return listOf(
+            createSettingsHintLabel("Session transcript file is ACP Client only."),
+            createSettingsHintLabel(
+                "Files live at .idea/agent-cli/transcripts/ (workspace-local, not VCS).",
+            ),
+            createSettingsHintSpacer(),
+            createSettingsHintLabel(
+                "Terminal (PTY Passthrough) does not create plugin transcript files.",
+            ),
+            createSettingsHintLabel("Use terminal scrollback or the external agent CLI."),
+            createSettingsHintSpacer(),
+            createSettingsHintLabel(openFolderLine),
         )
     }
 
@@ -210,8 +223,8 @@ internal object AgentSettingsUiFactory {
     }
 
     private fun buildObservabilityPanel(
-        sessionDiagnosticsHint: JBLabel,
-        transcriptHint: JBLabel,
+        sessionDiagnosticsHints: List<JComponent>,
+        transcriptHints: List<JComponent>,
         openButton: JBLabel,
     ): JPanel =
         JPanel(GridBagLayout()).apply {
@@ -234,8 +247,9 @@ internal object AgentSettingsUiFactory {
                 )
             }
 
-            addRow(sessionDiagnosticsHint)
-            addRow(transcriptHint)
+            sessionDiagnosticsHints.forEach { addRow(it) }
+            addRow(createSettingsHintSpacer())
+            transcriptHints.forEach { addRow(it) }
             addRow(openButton, GridBagConstraints.HORIZONTAL)
         }
 
