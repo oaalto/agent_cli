@@ -46,4 +46,79 @@ return fibonacci(n-1) + fibonacci(n-2)
 Example: `fibonacci(10)` → `55`."""
         assertEquals(expected, normalizeAgentFences(input))
     }
+
+    @Test
+    fun `splits opening fence when language tag merges with first code line`() {
+        val input =
+            """```kotlinfun summarize(numbers: List<Number>) {
+ val total = numbers.sumOf { it.toDouble() }
+ println(total)
+}
+```Example:"""
+        val expected =
+            """```kotlin
+fun summarize(numbers: List<Number>) {
+ val total = numbers.sumOf { it.toDouble() }
+ println(total)
+}
+```
+Example:"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
+
+    @Test
+    fun `splits single line opening fence when language tag merges with code`() {
+        val input = "```kotlinsummarize(listOf(1,2,3,4.5)) // prints10.5```"
+        val expected =
+            """```kotlin
+summarize(listOf(1,2,3,4.5)) // prints10.5
+```"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
+
+    @Test
+    fun `auto closes unclosed fence at end of input`() {
+        val dollar = "$"
+        val input =
+            """```kotlin
+fun concat(a: String, b: String): String = ${dollar}a${dollar}b
+"""
+        val expected =
+            """```kotlin
+fun concat(a: String, b: String): String = ${dollar}a${dollar}b
+
+```"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
+
+    @Test
+    fun `splits inline open and close fence with trailing prose on same line`() {
+        val input = "```kotlinfun concat(a: String, b: String): String = a + b```Or with string templates:"
+        val expected =
+            """```kotlin
+fun concat(a: String, b: String): String = a + b
+```
+Or with string templates:"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
+
+    @Test
+    fun `splits opening fence when prose precedes fence on same line`() {
+        val input =
+            """Here's a Kotlin example in `Main.kt`:```kotlinfun sum(numbers: List<Int>): Int = numbers.sum()
+```After:"""
+        val expected =
+            """Here's a Kotlin example in `Main.kt`:
+```kotlin
+fun sum(numbers: List<Int>): Int = numbers.sum()
+```
+After:"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
+
+    @Test
+    fun `does not treat prose after fence marker as opening fence`() {
+        val input = "```A slightly richer version with data classes:"
+        assertEquals(input, normalizeAgentFences(input))
+    }
 }

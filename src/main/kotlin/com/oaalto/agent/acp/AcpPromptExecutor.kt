@@ -35,6 +35,8 @@ class AcpPromptExecutor(
                     activeSession.prompt(listOf(ContentBlock.Text(trimmed))).collect { event ->
                         dispatchPromptEvent(event)
                     }
+                    // Finalize even when the transport omits PromptResponseEvent.
+                    listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
                 }.onFailure { throwable ->
                     log.warn("ACP prompt failed", throwable, sessionLogContext())
                     listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)

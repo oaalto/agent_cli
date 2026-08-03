@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -26,6 +27,7 @@ import javax.swing.JPanel
 import javax.swing.JSeparator
 import javax.swing.JTextPane
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 import javax.swing.border.EmptyBorder
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyledDocument
@@ -98,22 +100,27 @@ private fun applyStyleToRun(
             StyleConstants.setBold(runStyle, true)
             StyleConstants.setItalic(runStyle, true)
         }
-        TextStyle.CODE -> {
-            StyleConstants.setFontFamily(runStyle, MONO_FAMILY)
-            val scheme = EditorColorsManager.getInstance().globalScheme
-            val editorBackground =
-                scheme.getColor(EditorColors.CARET_ROW_COLOR)
-                    ?: scheme.defaultBackground
-            val editorForeground = scheme.defaultForeground
-            StyleConstants.setBackground(runStyle, editorBackground)
-            StyleConstants.setForeground(runStyle, editorForeground)
-        }
+        TextStyle.CODE -> applyInlineCodeStyle(runStyle)
         TextStyle.LINK -> {
             StyleConstants.setUnderline(runStyle, true)
             StyleConstants.setForeground(runStyle, colorProvider.getLinkForeground())
         }
         TextStyle.STRIKETHROUGH -> StyleConstants.setStrikeThrough(runStyle, true)
     }
+}
+
+private fun applyInlineCodeStyle(runStyle: javax.swing.text.Style) {
+    StyleConstants.setFontFamily(runStyle, MONO_FAMILY)
+    val scheme =
+        ApplicationManager
+            .getApplication()
+            ?.let { EditorColorsManager.getInstance().globalScheme }
+            ?: return
+    val editorBackground =
+        scheme.getColor(EditorColors.CARET_ROW_COLOR)
+            ?: scheme.defaultBackground
+    StyleConstants.setBackground(runStyle, editorBackground)
+    StyleConstants.setForeground(runStyle, scheme.defaultForeground)
 }
 
 /** Maps [TranscriptBlock] snapshots to Swing row components. */
@@ -284,6 +291,13 @@ private class AgentTextRow(
                 }
                 rebuildMarkdownBlocks(blocks)
                 renderedFinalText = block.text
+                if (disposableCodeComponents.isNotEmpty()) {
+                    SwingUtilities.invokeLater {
+                        widthAdjustment()
+                        revalidate()
+                        repaint()
+                    }
+                }
             }
             is TranscriptBlock.StreamingAgentText ->
                 setupSimpleTextPane { it.bindTranscriptBlock(block) }
@@ -408,7 +422,9 @@ private class AgentTextRow(
                     .createReadOnlyCodeBlock(languageId, displayCode)
                     .also {
                         it.alignmentX = Component.LEFT_ALIGNMENT
-                        it.maximumSize = Dimension(Int.MAX_VALUE, it.preferredSize.height)
+                        val height = it.preferredSize.height.coerceAtLeast(1)
+                        it.minimumSize = Dimension(0, height)
+                        it.maximumSize = Dimension(Int.MAX_VALUE, height)
                     }
             disposableCodeComponents += codeComponent
             return codeComponent

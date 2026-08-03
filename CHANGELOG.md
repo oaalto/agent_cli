@@ -18,6 +18,12 @@
 
 - **ACP transcript inline closing fences** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptMarkdownRenderer.kt`): Normalize agent markdown when closing ``` shares a line with code or trailing prose so example text renders outside the code block. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **ACP transcript merged opening fences** (`acp/TranscriptAgentFenceNormalizer.kt`): Split opening ``` lines when the language tag is concatenated with the first code line (e.g. ` ```kotlinfun main()`) so fenced code blocks render instead of collapsing into inline text. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript code block zero height** (`acp/TranscriptCodeBlockViewFactory.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/AcpPromptExecutor.kt`, `acp/TranscriptBlockLabelBinder.kt`): Fallback font-metrics when Editor `lineHeight` is 0 before first paint; set `minimumSize` on code block panels; remeasure on EDT after markdown rebuild; finalize agent stream when prompt flow completes without `PromptResponseEvent`; normalize fences during streaming display. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript mid-line opening fences** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptMarkdownRenderer.kt`, `acp/TranscriptCodeBlockViewFactory.kt`, `acp/TranscriptBlockViewFactory.kt`): Split fences when prose precedes ``` on the same line (e.g. `Main.kt:```kotlinfun`); preserve code line breaks when the parser emits separate text nodes; enable text selection in read-only code blocks; guard inline-code theme colors when no IDE application is available. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **PTY resume coordinator test** (`WorktreeLaunchCoordinatorTest`): Use `claude` binary so the test does not depend on a live `cursor-agent` resume probe stripping `--continue`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Settings observability hints** (`settings/`): Removed auto-wrapping layout workarounds; session diagnostics and transcript help copy are split across shorter hint lines with spacing between groups, and the transcript-folder button line names the open project. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

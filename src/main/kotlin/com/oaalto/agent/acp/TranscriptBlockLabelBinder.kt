@@ -41,7 +41,7 @@ private fun JTextPane.bindStreamingAgent(
     provider: TranscriptColorProvider?,
 ) {
     foreground = provider?.getTextForeground() ?: JBColor.foreground()
-    text = block.text + TranscriptStreamingCursor.CURSOR_CHAR
+    text = normalizeAgentFences(block.text) + TranscriptStreamingCursor.CURSOR_CHAR
 }
 
 private fun JTextPane.bindFinalAgent(

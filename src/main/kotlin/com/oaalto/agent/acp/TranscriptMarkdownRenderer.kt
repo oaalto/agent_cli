@@ -83,7 +83,11 @@ internal object TranscriptMarkdownRenderer {
             val ast = parser.buildMarkdownTreeFromString(normalized)
             val blocks = mutableListOf<RenderedBlock>()
             walkChildren(ast, normalized, blocks)
-            blocks
+            if (blocks.isEmpty() && normalized.isNotBlank()) {
+                listOf(RenderedBlock.InlineText(input, emptyList()))
+            } else {
+                blocks
+            }
         } catch (_: Exception) {
             listOf(RenderedBlock.InlineText(input, emptyList()))
         }
@@ -684,7 +688,14 @@ internal object TranscriptMarkdownRenderer {
                     textParts.add(child.getTextInNode(source).toString())
                 }
             }
-            return textParts.joinToString("").trimEnd('\n')
+            return joinCodeFenceParts(textParts)
+        }
+
+        fun joinCodeFenceParts(parts: List<String>): String {
+            if (parts.isEmpty()) return ""
+            val joined = parts.joinToString("")
+            if (joined.contains('\n')) return joined.trimEnd('\n')
+            return parts.joinToString("\n").trimEnd('\n')
         }
 
         fun resolveLanguage(

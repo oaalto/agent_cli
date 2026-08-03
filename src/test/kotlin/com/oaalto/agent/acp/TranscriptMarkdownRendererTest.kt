@@ -167,6 +167,114 @@ class TranscriptMarkdownRendererTest {
         assertEquals("py", second.languageId)
     }
 
+    @Test
+    fun `concat transcript with inline close and unclosed second fence renders code blocks`() {
+        val dollar = "$"
+        val input =
+            """```kotlinfun concat(a: String, b: String): String = a + b```Or with string templates:
+
+```kotlinfun concat(a: String, b: String): String = ${dollar}a${dollar}b
+"""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        assertTrue(blocks.any { it is RenderedBlock.CodeBlock }, "expected at least one code block: $blocks")
+        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+        assertEquals(2, codeBlocks.size, blocks.toString())
+        assertTrue(codeBlocks[0].code.isNotBlank(), "first code block empty: '${codeBlocks[0].code}'")
+        assertTrue(codeBlocks[1].code.isNotBlank(), "second code block empty: '${codeBlocks[1].code}'")
+        assertTrue(codeBlocks[0].code.contains("fun concat"))
+        assertTrue(codeBlocks[1].code.contains("fun concat"))
+    }
+
+    @Test
+    fun `kotlin sample transcript renders code blocks`() {
+        val dollar = "$"
+        val input =
+            """Here's a small Kotlin sample:
+
+```kotlinfun main() {
+ val name = "Kotlin"
+ val numbers = listOf(1,2,3,4,5)
+
+ val doubled = numbers.map { it *2 }
+ println("Hello, ${dollar}name!") println("Doubled: ${dollar}doubled") greet("Ada")}
+
+fun greet(person: String) {
+ println("Nice to meet you, ${dollar}person.")}
+```Want something more specific (coroutines, Android, data classes, etc.)?"""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+        assertEquals(1, codeBlocks.size, blocks.toString())
+        assertTrue(codeBlocks[0].code.contains("fun main"))
+        assertTrue(codeBlocks[0].code.contains("fun greet"))
+        assertTrue(codeBlocks[0].code.contains('\n'), "code should preserve line breaks: ${codeBlocks[0].code}")
+        val trailing = blocks.filterIsInstance<RenderedBlock.InlineText>().last()
+        assertTrue(trailing.text.contains("Want something more specific"))
+    }
+
+    @Test
+    fun `main kt inline fence transcript renders two code blocks`() {
+        val dollar = "$"
+        val input =
+            """Here's a concise Kotlin example in the same style as your `Main.kt`:```kotlinfun sum(numbers: List<Int>): Int = numbers.sum()fun main() {
+ val numbers = listOf(1,2,3,4,5)
+ println(sum(numbers)) //15}
+```A slightly richer version with data classes and null safety:
+
+```kotlindata class User(val name: String, val age: Int?)fun greet(user: User): String {
+ val ageText = user.age?.let { "${dollar}it years old" } ?: "age unknown"
+ return "Hello, $dollar{user.name} (${dollar}ageText)"}
+
+fun main() {
+ val users = listOf(
+ User("Ada",36), User("Grace", null)
+ )
+
+ users .map(::greet)
+ .forEach(::println)
+}
+```Your project already has the first style in `src/main/kotlin/Main.kt`."""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+        assertEquals(2, codeBlocks.size, blocks.toString())
+        assertEquals("kotlin", codeBlocks[0].languageId)
+        assertTrue(codeBlocks[0].code.contains("fun sum"))
+        assertTrue(codeBlocks[0].code.contains('\n'), "first code block should preserve line breaks")
+        assertEquals("kotlin", codeBlocks[1].languageId)
+        assertTrue(codeBlocks[1].code.contains("data class User"))
+        assertTrue(codeBlocks[1].code.contains('\n'), "second code block should preserve line breaks")
+        val intro = assertIs<RenderedBlock.InlineText>(blocks.first())
+        assertTrue(intro.text.contains("Main.kt"))
+        assertTrue(!intro.text.contains("kotlinfun"), "prose should not contain merged fence text")
+        val middle = blocks.filterIsInstance<RenderedBlock.InlineText>()[1]
+        assertTrue(middle.text.contains("slightly richer"))
+    }
+
+    @Test
+    fun `malformed agent fences with merged language tags render as code blocks`() {
+        val input =
+            """```kotlinfun summarize(numbers: List<Number>) {
+ val total = numbers.sumOf { it.toDouble() }
+ println(total)
+}
+```Example:
+
+```kotlinsummarize(listOf(1,2,3,4.5)) // prints10.5```"""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        assertEquals(3, blocks.size)
+        val first = assertIs<RenderedBlock.CodeBlock>(blocks[0])
+        assertEquals("kotlin", first.languageId)
+        assertTrue(first.code.contains("fun summarize"))
+        val example = assertIs<RenderedBlock.InlineText>(blocks[1])
+        assertEquals("Example:", example.text.trim())
+        val second = assertIs<RenderedBlock.CodeBlock>(blocks[2])
+        assertEquals("kotlin", second.languageId)
+        assertTrue(second.code.contains("summarize(listOf"))
+    }
+
     // -----------------------------------------------------------------------
     // Lists
     // -----------------------------------------------------------------------

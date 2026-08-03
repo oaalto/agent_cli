@@ -1,8 +1,31 @@
 # Engineering Wiki Log
 
-## [2026-08-03] skip | ACP fresh-session transcript bind fix
+## [2026-08-03] update | ACP mid-line fences and code selection
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptAgentFenceNormalizer.kt`, `TranscriptMarkdownRenderer.kt`, `TranscriptCodeBlockViewFactory.kt`, `TranscriptBlockViewFactory.kt`
+- Notes: Split fences when prose precedes ``` on the same line; preserve code newlines from parser text nodes; enable selection in read-only code blocks.
+
 
 - Reason: Bug fix in `applyStartResult` only; transcript persistence behavior already documented in ACP client wiki.
+
+## [2026-08-03] update | ACP code block zero-height and finalize
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptCodeBlockViewFactory.kt`, `TranscriptBlockViewFactory.kt`, `AcpPromptExecutor.kt`, `TranscriptBlockLabelBinder.kt`
+- Notes: Font-metrics fallback when Editor lineHeight is 0; finalize stream after prompt collect; streaming fence normalization.
+
+## [2026-08-03] update | ACP code block initial height
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptCodeBlockViewFactory.kt`, `TranscriptAgentFenceNormalizer.kt`
+- Notes: Editor-based code blocks now measure height at creation; normalizer auto-closes trailing unclosed fences.
+
+## [2026-08-03] update | ACP merged opening fence normalization
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptAgentFenceNormalizer.kt`, `TranscriptMarkdownRenderer.kt`
+- Notes: Documented opening-fence split when language tag merges with first code line.
 
 ## [2026-08-03] update | ACP inline closing fence normalization
 

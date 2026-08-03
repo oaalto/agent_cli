@@ -13,6 +13,31 @@ import javax.swing.JTextArea
 
 private const val CODE_BLOCK_LEFT_INSET = 20
 private const val MONO_FONT_SIZE = 12
+private const val CODE_BLOCK_DEFAULT_WIDTH = 480
+
+internal fun measureTranscriptEditorCodeBlockSize(
+    editor: Editor,
+    width: Int,
+): Dimension {
+    val editorEx = editor as EditorEx
+    val editorComponent = editor.component
+    val measureWidth = width.coerceAtLeast(1)
+    editorComponent.setSize(measureWidth, Int.MAX_VALUE)
+    val lineHeight = effectiveTranscriptEditorLineHeight(editorEx)
+    val lineCount = editor.document.lineCount.coerceAtLeast(1)
+    val minHeight = lineHeight * lineCount
+    val measuredHeight = editorComponent.preferredSize.height.coerceAtLeast(minHeight)
+    return Dimension(measureWidth, measuredHeight.coerceAtLeast(lineHeight))
+}
+
+/** Editor line height is 0 until the component is displayable; use font metrics as fallback. */
+private fun effectiveTranscriptEditorLineHeight(editorEx: EditorEx): Int {
+    if (editorEx.lineHeight > 0) return editorEx.lineHeight
+    val component = editorEx.component
+    val font = component.font ?: java.awt.Font("Monospaced", java.awt.Font.PLAIN, JBUI.scale(MONO_FONT_SIZE))
+    return component.getFontMetrics(font).height.coerceAtLeast(JBUI.scale(MONO_FONT_SIZE))
+}
+
 internal const val TRANSCRIPT_CODE_BLOCK_MARKER = "transcript.codeBlock"
 internal const val TRANSCRIPT_CODE_BLOCK_EDITOR_KEY = "transcript.codeBlock.editor"
 
@@ -32,12 +57,10 @@ internal fun applyTranscriptCodeBlockWidth(
     if (editor != null) {
         val editorEx = editor as EditorEx
         editorEx.settings.isUseSoftWraps = true
-        val editorComponent = editor.component
-        editorComponent.setSize(width, Int.MAX_VALUE)
-        val height = editorComponent.preferredSize.height
-        component.setSize(width, height)
-        component.preferredSize = Dimension(width, height)
-        component.maximumSize = Dimension(Int.MAX_VALUE, height)
+        val size = measureTranscriptEditorCodeBlockSize(editor, width)
+        component.setSize(size.width, size.height)
+        component.preferredSize = size
+        component.maximumSize = Dimension(Int.MAX_VALUE, size.height)
         return true
     }
     if (component is JTextArea) {
@@ -77,7 +100,7 @@ internal class EditorFactoryTranscriptCodeBlockViewFactory(
                 editorEx.settings.additionalLinesCount = 0
                 editorEx.settings.additionalColumnsCount = 0
                 editorEx.settings.isUseSoftWraps = true
-                editorEx.component.isFocusable = false
+                editorEx.component.isFocusable = true
             }
         return JPanel(BorderLayout()).apply {
             isOpaque = false
@@ -85,8 +108,11 @@ internal class EditorFactoryTranscriptCodeBlockViewFactory(
             putClientProperty(TRANSCRIPT_CODE_BLOCK_MARKER, true)
             putClientProperty(TRANSCRIPT_CODE_BLOCK_EDITOR_KEY, editor)
             add(editor.component, BorderLayout.CENTER)
-            preferredSize = editor.component.preferredSize
-            maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
+            val size = measureTranscriptEditorCodeBlockSize(editor, CODE_BLOCK_DEFAULT_WIDTH)
+            minimumSize = Dimension(0, size.height)
+            preferredSize = size
+            maximumSize = Dimension(Int.MAX_VALUE, size.height)
+            editor.component.minimumSize = Dimension(0, size.height)
         }
     }
 

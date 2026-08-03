@@ -130,8 +130,11 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - Agent text and tool card bodies render via IntelliJ's `org.intellij.markdown` parser with GFM flavour.
 - Produces `RenderedBlock` variants (inline text, code blocks, tables, blockquotes, images, thematic breaks).
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
-- Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `applyTranscriptCodeBlockWidth` reflows them on transcript column resize so content stays visible after finalize and panel resize.
-- `normalizeAgentFences` splits inline closing fences (`code```Example`) onto their own lines before parsing so trailing prose is not swallowed into the code block.
+- Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `measureTranscriptEditorCodeBlockSize` sizes them at creation (font-metrics fallback when `lineHeight` is 0 before first paint) and `applyTranscriptCodeBlockWidth` reflows on transcript column resize; `AgentTextRow` remeasures on EDT after markdown rebuild.
+- Agent stream finalizes when the prompt flow completes (`AcpPromptExecutor`), not only on `PromptResponseEvent`.
+- `normalizeAgentFences` splits inline closing fences (`code```Example`), merged opening fences (` ```kotlinfun main()`), prose-before-fence on the same line (`Main.kt:```kotlinfun`), and auto-closes trailing unclosed fences before parsing so code blocks and trailing prose render correctly.
+- `joinCodeFenceParts` preserves line breaks when the markdown parser emits separate text nodes inside a fence.
+- Read-only code block Editors are focusable for text selection.
 
 ### Plan visualization (`PlanPanel`, `PlanPanelRenderer`)
 
