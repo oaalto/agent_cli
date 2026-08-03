@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- **WSL resume test CI gate** (`WorktreeLaunchCoordinatorTest`): Skip `wsl resume context uses kernel resolved paths` on non-Windows runners via `Assume`; Linux CI was failing because temp paths are not drive-letter mapped to `/mnt/…`, blocking the 2.0 release JAR upload. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+- **WSL resume context test on Linux** (`WorktreeLaunchCoordinatorTest`): Use a Windows drive-letter worktree path so kernel `/mnt/` mapping is asserted portably instead of a Linux temp path. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Detekt on JDK 25 hosts** (`gradle/gradle-daemon-jvm.properties`): Pin Gradle daemon to JDK 21 via `updateDaemonJvm` so detekt 1.23.x runs on a supported JVM when the system default is Java 25. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

@@ -3,7 +3,6 @@ package com.oaalto.agent.worktree
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import com.oaalto.agent.worktree.resume.ResumeCapability
-import org.junit.Assume.assumeTrue
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -81,12 +80,8 @@ class WorktreeLaunchCoordinatorTest {
 
     @Test
     fun `wsl resume context uses kernel resolved paths`() {
-        assumeTrue(
-            "WSL drive-letter path mapping requires a Windows host temp path",
-            System.getProperty("os.name").lowercase().contains("windows"),
-        )
-        val worktreeDir = Files.createTempDirectory("wt-wsl").toFile().apply { deleteOnExit() }
         val projectDir = Files.createTempDirectory("wt-wsl-proj").toFile().apply { deleteOnExit() }
+        val worktreePath = "D:\\worktrees\\agent-1"
         val configuration =
             AgentSettingsState.AgentCliConfiguration().apply {
                 id = "cfg-wsl"
@@ -100,16 +95,12 @@ class WorktreeLaunchCoordinatorTest {
                 .buildResumeContext(
                     configuration = configuration,
                     worktreeRecord = null,
-                    worktreePath = worktreeDir.absolutePath,
+                    worktreePath = worktreePath,
                     resume = true,
                     projectBasePath = projectDir.absolutePath,
                 ).getOrThrow()
         assertEquals(projectDir.absolutePath, context.workingDirectory)
         assertEquals("Ubuntu", context.wslDistribution)
-        // Worktree path is a Windows drive path; kernel maps it to /mnt/c/... for WSL.
-        assertTrue(
-            context.wslWorkingDirectory!!.startsWith("/mnt/"),
-            "expected /mnt/ mapped path, got: ${context.wslWorkingDirectory}",
-        )
+        assertEquals("/mnt/d/worktrees/agent-1", context.wslWorkingDirectory)
     }
 }
