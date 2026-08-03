@@ -17,8 +17,9 @@ The issue tracker and triage label vocabulary should have been provided to you.
 Check with the user that these seams match their expectations.
 
 3. Write the spec using the template below, then save it to `docs/features/<feature_name>/prd.md`. Apply the `ready-for-agent` triage label - no need for additional triage.
+4. Add the feature to **Active (implementation order)** in `docs/features/FEATURES.md` (status = `draft`, rationale, PRD link). Read existing PRDs and dependencies; insert at the correct priority position (top = next to ship). Refresh **Summary**. See `docs/agents/issue-tracker.md` for the master list rules.
 
-After `/to-tickets` publishes slices for this spec, ensure `docs/features/STATUS.md` is updated per the **to-tickets** skill's backlog section. A spec alone does not add backlog rows until tickets exist.
+After `/to-tickets` publishes slices for this spec, ensure `docs/features/FEATURES.md` includes the ticket table per the **to-tickets** skill. A spec alone does not add ticket rows until slices exist.
 
 <spec-template>
 

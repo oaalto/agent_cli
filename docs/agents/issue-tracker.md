@@ -9,15 +9,16 @@ Planning artifacts for this repo live as markdown PRDs under `docs/features/<fea
 - **Split work**: `/to-tickets` produces implementation slices as numbered files co-located with the PRD: `docs/features/<feature_name>/<NN>-<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
 - **Status**: record planning status in the PRD (draft / in review / accepted / superseded) in a `## Status` section near the top.
 - **Master list**: keep `docs/features/FEATURES.md` in sync with every PRD — it is the single source of truth for the feature portfolio.
-  - Two sections: **Active (implementation order)** and **Implemented**. Top of Active = next to ship.
-  - **Ordering**: agents determine and maintain implementation order from PRDs, ticket blocking edges, ADRs, and cross-feature dependencies. Do not ask the human to set order; re-order Active when adding or when dependencies change.
-  - `/to-spec`: add a row to **Active** (status = `draft`, one-line description from the PRD problem statement) at the correct priority position.
-  - `/to-tickets`: if the feature has no row yet, add it to **Active** (status from the PRD's `## Status`) at the correct priority position; re-order Active if ticket edges reveal a better sequence.
-  - `/tdd` (implement): when slices are all done, mark the PRD `## Status` as `implemented`, **remove** the row from **Active**, and **add** it to **Implemented** (most recently completed first). Re-order **Active** if remaining priorities shift.
-  - When the PRD status changes for any other reason: update the row's status column in **Active** (or move to **Implemented** when status becomes `implemented`).
-  - When a PRD is deleted or superseded: remove the row from whichever section it is in.
+  - Sections: **Summary**, **Active (implementation order)** (with per-feature ticket tables), **Implemented**, and optional **Architecture conflicts** when open work overlaps.
+  - Top of **Active** = next to ship. Per-ticket `**Status:**` in slice files is authoritative.
+  - **Ordering**: agents determine and maintain implementation order from PRDs, ticket blocking edges, ADRs, and cross-feature dependencies. Do not ask the human to set order; re-order **Active** when adding or when dependencies change.
+  - `/to-spec`: add the feature to **Active** (status = `draft`, rationale, PRD link) at the correct priority position; refresh **Summary**.
+  - `/to-tickets`: if the feature has no **Active** entry yet, add it (status from the PRD's `## Status`) with a ticket table (links + blocked-by); re-order **Active** if ticket edges reveal a better sequence; refresh **Summary**; add **Architecture conflicts** when new work overlaps open features.
+  - `/tdd` (implement): when slices are all done, mark the PRD `## Status` as `implemented`, move the feature from **Active** to **Implemented** (most recently completed first), refresh **Summary**, and clear resolved conflict notes.
+  - When the PRD status changes for any other reason: update the feature's status in **Active** (or move to **Implemented** when status becomes `implemented`).
+  - When a PRD is deleted or superseded: remove the feature from whichever section it is in.
+  - Append a **Documentation** bullet to `CHANGELOG.md` when `FEATURES.md` changes materially (not for a single ticket status flip inside an otherwise unchanged feature).
   - Status vocabulary: `draft`, `accepted`, `ready-for-agent`, `implemented`, `superseded`.
-- **Backlog rollup**: `docs/features/STATUS.md` lists all `ready-for-agent` features in recommended implementation order. Per-ticket `**Status:**` in slice files is authoritative; update `STATUS.md` when features or tickets are added or completed (see **implement** and **to-tickets** skills).
 
 ## When a skill says "publish to the issue tracker"
 

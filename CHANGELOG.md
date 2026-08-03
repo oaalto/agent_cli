@@ -2,6 +2,10 @@
 
 ## 2026-08-03
 
+### Changed
+
+- **Feature master list consolidation** (`docs/features/FEATURES.md`, `docs/agents/issue-tracker.md`, `.pi/skills/`, `.agents/skills/`): Merged `STATUS.md` into `FEATURES.md` (summary counts, per-feature ticket tables, upkeep rules); removed duplicate `STATUS.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Fixed
 
 - **WSL resume context test on Linux** (`WorktreeLaunchCoordinatorTest`): Use a Windows drive-letter worktree path so kernel `/mnt/` mapping is asserted portably instead of a Linux temp path. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

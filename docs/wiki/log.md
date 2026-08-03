@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-03] skip | Merge STATUS.md into FEATURES.md
+
+- Reason: Planning-doc consolidation only; no runtime or architectural wiki facts changed.
+
 ## [2026-08-03] update | Quality gate wiki notes daemon JVM pin for detekt
 
 - Updated: [Quality gate & release workflow](workflows/quality-gate.md)

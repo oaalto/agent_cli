@@ -51,14 +51,9 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 Do NOT close or modify any parent issue.
 
-### Feature backlog (`docs/features/STATUS.md`)
+### 5. Update the master list
 
-After publishing tickets for a new or expanded feature:
-
-1. Add the feature to **Recommended implementation order** in `docs/features/STATUS.md` with rationale, ticket table (links + blocked-by), and PRD link — or ask the user where it fits if placement is unclear.
-2. Update **Summary** counts and `Last updated`.
-3. Add or adjust **Architecture conflict** notes when the new work overlaps an open feature.
-4. Append a **Documentation** bullet to `CHANGELOG.md` when `STATUS.md` changes materially.
+Update `docs/features/FEATURES.md` per `docs/agents/issue-tracker.md`: add or expand the feature in **Active** with rationale, ticket table (links + blocked-by), and PRD link — or ask the user where it fits if placement is unclear. Refresh **Summary**; add **Architecture conflicts** when the new work overlaps open features. Append a **Documentation** bullet to `CHANGELOG.md` when the change is material.
 
 <local-ticket-template>
 
