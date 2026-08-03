@@ -6,7 +6,7 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Orphan HTML appender and pane-ops modules are deleted with no remaining production references
 - [x] Dead-path-only helpers are removed from shared cursor and render-helper modules; live-path HTML fragment builders and the live streaming cursor character are retained

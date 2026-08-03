@@ -6,7 +6,7 @@
 
 **Blocked by:** 01 — Delete orphaned HTML transcript rendering path
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] ACP client subsystem wiki documents the live view-controller → model → panel rendering stack only
 - [x] Domain context wiki attributes transcript ownership to `TranscriptViewController`, not the deleted HTML appender

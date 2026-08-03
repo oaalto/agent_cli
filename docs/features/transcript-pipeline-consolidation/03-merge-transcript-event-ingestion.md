@@ -6,7 +6,7 @@
 
 **Blocked by:** 01 — Delete orphaned HTML transcript rendering path
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] One ingestion module exposes `ingest(SessionUpdate)` and `ingestPromptCompleted()` returning `StructuredUpdate` lists
 - [x] Finalize-before-non-chunk policy and every `SessionUpdate` variant mapping live together with clear ownership
