@@ -8,6 +8,10 @@
 
 ### Documentation
 
+- **Feature backlog upkeep** (`.pi/skills/implement/`, `.pi/skills/to-tickets/`, `.pi/skills/to-spec/`, `docs/agents/issue-tracker.md`): Skills and issue-tracker docs now instruct agents to keep `docs/features/STATUS.md` current when tickets ship or new features are published. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Feature backlog master status** (`docs/features/STATUS.md`): Rollup of all ready-for-agent features (21 tickets across 5 features) in recommended implementation order, with resume-orchestration vs controller-deepening conflict guidance. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Transcript pipeline consolidation tickets** (`docs/features/transcript-pipeline-consolidation/`): Verified implementation of tickets 01–03 (dead HTML path deleted, wiki aligned, `TranscriptEventIngestion` merged) and marked all three as `done`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ## 2026-07-28

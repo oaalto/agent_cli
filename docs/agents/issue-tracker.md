@@ -17,6 +17,7 @@ Planning artifacts for this repo live as markdown PRDs under `docs/features/<fea
   - When the PRD status changes for any other reason: update the row's status column in **Active** (or move to **Implemented** when status becomes `implemented`).
   - When a PRD is deleted or superseded: remove the row from whichever section it is in.
   - Status vocabulary: `draft`, `accepted`, `ready-for-agent`, `implemented`, `superseded`.
+- **Backlog rollup**: `docs/features/STATUS.md` lists all `ready-for-agent` features in recommended implementation order. Per-ticket `**Status:**` in slice files is authoritative; update `STATUS.md` when features or tickets are added or completed (see **implement** and **to-tickets** skills).
 
 ## When a skill says "publish to the issue tracker"
 

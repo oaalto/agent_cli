@@ -52,3 +52,14 @@ Do **not** commit unless the user explicitly asks. When work is ready, offer to 
 
 - Update the parent PRD's `## Status` to `implemented`.
 - Move the feature in `docs/features/FEATURES.md`: remove its row from **Active (implementation order)** and add it to **Implemented** (most recently completed first). Re-order remaining **Active** rows if dependencies or priorities shifted. See `docs/agents/issue-tracker.md` for the master list rules.
+
+### Feature backlog (`docs/features/STATUS.md`)
+
+When ticket or feature status changes, keep the master backlog current:
+
+1. Update **Summary** counts and `Last updated`.
+2. When **all tickets in a feature** are `done`, move it from **Recommended implementation order** to **Completed features**.
+3. If a shipped ticket changes cross-feature ordering or conflict notes (e.g. a blocker landed), adjust those sections.
+4. Append a **Documentation** bullet to `CHANGELOG.md` when `STATUS.md` changes materially.
+
+Skip `STATUS.md` for a single ticket flip inside an otherwise unchanged feature unless counts or ordering need refresh.

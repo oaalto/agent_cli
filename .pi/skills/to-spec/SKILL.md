@@ -19,6 +19,8 @@ Check with the user that these seams match their expectations.
 3. Write the spec using the template below, then publish it to the project issue tracker as `docs/features/<feature_name>/prd.md`. Apply the `ready-for-agent` triage label - no need for additional triage.
 4. Add a row to the **Active (implementation order)** section of `docs/features/FEATURES.md` (status = `draft`, one-line description from the problem statement, link to the PRD). Read existing PRDs and dependencies; insert at the correct priority position (top = next to ship). Re-order other Active rows if needed. See `docs/agents/issue-tracker.md` for the master list rules.
 
+After `/to-tickets` publishes slices for this spec, ensure `docs/features/STATUS.md` is updated per the **to-tickets** skill's backlog section. A spec alone does not add backlog rows until tickets exist.
+
 <spec-template>
 
 ## Problem Statement
