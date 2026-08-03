@@ -23,7 +23,7 @@ Main implementation files:
 ## Prerequisites
 
 - JDK 21 (project compiles with Java/Kotlin target 21; Gradle auto-provisions JDK 21 via the Foojay toolchain resolver when needed)
-- Run Gradle itself on JDK 21 when possible — detekt 1.x does not support running on JDK 25
+- `gradle/gradle-daemon-jvm.properties` pins the Gradle daemon to JDK 21 so detekt 1.x works when the system default is Java 25+; regenerate with `./gradlew updateDaemonJvm --jvm-version=21` if criteria change
 - Git
 - IntelliJ IDEA (for local plugin development)
 

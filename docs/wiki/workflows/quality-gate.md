@@ -2,9 +2,10 @@
 title: Quality gate & release workflow
 type: workflow
 status: current
-updated: 2026-07-24
+updated: 2026-08-03
 sources:
   - build.gradle.kts
+  - gradle/gradle-daemon-jvm.properties
   - detekt.yml
   - .github/workflows/build-plugin.yml
   - scripts/pre-commit
@@ -22,6 +23,7 @@ The repository exposes a `qualityGate` Gradle task that runs formatting, compila
 - `qualityGate` task is defined in `build.gradle.kts` and depends on `test`, `jacocoTestReport`, `detektMain`, and `detektTest`.
 - Task chain: `compileKotlin` → `ktlintFormat`; `test` → `ktlintCheck`, `detekt`, `detektMain`, `detektTest` → `jacocoTestReport`.
 - `detekt.yml` is the canonical static-analysis policy; Qodana was removed in favor of expanded detekt coverage.
+- `gradle/gradle-daemon-jvm.properties` pins the Gradle daemon to JDK 21 so detekt 1.23.x runs on hosts whose default JDK is 25+.
 - CI uses `./gradlew clean buildPlugin jar` in `.github/workflows/build-plugin.yml`.
 - Pre-commit (`scripts/pre-commit`): blocks `@Suppress` annotations, runs `npm run wiki-lint`, `./gradlew ktlintCheck`, and `graphify update .`.
 - Wiki mechanical lint: `npm run wiki-lint` or `node scripts/wiki-lint.mjs --staged`.

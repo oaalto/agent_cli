@@ -1,5 +1,11 @@
 # Engineering Wiki Log
 
+## [2026-08-03] update | Quality gate wiki notes daemon JVM pin for detekt
+
+- Updated: [Quality gate & release workflow](workflows/quality-gate.md)
+- Sources: `gradle/gradle-daemon-jvm.properties`, `docs/development.md`
+- Notes: Documented `gradle-daemon-jvm.properties` JDK 21 daemon criteria so detekt 1.23.x works when the host default JDK is 25+.
+
 ## [2026-07-24] skip | ACP transcript block alignment fix
 
 - Reason: Visual layout fix only; no behavioral or architectural facts changed in the wiki.
