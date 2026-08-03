@@ -6,7 +6,15 @@
 
 - **WSL resume test CI gate** (`WorktreeLaunchCoordinatorTest`): Skip `wsl resume context uses kernel resolved paths` on non-Windows runners via `Assume`; Linux CI was failing because temp paths are not drive-letter mapped to `/mnt/…`, blocking the 2.0 release JAR upload. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+### Changed
+
+- **Graphify AST-only re-index** (`graphify-out/`): Ran `graphify update .` (AST extraction only, no LLM backend). Graph now at commit `e7b0aa5e` — 3204 nodes, 4644 edges. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **zoom-out upstream lock removed** (`skills-lock.json`): Dropped mattpocock/skills upstream entry; bundled copy at `.agents/skills/zoom-out/SKILL.md` is canonical. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Documentation
+
+- **ADC update tailoring** (`.agents/skills/`, `AGENTS.md`, `docs/agents/issue-tracker.md`): Re-tailored graphify, wiki, repo-navigation, and workflow skills for Kotlin/Gradle layout; added bundled `to-spec`/`to-tickets` skills using `docs/features/` co-located PRD + slice convention; added `grill-with-docs-batch` skill; restored issue-tracker paths and restricted-operations repo notes. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Feature backlog upkeep** (`.pi/skills/implement/`, `.pi/skills/to-tickets/`, `.pi/skills/to-spec/`, `docs/agents/issue-tracker.md`): Skills and issue-tracker docs now instruct agents to keep `docs/features/STATUS.md` current when tickets ship or new features are published. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

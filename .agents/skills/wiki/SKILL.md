@@ -56,7 +56,7 @@ For **structural topology** questions (call chains, cross-slice imports, impact 
 ## Source Rules
 
 - Treat code, tests, accepted ADRs, `CONTEXT.md`, current runbooks, and current official external docs as live sources.
-- Treat PRDs, issue discussions, PR discussions, and chat history as historical sources unless verified against live sources.
+- Treat PRDs under `docs/features/`, issue discussions, PR discussions, and chat history as historical sources unless verified against live sources.
 - Treat agent synthesis as synthesis, not fact.
 - Verify wiki claims against live sources before relying on them for implementation.
 - Record URLs and fetch dates for external sources.

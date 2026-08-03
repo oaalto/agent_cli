@@ -1,7 +1,7 @@
 {
   "manifestVersion": "1",
   "agenticConfigVersion": "2026.06.26",
-  "generatedAt": "2026-07-23T11:13:19.267Z",
+  "generatedAt": "2026-08-03T09:19:41.947Z",
   "selection": {
     "version": "1",
     "targetAgent": {
@@ -63,7 +63,8 @@
       "repo-navigation",
       "research",
       "resolving-merge-conflicts",
-      "teach"
+      "teach",
+      "grill-with-docs-batch"
     ],
     "rules": [
       "documentation",
@@ -197,6 +198,7 @@
     "skill.research",
     "skill.resolving-merge-conflicts",
     "skill.teach",
+    "skill.grill-with-docs-batch",
     "rule.documentation",
     "rule.testing",
     "rule.dependency-boundaries",
@@ -228,8 +230,6 @@
   "autoIncluded": [
     "USAGE.md",
     "docs/agent-commands.md",
-    "docs/features/",
-    "docs/issues/",
     "CONTEXT.md",
     "docs/adr/",
     "docs/eslint-deferred-rules.md",
@@ -247,8 +247,8 @@
     "docs/agents/triage-labels.md",
     "docs/agents/domain.md",
     "AGENTS.md",
-    "docs/features/.gitkeep",
-    "docs/issues/.gitkeep"
+    "docs/prds/",
+    "docs/issues/"
   ],
   "targetAgent": {
     "id": "pi"
@@ -292,6 +292,42 @@
         "requires": [
           "jq",
           "pi"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-grilling",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill grilling --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-to-spec",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill to-spec --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
+        ],
+        "optional": false,
+        "source": "catalog"
+      },
+      {
+        "id": "skill-to-tickets",
+        "kind": "skills-add",
+        "command": "npx -y skills@latest add mattpocock/skills --skill to-tickets --agent pi -y",
+        "requires": [
+          "jq",
+          "node",
+          "npx"
         ],
         "optional": false,
         "source": "catalog"
@@ -519,6 +555,7 @@
     ".agents/skills/graphify/SKILL.md": "sha256:7ee433a69ef3d3838646db742aaaf2eb9f2b30bf242fef8bd52005f8cfa1a842",
     ".agents/skills/workflow/SKILL.md": "sha256:0317887a4e967975e9fd59229cbdd1a49fdf6ef4cddbdfbfb4be7b1e2b4e6ee5",
     ".agents/skills/repo-navigation/SKILL.md": "sha256:ed37736815595101af74eb5cae41fbc91bfa417076c141f006761e2bb41343e8",
+    ".agents/skills/grill-with-docs-batch/SKILL.md": "sha256:494751bce3721913708cbb9387562fe1309eb51fc6bdbc606c40476732145a48",
     "AGENTS.md": "sha256:840c43ab7ebad09d597287680cc232e8df3ccb3b485c1272e845e9f9b684272b",
     ".agents/rules/documentation.md": "sha256:f417a82cd3b04e190e4a1f32ef627adc8563f593aa42432ad33035d552a1369e",
     ".agents/rules/testing.md": "sha256:92abf5930f093742e88234fc76926f3c4f8737e6120d51e37d15c3da9afdf48d",
@@ -537,13 +574,15 @@
     ".agents/rules/headroom-consultation.md": "sha256:813488ac2cb50bd6d48aac16d5c1d05359adb3aa15ba38192f9c87af22aba59b"
   },
   "contentHashes": {
-    ".agents/skills/workflow/SKILL.md": "sha256:8341da8a70f0e7dd9f80fcc00572143a5d8e71f8c57b44bf4df84d4bbf8f98b1",
-    ".agents/skills/wiki/SKILL.md": "sha256:c599fdf559b7a2e5dbb368aa30e572c93f0b4dba9d82c43b168d665a22481fd3",
+    "AGENTS.md": "sha256:0aca3c937f7ef3ff53ae5ecffd832043c6a03fecd4d63ebf662681944046cb71",
+    ".agents/skills/graphify/SKILL.md": "sha256:36c59d2f7de15f8fd9b2183f9b5f5446f464ca41dcba3c591b53c407161f4706",
+    ".agents/skills/wiki/SKILL.md": "sha256:e1ddceb5291dde9aef79a562c11789450b373ce4e126b385d4e9bcf620d3a99f",
     ".agents/skills/repo-navigation/SKILL.md": "sha256:80e41569d736d59fa19f96e654acc02f515ffe4e7caf03d0bba7b8eb92229a09",
-    ".agents/skills/graphify/SKILL.md": "sha256:dfb668211626e296747368f68473b2c4079a19839e0b585f14a4683956348f49",
-    "docs/wiki/subsystems/acp-client.md": "sha256:1f49502e01e53196b5ab8785ffc7e650624f0a5d7933ac38fa22ed2852e85b90",
-    "docs/wiki/index.md": "sha256:4bc16ddce0ea415761e9633797be60b83ab9500816c5586974757fbb23e849c5",
-    "docs/wiki/log.md": "sha256:419fa8d95b1b8ed9936b4900f67f618f80a1e467d9ebd92bb8c7c0514b18f90f",
-    "docs/wiki/path-map.json": "sha256:f44d63e939783bce9c2861c0d6bb515edc0560395181db4dcc0799dfa7759586"
+    ".agents/skills/workflow/SKILL.md": "sha256:77cacea65df2fa72ac426c783d4f2feeae84bedc1dc8bda289e3de7dbcebf4ea",
+    ".agents/skills/to-spec/SKILL.md": "sha256:c266b3f6827f8d34d44fb881b75eabd36d3019adb6bc5b0ebaf698e76bad2d95",
+    ".agents/skills/to-tickets/SKILL.md": "sha256:bae831962853ca16d37fc229d1834f7618d059633dad8695940ad43fddc57409",
+    ".agents/skills/grill-with-docs-batch/SKILL.md": "sha256:401e2f2685f03b52ebac209b7da598028faa3e692e8d66b6ced2e95ff136d2e9",
+    "docs/agents/issue-tracker.md": "sha256:3fe3ca73f448e87b556c80aaa2e4b6cea1700a85f95088b5df7edbb69049ff7e",
+    "skills-lock.json": "sha256:b4bf2891ec3876b10c458a4d2d5d5374c969aac0983c3fd46d31e544198f742c"
   }
 }

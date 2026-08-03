@@ -1,15 +1,16 @@
-# Graph Report - .  (2026-07-23)
+# Graph Report - agent_cli  (2026-08-03)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 301 files · ~143,560 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2611 nodes · 3911 edges · 243 communities (117 shown, 126 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 205 edges (avg confidence: 0.8)
+- 3204 nodes · 4644 edges · 260 communities (174 shown, 86 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 275 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ef863ee8`
+- Built from commit: `e7b0aa5e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -17,271 +18,288 @@
 - PlanEntry
 - ASTNode
 - featureIds
-- StructuredUpdate
-- TranscriptPanel
-- TranscriptBodyPart
-- TranscriptColorProvider
-- McpServer
-- agent-cli-overview.md
-- AgentWorktreeStateService
-- PermissionCoordinator
-- AcpAgentEditor
-- AuthPromptPanel
-- AcpClientSessionOperationsImpl
-- TranscriptModel
-- Your task (in order)
-- Your task (in order)
-- TranscriptHtmlAppender
-- CursorResumeProbeLogic
-- TranscriptMarkdownRendererTest
-- TranscriptRendererTest
-- TranscriptToolCallContentRendererTest
-- contentTemplateHashes
-- PromptInputBar
-- wiki
-- skills
-- PtyAgentEditor
-- rules
-- TranscriptFooter
-- autoIncluded
-- Full File Contents
-- AgentTextRow
-- AgentSettingsState
-- AgentSettingsConfigurable
-- AcpSessionControllerImpl
-- TranscriptBlock
-- Changelog
-- Implementation Steps (Easiest → Hardest)
-- CollapsibleToolPanel
-- Your task (in order)
-- AgentConfigRow
-- AgentWorktreeGitSupport
 - AgentLaunchContext
+- StructuredUpdate
+- .buildWorktreeChildren
+- TranscriptPanel
+- McpServer
+- TranscriptColorProvider
+- AcpAgentEditor
+- AgentWorktreeStateService
+- AcpClientSessionOperationsImpl
+- PermissionCoordinator
+- AuthPromptPanel
+- Your task (in order)
+- Your task (in order)
+- AgentTextRow
+- TranscriptBodyPart
+- TranscriptFileStore
+- PromptInputBar
+- STATUS.md
+- AgentSettingsUiFactory
+- TranscriptMarkdownRendererTest
+- contentTemplateHashes
+- TranscriptBlock
+- TranscriptBlockViewFactory
+- TranscriptToolCallContentRendererTest
+- skills
+- AgentSettingsConfigurable
+- PtyAgentEditor
+- wiki
+- unified-launch-resolution/prd.md
+- TranscriptModel
+- AgentSettingsState
+- TranscriptRendererTest
+- rules
+- AcpSessionControllerImpl
+- acp-session-controller-deepening/prd.md
+- autoIncluded
+- Your task (in order)
+- Implementation Steps (Easiest → Hardest)
+- TranscriptFooter
+- Changelog
+- AnActionEvent
+- Engineering Wiki Log
+- Verified Facts
+- Cost
+- CollapsibleToolPanel
+- transcript-pipeline-consolidation/prd.md
+- AgentWorktreeGitSupport
 - ScopedFileSystemOperations
+- AgentConfigRow
+- LaunchResumePlan
 - Agentic Development Configurator setup
+- Glossary
 - How pi-agent Handles Displaying User Input and Model Output
-- AcpLaunchPlan
 - IdeScopedFileSystemAccess
 - AgentConfigurationResolutionInput
 - install.sh
-- AuthFlowCoordinator
-- AgentConfigsTableModel
-- AcpSessionController
-- RecordingSessionController
-- AnActionEvent
-- RecordingCodeBlockViewFactory
 - install.ps1
-- triageLabels
-- AgentWorktreeService
-- Agent CLI
-- AgentSettingsUiFactory
-- EnvironmentVariablesTableModel
-- skillSource
 - AGENTS.md
-- TranscriptToolCallDiffRenderer
-- .createEditor
-- .buildWslTerminalStartupRequest
-- Engineering Wiki Schema
-- ADR 0003: Per-project agent selection
-- manifest.json
-- definition-of-done
-- restricted-operations
-- AgentFileEditorProvider
-- AgentVirtualFile
-- ShellPaneHost
-- LaunchResumePlan
-- PtyResumeStrategyTest
-- changelog
-- CollapsibleToolPanel.kt
-- SelectAgentConfigurationActionGroup
-- DetailPanelBindings
-- .buildWorktreeChildren
 - Wiki
+- AuthFlowCoordinator
+- worktree-pending-launch-handoff/prd.md
+- AgentConfigsTableModel
+- AgentVirtualFile
+- AcpSessionController
+- triageLabels
+- Agent CLI
+- RecordingSessionController
+- isAgentCliLogEnabled
+- EnvironmentVariablesTableModel
+- AgentLaunchResolverTest
+- skillSource
+- CONTEXT.md
+- 0004-session-observability.md
+- Implementation Decisions
+- Engineering Wiki Schema
+- ShellPaneHost
+- .apply
+- TranscriptToolCallDiffRenderer
+- TranscriptEventIngestionTest
+- manifest.json
+- During composition (read-only)
+- ADR 0003: Per-project agent selection
+- acp-transcript-block-alignment-fix/prd.md
+- AgentFileEditorProvider
+- PtyResumeStrategyTest
+- TranscriptTextSerializerTest
+- Restricted Operations
+- Feature backlog — master status
+- tiered-session-diagnostics/prd.md
+- AgentCliLog.kt
+- AgentCliSessionContext
+- contentHashes
+- During the session
+- Test-Driven Development
+- Workflow gates
 - Agent Commands
 - Development Guide
-- During the session
-- RunAgentSplitButtonAction
+- settings-observability-help/prd.md
+- Implementation Decisions
+- SessionTranscriptCoordinator
+- TranscriptRenderer
 - AcpJsonImportDraft
-- WorktreeLaunchCoordinator
+- DetailPanelBindings
 - WslPathResolver
 - TranscriptFenceLanguageResolverTest
-- TranscriptModelTest
 - AcpJsonImporterExporterTest
-- Test-Driven Development
+- Vertical slice boundaries
+- to-spec/SKILL.md
+- Process
 - ADR 0001: Custom ACP client in the Agent CLI plugin
 - ADR 0002: Kotlin ACP SDK for the plugin client
-- Vertical slice boundaries
+- acp-session-transcript-persistence/prd.md
+- Architecture decisions map
 - wiki-lint.mjs
+- LaunchMode
+- SessionDiagnosticsCollector
 - TerminalSessionRegistry
-- bindTranscriptBlock
-- TranscriptPaneHtmlOps
+- AgentWslCommandRequest
+- ResolvedLaunchInputs
+- .buildLocalTerminalStartupRequest
 - ProjectAgentSelectionState
 - AgentWorktreePathMapper
-- TranscriptStreamingCursorTest
+- CursorResumeProbeLogic
 - selection
-- package.json
+- Definition of Done
 - Review
+- Implementation Decisions
+- acp-session-resume-orchestration/prd.md
+- Implementation Decisions
+- Problem Statement
+- Implementation Decisions
+- Implementation Decisions
+- Implementation Decisions
+- Engineering Wiki Index
+- package.json
+- AgentCommandBuilder
+- CursorResumeProbeRequest
 - AgentSettingsStateSupport
 - AiAssistantPresence
-- TranscriptSessionUpdateMapperTest
+- .buildLaunchContext
 - headroom
-- Process
 - Functional Programming Principles
-- Headroom Consultation
-- AcpLaunchArguments
-- PtyResumeStrategy
+- Process
+- Repository navigation
+- Vertical slice migration
+- acp-client-operations-wiring/prd.md
+- MouseAdapter
+- CollapsibleToolPanel.kt
 - AgentWorktreePathMapperTest
 - AgentWorktreeServiceTest
 - AcpResumeStrategyTest
-- Vertical slice migration
+- Strict Output and Execution
+- Headroom Consultation
+- Graphify (consultation overlay)
+- 2026-06-22
+- 2026-07-24
 - Domain Docs
-- Issue tracker: Repo PRDs (`docs/prds/`)
+- Issue tracker: Repo specs (`docs/features/`)
+- Testing Decisions
+- Implementation Decisions
+- Domain context & ACP transcript model
+- Worktree subsystem
 - AgentEditorTabTitleProvider
-- Warning Hygiene
-- AccumulatedUsage
 - AuthMethodSupport
 - TranscriptBadgeStyle
-- TranscriptStreamingCursor
+- .createEditor
+- CopySessionDiagnosticsAction
 - OpenAgentEditorAction
 - .toAgentServerEntry
+- ExecutionTarget
 - SlashCommandMatcherTest
 - LaunchModeTest
+- WorktreeLaunchCoordinatorTest
 - custom
 - Agentic Development Usage
+- Changelog
+- 2026-06-16
+- 2026-06-20
+- 2026-06-21
+- 2026-06-26
 - AcpClientCapabilities
+- Testing Decisions
+- Testing Decisions
+- Testing Decisions
+- Testing Decisions
+- Quality gate & release workflow
 - TranscriptFenceLanguageResolver
 - SessionScopeResolverTest
 - UserMcpConfigParserTest
-- WorktreeLaunchCoordinatorTest
-- gradlew
+- Signature attribution
 - Documentation
 - Runtime Handoff
+- 2026-04-02
+- 2026-04-26
+- 2026-06-17
+- 2026-06-19
+- gradlew
 - SessionScopeResolver
+- AgentCliCorrelationToken
 - .invokeIdeAction
 - .getUserData
 - EnvironmentVariableText
 - AcpClientCapabilitiesTest
+- TranscriptViewControllerRestoreTest
 - AgentEditorFactoryTest
 - EnvironmentVariableTextTest
 - API Design Basics
-- Code Formatting
 - Dependency Boundaries
 - Logging Practices
 - Result Handling
-- Testing Guidelines
+- Warning Hygiene
+- 2026-02-23
 - generate_release_notes.sh
 - TranscriptTextTruncation
-- ExecutionTarget
+- AgentCliRegistry
 - ResumeCapability
 - TranscriptFencedAgentTextLimitsTest
-- Engineering Wiki Log
-- Triage Labels
+- AgentCliCorrelationTokenTest
 - adr-discipline.md
+- code-format.md
 - current-state.md
 - domain-language.md
+- testing.md
+- triage-labels.md
+- 01-process-transport-seam.md
+- 05-resume-orchestration-in-lifecycle.md
+- 02-orchestrator-ports-and-adapters.md
+- 03-acp-session-resume-orchestrator.md
+- 01-transcript-text-serializer.md
+- 02-transcript-file-store.md
+- 03-debounced-snapshot-writer.md
+- 04-plain-text-restore.md
+- 05-correlation-tokens-and-log-pairing.md
+- 06-copy-session-diagnostics-action.md
+- 02-tool-card-body-block-alignment.md
+- 01-settings-observability-help-panel.md
+- 01-agent-cli-log-and-tier-gates.md
+- 02-migrate-existing-logger-call-sites.md
+- 03-dialog-only-failure-logging.md
+- 01-delete-dead-html-transcript-path.md
+- 02-align-acp-transcript-wiki.md
+- 03-merge-transcript-event-ingestion.md
+- 01-execution-target-parsing.md
+- 02-kernel-launch-resolver.md
+- 03-acp-launch-adapter.md
+- 04-pty-launch-adapter.md
+- 05-worktree-resume-alignment.md
+- 01-handoff-consume-path.md
 - install-git-hooks.sh
 - pre-commit
-- .getUserData
+- TranscriptStreamingCursor.kt
 - AcpUiMetrics.kt
 - AgentConfigsTableColumns.kt
-- AbstractTableModel
-- ActionGroup
-- ActionUpdateThread
-- AnAction
-- AnActionEvent
-- Any
-- Array
-- AuthMethod
-- BackgroundEditorHighlighter
-- Boolean
-- Class
-- Color
-- com
-- CompletableDeferred
-- Component
-- ComponentEvent
-- ContentBlock
-- DateTimeFormatter
-- Disposable
-- DumbAware
-- DumbAwareAction
-- FileEditor
-- FileEditorLocation
-- FileEditorState
-- Font
-- GitRepository
-- Int
-- IntArray
-- javax
-- JBLabel
-- JBTable
-- JCheckBox
-- JComponent
-- JEditorPane
-- JLabel
-- JPanel
-- JsonObject
-- Key
-- KeyEvent
-- LinkedHashMap
-- List
-- Long
-- Map
-- McpServer
-- MutableList
-- MutableMap
-- Pair
-- Path
-- PermissionOption
-- PersistentStateComponent
-- Process
-- Project
-- PropertyChangeListener
-- RequestPermissionOutcome
-- RequestPermissionResponse
-- Result
-- SessionUpdate
-- Set
-- ShellTerminalWidget
-- String
-- StringBuilder
-- StructureViewBuilder
-- T
-- ToolCallContent
-- ToolCallStatus
-- ToolKind
-- Unit
-- VirtualFile
-- AcpEditorContext
 
 ## God Nodes (most connected - your core abstractions)
-1. `featureIds` - 78 edges
-2. `AgentSettingsState` - 66 edges
-3. `TranscriptModel` - 48 edges
-4. `StructuredUpdate` - 42 edges
-5. `PlanEntry` - 42 edges
-6. `TranscriptBlock` - 38 edges
+1. `featureIds` - 82 edges
+2. `AgentSettingsState` - 67 edges
+3. `TranscriptModel` - 57 edges
+4. `PlanEntry` - 43 edges
+5. `TranscriptBlock` - 43 edges
+6. `StructuredUpdate` - 42 edges
 7. `PlanPanel` - 37 edges
 8. `RenderedBlock` - 36 edges
-9. `AgentWorktreeStateService` - 34 edges
-10. `PtyAgentEditor` - 32 edges
+9. `AgentWorktreeStateService` - 36 edges
+10. `AcpAgentEditor` - 34 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `isLogEnabled()` --calls--> `isAgentCliLogEnabled()`  [INFERRED]
+  src/main/kotlin/com/oaalto/agent/AgentCliLog.kt → src/main/kotlin/com/oaalto/agent/AgentCliLogGates.kt
+- `isDebugEnabled()` --calls--> `isAgentCliDebugEnabled()`  [INFERRED]
+  src/main/kotlin/com/oaalto/agent/AgentCliLog.kt → src/main/kotlin/com/oaalto/agent/AgentCliLogGates.kt
 - `defaultSessionController()` --calls--> `AcpSessionControllerImpl`  [INFERRED]
   src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt → src/main/kotlin/com/oaalto/agent/acp/AcpSessionControllerImpl.kt
 - `create()` --calls--> `IdeScopedFileSystemAccess`  [INFERRED]
   src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt → src/main/kotlin/com/oaalto/agent/acp/filesystem/IdeScopedFileSystemAccess.kt
 - `create()` --calls--> `TranscriptBlockViewFactory`  [INFERRED]
   src/main/kotlin/com/oaalto/agent/acp/TranscriptPanel.kt → src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt
-- `applyCursorResumeFallbackForLocal()` --calls--> `CursorResumeProbeRequest`  [INFERRED]
-  src/main/kotlin/com/oaalto/agent/pty/PtyEditorSupport.kt → src/main/kotlin/com/oaalto/agent/worktree/resume/CursorResumeProbe.kt
-- `applyCursorResumeFallbackForWsl()` --calls--> `CursorResumeProbeRequest`  [INFERRED]
-  src/main/kotlin/com/oaalto/agent/pty/PtyEditorSupport.kt → src/main/kotlin/com/oaalto/agent/worktree/resume/CursorResumeProbe.kt
 
 ## Import Cycles
 - None detected.
 
-## Communities (243 total, 126 thin omitted)
+## Communities (260 total, 86 thin omitted)
 
 ### Community 0 - "PlanEntry"
 Cohesion: 0.05
@@ -292,468 +310,696 @@ Cohesion: 0.07
 Nodes (30): ASTNode, IElementType, TranscriptHtmlBuilder, BlockHandlers, BlockQuote, CodeBlock, CustomHtml, Image (+22 more)
 
 ### Community 2 - "featureIds"
-Cohesion: 0.03
-Nodes (78): featureIds, agentSetup.domainLayout.single-context, agentSetup.issueTracker.repo-prd, contextOptimization.headroom.piExtension, contextOptimization.headroom.rule, graphify.enabled, install.skillSource.upstream, rule.adr-discipline (+70 more)
+Cohesion: 0.02
+Nodes (82): featureIds, agentSetup.domainLayout.single-context, agentSetup.issueTracker.repo-prd, contextOptimization.headroom.enabled, contextOptimization.headroom.guide, contextOptimization.headroom.piExtension, contextOptimization.headroom.rule, contextOptimization.headroom.runtime (+74 more)
 
-### Community 3 - "StructuredUpdate"
-Cohesion: 0.05
-Nodes (25): AcpPromptEventDispatcher, SessionUpdate, AcpSessionListener, Create, PlanTranscriptRegistry, PlanUpdateResult, Update, PlanUpdateMapper (+17 more)
-
-### Community 4 - "TranscriptPanel"
+### Community 3 - "AgentLaunchContext"
 Cohesion: 0.06
-Nodes (23): DialogWrapper, JBScrollPane, AcpEditorLayout, EditorLayoutComponents, JPanel, EditorFactoryTranscriptCodeBlockViewFactory, JComponent, PlainMonospaceTranscriptCodeBlockViewFactory (+15 more)
+Nodes (14): AcpLaunchArguments, AcpLaunchPlan, McpServer, AcpLaunchRequest, AcpProcessLauncher, Result, AgentProjectContext, toAgentProjectContext() (+6 more)
 
-### Community 5 - "TranscriptBodyPart"
+### Community 4 - "StructuredUpdate"
 Cohesion: 0.07
-Nodes (17): EmbeddedResourceResource, HighlightedCounter, TranscriptBlockConverter, Code, Html, TranscriptBodyPart, ContentBlock, SessionUpdate (+9 more)
+Nodes (23): Create, PlanTranscriptRegistry, PlanUpdateResult, Update, PlanUpdateMapper, AppendAgentText, AppendAuthFailure, AppendError (+15 more)
 
-### Community 6 - "TranscriptColorProvider"
-Cohesion: 0.08
-Nodes (10): DefaultTranscriptColorProvider, Color, ToolCallStatus, TranscriptColorProvider, Color, TranscriptPalette, ToolCallStatus, ToolKind (+2 more)
+### Community 5 - ".buildWorktreeChildren"
+Cohesion: 0.07
+Nodes (25): R, SplitButtonAction, AgentWorktreeService, bind(), CreatedWorktree, GitRepository, Result, ManagedWorktree (+17 more)
+
+### Community 6 - "TranscriptPanel"
+Cohesion: 0.05
+Nodes (23): DialogWrapper, JBScrollPane, AcpEditorLayout, EditorLayoutComponents, JPanel, EditorFactoryTranscriptCodeBlockViewFactory, JComponent, PlainMonospaceTranscriptCodeBlockViewFactory (+15 more)
 
 ### Community 7 - "McpServer"
 Cohesion: 0.09
 Nodes (17): EnvVariable, createDefault(), DefaultMcpCapabilityBridge, McpServer, McpCapabilityBridge, IdeaMcpServerSource, JsonObject, McpServer (+9 more)
 
-### Community 8 - "agent-cli-overview.md"
-Cohesion: 0.05
-Nodes (39): Agent Synthesis, Open Questions, Related, Summary, Verified Facts, Agent Synthesis, Domain context & ACP transcript model, Open Questions (+31 more)
-
-### Community 9 - "AgentWorktreeStateService"
+### Community 8 - "TranscriptColorProvider"
 Cohesion: 0.08
+Nodes (10): DefaultTranscriptColorProvider, Color, ToolCallStatus, TranscriptColorProvider, Color, TranscriptPalette, ToolCallStatus, ToolKind (+2 more)
+
+### Community 9 - "AcpAgentEditor"
+Cohesion: 0.08
+Nodes (13): AcpAgentEditor, BackgroundEditorHighlighter, Disposable, FileEditor, FileEditorLocation, FileEditorState, JComponent, Key (+5 more)
+
+### Community 10 - "AgentWorktreeStateService"
+Cohesion: 0.09
 Nodes (12): getActiveRecordsForConfiguration(), touch(), AgentWorktreeStateService, getInstance(), PersistentStateComponent, ManagedWorktreeRecord, PendingLaunch, StoredPendingLaunch (+4 more)
 
-### Community 10 - "PermissionCoordinator"
+### Community 11 - "AcpClientSessionOperationsImpl"
+Cohesion: 0.08
+Nodes (20): ClientSessionOperations, CreateTerminalResponse, JsonElement, JsonRpcException, KillTerminalCommandResponse, ReadTextFileResponse, ReleaseTerminalResponse, AcpClientSessionOperationsImpl (+12 more)
+
+### Community 12 - "PermissionCoordinator"
 Cohesion: 0.09
 Nodes (19): defaultPermissionOptions(), isAllow(), PermissionOption, RequestPermissionOutcome, RequestPermissionResponse, SessionUpdate, ToolKind, PermissionCoordinator (+11 more)
 
-### Community 11 - "AcpAgentEditor"
-Cohesion: 0.09
-Nodes (10): AcpAgentEditor, BackgroundEditorHighlighter, Disposable, FileEditor, FileEditorLocation, FileEditorState, JComponent, PropertyChangeListener (+2 more)
-
-### Community 12 - "AuthPromptPanel"
+### Community 13 - "AuthPromptPanel"
 Cohesion: 0.12
 Nodes (15): JButton, PermissionOptionKind, AuthPromptResult, AuthPromptUi, Cancelled, Continue, AuthPromptPanel, CompletableDeferred (+7 more)
 
-### Community 13 - "AcpClientSessionOperationsImpl"
-Cohesion: 0.10
-Nodes (19): ClientSessionOperations, CreateTerminalResponse, JsonElement, JsonRpcException, KillTerminalCommandResponse, ReadTextFileResponse, ReleaseTerminalResponse, AcpClientSessionOperationsImpl (+11 more)
-
-### Community 14 - "TranscriptModel"
-Cohesion: 0.10
-Nodes (3): TranscriptModel, TranscriptModelPlanTest, TranscriptModelUsageAccumulationTest
+### Community 14 - "Your task (in order)"
+Cohesion: 0.06
+Nodes (33): Agent setup, Catalog tailoring, Commands & tooling, Complete agent setup — update existing ADC installation, Constraints (mandatory), Definition of done wiring, Domain terms, Duplicate content audit (+25 more)
 
 ### Community 15 - "Your task (in order)"
-Cohesion: 0.07
-Nodes (29): Agent setup, Catalog tailoring, Commands & tooling, Complete agent setup — existing repository, Constraints (mandatory), Definition of done wiring, Domain terms, Duplicate content audit (+21 more)
+Cohesion: 0.06
+Nodes (32): Agent setup, Catalog tailoring, Commands & tooling, Complete agent setup — existing repository, Constraints (mandatory), Definition of done wiring, Domain terms, Duplicate content audit (+24 more)
 
-### Community 16 - "Your task (in order)"
-Cohesion: 0.07
-Nodes (29): Agent setup, Catalog tailoring, Commands & tooling, Complete agent setup — update existing ADC installation, Constraints (mandatory), Definition of done wiring, Domain terms, Duplicate content audit (+21 more)
-
-### Community 17 - "TranscriptHtmlAppender"
-Cohesion: 0.13
-Nodes (3): TranscriptHtmlAppender, JEditorPane, TranscriptHtmlAppenderStreamingTest
-
-### Community 18 - "CursorResumeProbeLogic"
-Cohesion: 0.11
-Nodes (6): AgentCommandBuilder, AgentWslCommandRequest, CursorResumeProbe, CursorResumeProbeLogic, CursorResumeProbeRequest, AgentCommandBuilderTest
-
-### Community 22 - "contentTemplateHashes"
-Cohesion: 0.07
-Nodes (27): contentTemplateHashes, AGENTS.md, .agents/rules/adr-discipline.md, .agents/rules/api-design-basics.md, .agents/rules/code-format.md, .agents/rules/current-state.md, .agents/rules/dependency-boundaries.md, .agents/rules/documentation.md (+19 more)
-
-### Community 23 - "PromptInputBar"
-Cohesion: 0.12
-Nodes (8): AvailableCommand, JBList, JBPopup, SlashCommand, JComponent, KeyEvent, PromptInputBar, SlashCommandMatcher
-
-### Community 24 - "wiki"
-Cohesion: 0.08
-Nodes (26): index, log, schema, concepts, debugging, known-traps, source-notes, subsystems (+18 more)
-
-### Community 25 - "skills"
-Cohesion: 0.08
-Nodes (26): skills, code-review, codebase-design, diagnosing-bugs, domain-modeling, graphify, grill-with-docs, grilling (+18 more)
-
-### Community 26 - "PtyAgentEditor"
-Cohesion: 0.09
-Nodes (10): BackgroundEditorHighlighter, Disposable, FileEditor, FileEditorLocation, FileEditorState, JComponent, PropertyChangeListener, StructureViewBuilder (+2 more)
-
-### Community 27 - "rules"
-Cohesion: 0.08
-Nodes (25): rules, adr-discipline, api-design-basics, changelog, code-format, commit, current-state, decision-making (+17 more)
-
-### Community 28 - "TranscriptFooter"
-Cohesion: 0.16
-Nodes (4): Cost, JPanel, TranscriptFooter, TranscriptFooterTest
-
-### Community 29 - "autoIncluded"
-Cohesion: 0.08
-Nodes (24): autoIncluded, AGENTS.md, CONTEXT.md, docs/adr/, docs/agent-commands.md, docs/agents/domain.md, docs/agents/issue-tracker.md, docs/agents/triage-labels.md (+16 more)
-
-### Community 30 - "Full File Contents"
-Cohesion: 0.08
-Nodes (23): 1. TranscriptHtmlAppender.kt, 2. AcpAgentEditor.kt, 3. TranscriptStreamingCursor.kt, 4. AcpPromptEventDispatcher.kt, 5. AcpEditorLayout.kt, 6. AcpClientSessionOperationsImpl.kt, 7. TranscriptHtmlAppenderStreamingTest.kt (includes AcpPromptEventDispatcherTest), 8. TranscriptStreamingCursorTest.kt (+15 more)
-
-### Community 31 - "AgentTextRow"
+### Community 16 - "AgentTextRow"
 Cohesion: 0.14
 Nodes (17): EmptyBorder, JTextPane, AgentTextRow, applyStyleToRun(), componentResized(), createHtmlPane(), createThematicBreak(), escapeHtml() (+9 more)
 
-### Community 32 - "AgentSettingsState"
+### Community 17 - "TranscriptBodyPart"
 Cohesion: 0.12
-Nodes (6): AgentCliConfiguration, AgentSettingsState, getInstance(), PersistentStateComponent, State, AgentSettingsStateTest
+Nodes (11): EmbeddedResourceResource, HighlightedCounter, TranscriptBlockConverter, Code, Html, TranscriptBodyPart, ContentBlock, ToolCallContent (+3 more)
 
-### Community 33 - "AgentSettingsConfigurable"
-Cohesion: 0.15
+### Community 18 - "TranscriptFileStore"
+Cohesion: 0.11
+Nodes (6): ScheduledFuture, DebouncedTranscriptSnapshotWriter, Result, TranscriptFileStore, DebouncedTranscriptSnapshotWriterTest, TranscriptFileStoreTest
+
+### Community 19 - "PromptInputBar"
+Cohesion: 0.11
+Nodes (10): AvailableCommand, JBList, JBPopup, SlashCommand, javax, JComponent, KeyEvent, PromptInputBar (+2 more)
+
+### Community 20 - "STATUS.md"
+Cohesion: 0.07
+Nodes (13): 01 — ScopedFileSystemAccess VFS seam, 02 — SessionFilesystemOperations deep module, 03 — SDK adapter filesystem delegation, 04 — Session operations composition root, 05 — Session controller factory injection, 06 — Wiki session operations documentation, 02 — Connection bootstrap extraction, 03 — Session lifecycle core (+5 more)
+
+### Community 21 - "AgentSettingsUiFactory"
+Cohesion: 0.13
+Nodes (13): DetailPanelHints, EnvironmentVariablesEditor, ObservationHelpPanel, AgentSettingsUiFactory, com, com, java, com (+5 more)
+
+### Community 23 - "contentTemplateHashes"
+Cohesion: 0.07
+Nodes (28): contentTemplateHashes, AGENTS.md, .agents/rules/adr-discipline.md, .agents/rules/api-design-basics.md, .agents/rules/code-format.md, .agents/rules/current-state.md, .agents/rules/dependency-boundaries.md, .agents/rules/documentation.md (+20 more)
+
+### Community 24 - "TranscriptBlock"
+Cohesion: 0.12
+Nodes (19): AuthFailureLine, ErrorLine, FinalAgentText, PlainLine, PlanBlock, StreamingAgentText, Thought, ToolCallBlock (+11 more)
+
+### Community 25 - "TranscriptBlockViewFactory"
+Cohesion: 0.14
+Nodes (7): JPanel, TranscriptBlockViewFactory, javax, JPanel, RecordingCodeBlockViewFactory, TranscriptBlockViewFactoryTest, TranscriptTextTruncationTest
+
+### Community 27 - "skills"
+Cohesion: 0.07
+Nodes (27): skills, code-review, codebase-design, diagnosing-bugs, domain-modeling, graphify, grill-with-docs, grill-with-docs-batch (+19 more)
+
+### Community 28 - "AgentSettingsConfigurable"
+Cohesion: 0.14
 Nodes (8): SearchableConfigurable, AgentSettingsConfigurable, com, JBLabel, JBTable, JCheckBox, JComponent, JPanel
 
-### Community 34 - "AcpSessionControllerImpl"
-Cohesion: 0.15
+### Community 29 - "PtyAgentEditor"
+Cohesion: 0.08
+Nodes (10): BackgroundEditorHighlighter, Disposable, FileEditor, FileEditorLocation, FileEditorState, JComponent, PropertyChangeListener, StructureViewBuilder (+2 more)
+
+### Community 30 - "wiki"
+Cohesion: 0.08
+Nodes (26): index, log, schema, concepts, debugging, known-traps, source-notes, subsystems (+18 more)
+
+### Community 31 - "unified-launch-resolution/prd.md"
+Cohesion: 0.08
+Nodes (25): Adapter thinning, ADR alignment, Deletion test, Error contract unification, Further Notes, Impact, Implementation Decisions, Interface (high leverage, small surface) (+17 more)
+
+### Community 32 - "TranscriptModel"
+Cohesion: 0.13
+Nodes (3): TranscriptModel, TranscriptModelPlanTest, TranscriptModelTest
+
+### Community 33 - "AgentSettingsState"
+Cohesion: 0.11
+Nodes (7): AgentCliConfiguration, AgentSettingsState, PersistentStateComponent, State, com, com, AgentSettingsStateTest
+
+### Community 35 - "rules"
+Cohesion: 0.08
+Nodes (25): rules, adr-discipline, api-design-basics, changelog, code-format, commit, current-state, decision-making (+17 more)
+
+### Community 36 - "AcpSessionControllerImpl"
+Cohesion: 0.14
 Nodes (8): AgentInfo, Client, ClientSession, Event, Job, Protocol, AcpSessionControllerImpl, CompletableDeferred
 
-### Community 35 - "TranscriptBlock"
-Cohesion: 0.18
-Nodes (12): AuthFailureLine, ErrorLine, FinalAgentText, PlainLine, PlanBlock, StreamingAgentText, Thought, ToolCallBlock (+4 more)
+### Community 37 - "acp-session-controller-deepening/prd.md"
+Cohesion: 0.08
+Nodes (24): `AcpEditorContext` — no structural change, ADR alignment, `AuthFlowCoordinator` — unchanged public surface, Caller migration (`AcpAgentEditor`), Editor-facing interface (after), Error recovery during resume, Further Notes, Implementation Decisions (+16 more)
 
-### Community 36 - "Changelog"
-Cohesion: 0.28
-Nodes (21): 2026-02-19, 2026-02-20, 2026-02-23, 2026-04-02, 2026-04-03, 2026-04-26, 2026-05-25, 2026-06-16 (+13 more)
+### Community 38 - "autoIncluded"
+Cohesion: 0.09
+Nodes (22): autoIncluded, AGENTS.md, CONTEXT.md, docs/adr/, docs/agent-commands.md, docs/agents/domain.md, docs/agents/issue-tracker.md, docs/agents/triage-labels.md (+14 more)
 
-### Community 37 - "Implementation Steps (Easiest → Hardest)"
+### Community 39 - "Your task (in order)"
+Cohesion: 0.09
+Nodes (21): Catalog tailoring, Complete agent setup — greenfield install, Constraints (mandatory), Definition of done wiring, Duplicate content audit, Graphify automation, How to work with the human, Initial graphify (+13 more)
+
+### Community 40 - "Implementation Steps (Easiest → Hardest)"
 Cohesion: 0.10
 Nodes (20): ACP Client Transcript Output: Implementation Roadmap, ACP Update Types (from `SessionUpdate`), Architectural Notes, Current event flow, Current State, Implementation Steps (Easiest → Hardest), Step 1: Separate transcript into a structured component (huge payoff, low effort), Step 2: Color-code status badges for tool calls (small effort, clear UX win) (+12 more)
 
-### Community 38 - "CollapsibleToolPanel"
-Cohesion: 0.28
-Nodes (4): Dimension, CollapsibleToolPanel, JEditorPane, JPanel
+### Community 41 - "TranscriptFooter"
+Cohesion: 0.16
+Nodes (3): JPanel, TranscriptFooter, TranscriptFooterTest
 
-### Community 39 - "Your task (in order)"
+### Community 42 - "Changelog"
+Cohesion: 0.10
+Nodes (20): 2026-02-19, 2026-02-20, 2026-04-03, 2026-05-25, 2026-06-24, 2026-07-23, 2026-08-03, Added (+12 more)
+
+### Community 43 - "AnActionEvent"
+Cohesion: 0.14
+Nodes (10): ActionGroup, ActionUpdateThread, AnAction, AnActionEvent, DumbAware, DumbAwareAction, SelectAgentConfigurationActionGroup, DumbAwareAction (+2 more)
+
+### Community 44 - "Engineering Wiki Log"
 Cohesion: 0.11
-Nodes (18): Catalog tailoring, Complete agent setup — greenfield install, Constraints (mandatory), Definition of done wiring, Duplicate content audit, Graphify automation, How to work with the human, Initial graphify (+10 more)
+Nodes (19): [2026-06-16] ingest | Agent CLI overview, [2026-06-16] ingest | Worktree subsystem, [2026-06-24] ingest | Architecture decisions map, [2026-06-24] ingest | Domain context & ACP transcript model, [2026-06-24] ingest | Quality gate & release workflow, [2026-06-26] update | Agent CLI overview, [2026-06-26] update | Domain context & ACP transcript model, [2026-06-26] update | Wiki log backfill (+11 more)
 
-### Community 40 - "AgentConfigRow"
-Cohesion: 0.17
-Nodes (6): AgentConfigRow, normalizeExecutionTarget(), normalizeLaunchMode(), toRow(), AgentConfigRowColumns, AgentSettingsValidation
+### Community 45 - "Verified Facts"
+Cohesion: 0.11
+Nodes (19): ACP client subsystem, Agent Synthesis, Architecture, Event ingestion (`TranscriptEventIngestion`), Markdown rendering (`TranscriptMarkdownRenderer`), Open Questions, Plan visualization (`PlanPanel`, `PlanPanelRenderer`), Prompt event routing (`TranscriptEventIngestion`) (+11 more)
 
-### Community 41 - "AgentWorktreeGitSupport"
+### Community 47 - "CollapsibleToolPanel"
+Cohesion: 0.22
+Nodes (6): Dimension, CollapsibleToolPanel, JEditorPane, JPanel, applyTranscriptColumnWidth(), JComponent
+
+### Community 48 - "transcript-pipeline-consolidation/prd.md"
+Cohesion: 0.11
+Nodes (17): Further Notes, Modules to test, Out of Scope, Phase 1 — Delete dead path (high leverage, low risk), Phase 2 — Deepen event ingestion seam, Phase 3 — Deepen view seam (optional follow-up in same PR if scope allows), Phase 4 — Documentation alignment, Prior art (+9 more)
+
+### Community 49 - "AgentWorktreeGitSupport"
 Cohesion: 0.20
 Nodes (8): FilePath, Git, GitCommandResult, AgentWorktreeGitSupport, GitRepository, Project, Result, ParsedWorktree
 
-### Community 42 - "AgentLaunchContext"
-Cohesion: 0.19
-Nodes (5): AgentProjectContext, toAgentProjectContext(), AgentLaunchContext, AcpLaunchArgumentsTest, AcpProcessLauncherTest
-
-### Community 43 - "ScopedFileSystemOperations"
+### Community 50 - "ScopedFileSystemOperations"
 Cohesion: 0.22
 Nodes (6): create(), InScope, OutOfScope, ScopedFileSystemOperations, ScopeResult, ScopedFileSystemOperationsTest
 
-### Community 44 - "Agentic Development Configurator setup"
+### Community 51 - "AgentConfigRow"
+Cohesion: 0.18
+Nodes (6): AgentConfigRow, normalizeExecutionTarget(), normalizeLaunchMode(), toRow(), AgentConfigRowColumns, AgentSettingsValidation
+
+### Community 52 - "LaunchResumePlan"
+Cohesion: 0.14
+Nodes (8): AcpResumeStrategy, AcpLoad, AcpNewSession, AcpPickSession, LaunchResumePlan, Pty, PtyResumeStrategy, ResumeStrategy
+
+### Community 53 - "Agentic Development Configurator setup"
 Cohesion: 0.12
 Nodes (16): Agentic Development Configurator setup, Auto-detection, Cleaning up, Curated backend paths, First graph build, Graphify extraction backend, Headroom (context optimization), Install steps (+8 more)
 
-### Community 45 - "How pi-agent Handles Displaying User Input and Model Output"
+### Community 54 - "Glossary"
+Cohesion: 0.12
+Nodes (17): ACP (Agent Client Protocol), Agent CLI plugin, Agent configuration, AgentConfigurationSelector, `agentSettings.xml` / `acp.json`, Default agent configuration, Domain context, Glossary (+9 more)
+
+### Community 55 - "How pi-agent Handles Displaying User Input and Model Output"
 Cohesion: 0.12
 Nodes (16): 1. Overview, 2.1 The Editor, 2.2 Editor Border, 2.3 Message Queue Display, 2. User Input Display, 3.1 Event Pipeline, 3.2 Assistant Message Rendering, 3.3 Tool Call and Execution Display (+8 more)
 
-### Community 46 - "AcpLaunchPlan"
-Cohesion: 0.19
-Nodes (6): AcpLaunchPlan, McpServer, AcpLaunchRequest, AcpProcessLauncher, Result, AcpLaunchPlanTest
-
-### Community 47 - "IdeScopedFileSystemAccess"
+### Community 56 - "IdeScopedFileSystemAccess"
 Cohesion: 0.29
 Nodes (6): AccessResult, Failure, IdeScopedFileSystemAccess, T, VirtualFile, Success
 
-### Community 48 - "AgentConfigurationResolutionInput"
+### Community 57 - "AgentConfigurationResolutionInput"
 Cohesion: 0.17
 Nodes (6): AgentConfigurationResolution, AgentConfigurationResolutionInput, AgentConfigurationResolutionResult, AgentConfigurationSelector, Project, AgentConfigurationResolutionTest
 
-### Community 49 - "install.sh"
+### Community 58 - "install.sh"
 Cohesion: 0.25
 Nodes (13): collect_required_tools(), ensure_graphify_path(), ensure_headroom_path(), has_graphify_extraction_backend_env(), have(), plan_includes_graphify(), print_tool_help(), prior_adc_in_head() (+5 more)
 
-### Community 50 - "AuthFlowCoordinator"
+### Community 59 - "install.ps1"
+Cohesion: 0.19
+Nodes (10): Get-RequiredTools(), Invoke-EnvCheck(), Show-GraphifyExtractionBackendWarning(), Show-HeadroomWindowsBuildHelp(), Show-ToolHelp(), Test-GraphifyExtractionBackendEnv(), Test-Have(), Test-MsvcLinkAvailable() (+2 more)
+
+### Community 60 - "AGENTS.md"
+Cohesion: 0.12
+Nodes (14): Architecture and exploration questions, Before Committing, changelog, Commit Strategy, decision-making, Decision Making and User Guidance, How project rules apply, Ponytail, lazy senior dev mode (+6 more)
+
+### Community 61 - "Wiki"
+Cohesion: 0.12
+Nodes (15): Architecture and exploration questions, Before Commit, Operations, Output, Pre-task consultation, Purpose, Read First, Source Rules (+7 more)
+
+### Community 62 - "AuthFlowCoordinator"
 Cohesion: 0.27
 Nodes (5): AuthMethodId, AuthFlowCoordinator, AuthMethod, Result, AuthMethodSupportTest
 
-### Community 52 - "AcpSessionController"
+### Community 63 - "worktree-pending-launch-handoff/prd.md"
+Cohesion: 0.12
+Nodes (15): Behavioural fixes bundled with deepening (optional, scope separately), Friction (deep-module diagnosis), Further Notes, Lifecycle (current), Modules to test, Out of Scope, Prior art, Problem Statement (+7 more)
+
+### Community 65 - "AgentVirtualFile"
 Cohesion: 0.13
-Nodes (3): defaultSessionController(), AcpSessionController, SessionSummary
+Nodes (6): LightVirtualFile, AgentVirtualFile, AgentPendingLaunchStartupActivity, Project, AgentCliSessionContextTest, StartupActivity
 
-### Community 54 - "AnActionEvent"
-Cohesion: 0.22
-Nodes (7): DeleteWorktreeAction, AnActionEvent, DumbAwareAction, ManageAgentSettingsAction, OpenOrResumeWorktreeAction, RunAgentInCurrentProjectAction, RunAgentInNewWorktreeAction
+### Community 66 - "AcpSessionController"
+Cohesion: 0.13
+Nodes (3): defaultSessionController(), AcpEditorContext, AcpSessionController
 
-### Community 55 - "RecordingCodeBlockViewFactory"
-Cohesion: 0.18
-Nodes (5): javax, JPanel, RecordingCodeBlockViewFactory, TranscriptBlockViewFactoryTest, TranscriptTextTruncationTest
-
-### Community 56 - "install.ps1"
-Cohesion: 0.23
-Nodes (10): Get-RequiredTools(), Invoke-EnvCheck(), Show-GraphifyExtractionBackendWarning(), Show-HeadroomWindowsBuildHelp(), Show-ToolHelp(), Test-GraphifyExtractionBackendEnv(), Test-Have(), Test-MsvcLinkAvailable() (+2 more)
-
-### Community 57 - "triageLabels"
+### Community 67 - "triageLabels"
 Cohesion: 0.18
 Nodes (14): agentSetup, domainLayout, issueTracker, required, triageLabels, gitRemoteUrl, otherDescription, type (+6 more)
 
-### Community 58 - "AgentWorktreeService"
-Cohesion: 0.29
-Nodes (8): R, AgentWorktreeService, bind(), CreatedWorktree, GitRepository, Result, ManagedWorktree, resumeArgumentsForConfiguration()
-
-### Community 59 - "Agent CLI"
+### Community 68 - "Agent CLI"
 Cohesion: 0.14
 Nodes (13): Agent CLI, Developer documentation, How to use, Installation, License, Requirements and notes, Running in WSL2 on Windows, Screenshots (+5 more)
 
-### Community 60 - "AgentSettingsUiFactory"
-Cohesion: 0.19
-Nodes (7): DetailPanelHints, EnvironmentVariablesEditor, AgentSettingsUiFactory, JBTable, JCheckBox, JComponent, JPanel
+### Community 69 - "RecordingSessionController"
+Cohesion: 0.16
+Nodes (3): SessionSummary, AcpSessionControllerTest, RecordingSessionController
 
-### Community 61 - "EnvironmentVariablesTableModel"
+### Community 70 - "isAgentCliLogEnabled"
+Cohesion: 0.29
+Nodes (4): isAgentCliDebugEnabled(), isAgentCliEnvFlagTrue(), isAgentCliLogEnabled(), AgentCliLogGatesTest
+
+### Community 71 - "EnvironmentVariablesTableModel"
 Cohesion: 0.16
 Nodes (3): EnvironmentVariableRow, EnvironmentVariablesTableModel, AbstractTableModel
 
-### Community 62 - "skillSource"
+### Community 73 - "skillSource"
 Cohesion: 0.15
 Nodes (13): acknowledgeUnsafeCommands, piPackages, skillSource, install, diagnosing-bugs, grill-with-docs, grilling, improve-codebase-architecture (+5 more)
 
-### Community 63 - "AGENTS.md"
-Cohesion: 0.17
-Nodes (11): Before Committing, Commit Strategy, decision-making, Decision Making and User Guidance, Formatting guidance, role, Rules index, signature (+3 more)
+### Community 74 - "CONTEXT.md"
+Cohesion: 0.42
+Nodes (4): Agent Synthesis, Related, Summary, Verified Facts
 
-### Community 64 - "TranscriptToolCallDiffRenderer"
-Cohesion: 0.28
-Nodes (3): IntArray, ToolCallContent, TranscriptToolCallDiffRenderer
+### Community 75 - "0004-session-observability.md"
+Cohesion: 0.15
+Nodes (12): ADR 0004: Session observability — transcript file and tiered IDE logging, Alternatives considered, Consequences, Context, Decision, Delivery, Negative, Neutral (+4 more)
 
-### Community 65 - ".createEditor"
-Cohesion: 0.19
-Nodes (8): AgentEditorFactory, FileEditor, Project, from(), fromDisplayLabel(), LaunchMode, ACP_CLIENT, PTY_PASSTHROUGH
+### Community 76 - "Implementation Decisions"
+Cohesion: 0.15
+Nodes (13): ADR alignment, Copy session diagnostics editor action, Correlation tokens (transcript errors), Debounced snapshot writer, Delivery boundary, Glossary (CONTEXT.md), Implementation Decisions, Integration points (conceptual) (+5 more)
 
-### Community 66 - ".buildWslTerminalStartupRequest"
-Cohesion: 0.29
-Nodes (5): TerminalStartupRequest, applyCursorResumeFallbackForLocal(), applyCursorResumeFallbackForWsl(), resolvePtyConfiguration(), resolvePtyExecutionTarget()
-
-### Community 67 - "Engineering Wiki Schema"
+### Community 77 - "Engineering Wiki Schema"
 Cohesion: 0.15
 Nodes (12): Engineering Wiki Schema, Evidence Rules, Frontmatter, Links, Log Format, Mechanical Lint, Page Body, Page Types (+4 more)
 
-### Community 68 - "ADR 0003: Per-project agent selection"
-Cohesion: 0.17
-Nodes (11): ADR 0003: Per-project agent selection, Alternatives considered, Consequences, Context, Decision, Migration, Negative, Neutral (+3 more)
+### Community 78 - "ShellPaneHost"
+Cohesion: 0.29
+Nodes (4): ShellStartupOptions, JComponent, ShellTerminalWidget, ShellPaneHost
 
-### Community 69 - "manifest.json"
+### Community 80 - "TranscriptToolCallDiffRenderer"
+Cohesion: 0.28
+Nodes (3): IntArray, ToolCallContent, TranscriptToolCallDiffRenderer
+
+### Community 82 - "manifest.json"
 Cohesion: 0.17
 Nodes (11): agenticConfigVersion, bundleOnlyRules, generatedAt, installPlan, skillsAgentFlag, steps, targetAgent, version (+3 more)
 
-### Community 70 - "definition-of-done"
+### Community 83 - "During composition (read-only)"
 Cohesion: 0.17
-Nodes (12): 1. Strict Output Rules, 2. Format Expectations, 3. Context and Scope, 4. Execution and Verification, definition-of-done, Documentation, ponytail, Refactoring (+4 more)
+Nodes (11): After acceptance, Challenge against existing language, Cross-reference with code, Decision-record candidates (inventory only), Discover existing documentation, Discuss concrete scenarios, During composition (read-only), Grill result table (+3 more)
 
-### Community 71 - "restricted-operations"
+### Community 84 - "ADR 0003: Per-project agent selection"
 Cohesion: 0.17
-Nodes (12): Agent skills, Always allowed (no permission needed), Domain docs, Issue tracker, Triage labels, Permission request format, Policy, Ponytail, lazy senior dev mode (+4 more)
+Nodes (11): ADR 0003: Per-project agent selection, Alternatives considered, Consequences, Context, Decision, Migration, Negative, Neutral (+3 more)
 
-### Community 72 - "AgentFileEditorProvider"
+### Community 85 - "acp-transcript-block-alignment-fix/prd.md"
+Cohesion: 0.17
+Nodes (11): Further Notes, Modules to test, Out of Scope, Prior art, Problem Statement, Solution, Status, Testing Decisions (+3 more)
+
+### Community 86 - "AgentFileEditorProvider"
 Cohesion: 0.20
 Nodes (7): FileEditorPolicy, FileEditorProvider, AgentFileEditorProvider, DumbAware, FileEditor, Project, VirtualFile
 
-### Community 73 - "AgentVirtualFile"
-Cohesion: 0.17
-Nodes (5): LightVirtualFile, AgentVirtualFile, AgentPendingLaunchStartupActivity, Project, StartupActivity
-
-### Community 74 - "ShellPaneHost"
-Cohesion: 0.32
-Nodes (4): ShellStartupOptions, JComponent, ShellTerminalWidget, ShellPaneHost
-
-### Community 75 - "LaunchResumePlan"
+### Community 89 - "Restricted Operations"
 Cohesion: 0.18
-Nodes (7): AcpResumeStrategy, AcpLoad, AcpNewSession, AcpPickSession, LaunchResumePlan, Pty, ResumeStrategy
+Nodes (11): Agent skills, Always allowed (no permission needed), Domain docs, Issue tracker, Permission request format, Policy, Repo-Specific Notes, Restricted categories (require explicit permission) (+3 more)
 
-### Community 77 - "changelog"
+### Community 90 - "Feature backlog — master status"
 Cohesion: 0.18
-Nodes (11): Architecture and exploration questions, Both tracks, changelog, commit, How project rules apply, How to update, Narrative overview questions, Scoped rule loading policy (+3 more)
+Nodes (11): 1. `acp-transcript-block-alignment-fix` — user-visible layout bug, 2. `acp-client-operations-wiring` — filesystem client-op deepening, 3. `acp-session-resume-orchestration` — resume execution deep module, 4. `acp-session-controller-deepening` — controller module deepening, 5. `worktree-pending-launch-handoff` — cross-project launch handoff deepening, Architecture conflict — resume orchestration, Completed features, Feature backlog — master status (+3 more)
 
-### Community 78 - "CollapsibleToolPanel.kt"
-Cohesion: 0.29
-Nodes (6): MouseEvent, componentResized(), keyPressed(), ComponentEvent, KeyEvent, mouseClicked()
-
-### Community 79 - "SelectAgentConfigurationActionGroup"
-Cohesion: 0.20
-Nodes (6): ActionGroup, ActionUpdateThread, AnAction, AnActionEvent, DumbAware, SelectAgentConfigurationActionGroup
-
-### Community 80 - "DetailPanelBindings"
-Cohesion: 0.25
-Nodes (4): DetailPanelBindings, AgentSettingsDetailPanelSupport, JBLabel, JCheckBox
-
-### Community 81 - ".buildWorktreeChildren"
-Cohesion: 0.33
-Nodes (4): ActionGroup, AnAction, com, RunAgentSplitActionGroup
-
-### Community 82 - "Wiki"
+### Community 91 - "tiered-session-diagnostics/prd.md"
 Cohesion: 0.18
-Nodes (10): Before Commit, Operations, Output, Pre-task consultation, Purpose, Wiki, `/wiki-ingest`, `/wiki-lint` (+2 more)
+Nodes (10): Further Notes, Out of Scope, Problem Statement, Relationship to ADR 0004, Scope of migration (PR1), Session context on log lines, Solution, Status (+2 more)
 
-### Community 83 - "Agent Commands"
+### Community 92 - "AgentCliLog.kt"
+Cohesion: 0.22
+Nodes (6): AgentCliLogTierProbe, getInstance(), invoke(), AgentCliLogTierProbe, isDebugEnabled(), isLogEnabled()
+
+### Community 93 - "AgentCliSessionContext"
+Cohesion: 0.38
+Nodes (5): AgentCliLog, AgentCliSessionContext, formatAgentCliLogMessage(), formatAgentCliSessionContextPrefix(), toAgentCliSessionContext()
+
+### Community 94 - "contentHashes"
 Cohesion: 0.20
-Nodes (9): Agent Commands, Build / Typecheck, Docs Checks, Format, Lint, Runtime-Restricted Checks, Test, To Complete (+1 more)
+Nodes (10): contentHashes, AGENTS.md, .agents/skills/graphify/SKILL.md, .agents/skills/grill-with-docs-batch/SKILL.md, .agents/skills/repo-navigation/SKILL.md, .agents/skills/to-spec/SKILL.md, .agents/skills/to-tickets/SKILL.md, .agents/skills/wiki/SKILL.md (+2 more)
 
-### Community 84 - "Development Guide"
-Cohesion: 0.20
-Nodes (9): Build plugin workflow, CI and release flow, Common Gradle tasks, Development Guide, IntelliJ Platform references, Local testing checklist, Prerequisites, Project overview (+1 more)
-
-### Community 85 - "During the session"
+### Community 95 - "During the session"
 Cohesion: 0.20
 Nodes (9): Challenge against the glossary, Cross-reference with code, Discuss concrete scenarios, Domain awareness, During the session, File structure, Offer ADRs sparingly, Sharpen fuzzy language (+1 more)
 
-### Community 86 - "RunAgentSplitButtonAction"
-Cohesion: 0.20
-Nodes (5): SplitButtonAction, ActionUpdateThread, DumbAware, RunAgentSplitButtonAction, RunAgentSplitButtonActionTest
-
-### Community 87 - "AcpJsonImportDraft"
-Cohesion: 0.31
-Nodes (6): AcpJsonImportDraft, AcpJsonImporter, AcpJsonImportResult, copyOf(), JsonObject, Result
-
-### Community 88 - "WorktreeLaunchCoordinator"
-Cohesion: 0.33
-Nodes (3): Project, WorktreeLaunchCoordinator, WslPaths
-
-### Community 89 - "WslPathResolver"
-Cohesion: 0.33
-Nodes (3): ResolvedWslPath, WorkingDirectoryResolver, WslPathResolver
-
-### Community 93 - "Test-Driven Development"
+### Community 96 - "Test-Driven Development"
 Cohesion: 0.20
 Nodes (9): 1. Planning, 2. Tracer Bullet, 3. Incremental Loop, 4. Refactor, Anti-Pattern: Horizontal Slices, Checklist Per Cycle, Philosophy, Test-Driven Development (+1 more)
 
-### Community 94 - "ADR 0001: Custom ACP client in the Agent CLI plugin"
-Cohesion: 0.22
-Nodes (8): ADR 0001: Custom ACP client in the Agent CLI plugin, Alternatives considered, Consequences, Context, Decision, Negative, Neutral, Positive
+### Community 97 - "Workflow gates"
+Cohesion: 0.20
+Nodes (9): Fix-everything-before-continue (mandatory), Format (ktlint), Generic gate order (toolchain not installed), Graphify (step 7), Kotlin/Gradle gate order (this repository), Lint (ktlint + detekt), Optional docs-only path, Tests (+1 more)
 
-### Community 95 - "ADR 0002: Kotlin ACP SDK for the plugin client"
-Cohesion: 0.22
-Nodes (8): ADR 0002: Kotlin ACP SDK for the plugin client, Alternatives considered, Consequences, Context, Decision, Negative, Neutral, Positive
+### Community 98 - "Agent Commands"
+Cohesion: 0.20
+Nodes (9): Agent Commands, Build / Typecheck, Docs Checks, Format, Lint, Quality Gate, Runtime-Restricted Checks, Test (+1 more)
 
-### Community 96 - "Vertical slice boundaries"
+### Community 99 - "Development Guide"
+Cohesion: 0.20
+Nodes (9): Build plugin workflow, CI and release flow, Common Gradle tasks, Development Guide, IntelliJ Platform references, Local testing checklist, Prerequisites, Project overview (+1 more)
+
+### Community 100 - "settings-observability-help/prd.md"
+Cohesion: 0.20
+Nodes (9): Documentation boundary, Further Notes, Out of Scope, Problem Statement, Session diagnostics (IDE log), Session transcript file, Solution, Status (+1 more)
+
+### Community 101 - "Implementation Decisions"
+Cohesion: 0.20
+Nodes (10): ADR and glossary alignment, AgentCliLog module, Implementation Decisions, Migration map, New tier-1 coverage (dialog-only gaps), Ownership, Performance, Registry keys (+2 more)
+
+### Community 103 - "TranscriptRenderer"
+Cohesion: 0.20
+Nodes (3): ToolCallStatus, ToolKind, TranscriptRenderer
+
+### Community 104 - "AcpJsonImportDraft"
+Cohesion: 0.31
+Nodes (6): AcpJsonImportDraft, AcpJsonImporter, AcpJsonImportResult, copyOf(), JsonObject, Result
+
+### Community 105 - "DetailPanelBindings"
+Cohesion: 0.29
+Nodes (4): DetailPanelBindings, AgentSettingsDetailPanelSupport, JBLabel, JCheckBox
+
+### Community 106 - "WslPathResolver"
+Cohesion: 0.33
+Nodes (3): ResolvedWslPath, WorkingDirectoryResolver, WslPathResolver
+
+### Community 109 - "Vertical slice boundaries"
 Cohesion: 0.22
 Nodes (8): Adapters vs domain, Cross-slice calls, Duplicate over shared (default), Kernel and composition, Project overlay, Public entry only, Tests, Vertical slice boundaries
 
-### Community 97 - "wiki-lint.mjs"
+### Community 110 - "to-spec/SKILL.md"
+Cohesion: 0.22
+Nodes (8): Further Notes, Implementation Decisions, Out of Scope, Problem Statement, Process, Solution, Testing Decisions, User Stories
+
+### Community 111 - "Process"
+Cohesion: 0.22
+Nodes (8): 1. Gather context, 2. Explore the codebase (optional), 3. Draft vertical slices, 4. Publish the tickets, Feature backlog (`docs/features/STATUS.md`), <NN> — <Ticket title>, Process, To Tickets
+
+### Community 112 - "ADR 0001: Custom ACP client in the Agent CLI plugin"
+Cohesion: 0.22
+Nodes (8): ADR 0001: Custom ACP client in the Agent CLI plugin, Alternatives considered, Consequences, Context, Decision, Negative, Neutral, Positive
+
+### Community 113 - "ADR 0002: Kotlin ACP SDK for the plugin client"
+Cohesion: 0.22
+Nodes (8): ADR 0002: Kotlin ACP SDK for the plugin client, Alternatives considered, Consequences, Context, Decision, Negative, Neutral, Positive
+
+### Community 114 - "acp-session-transcript-persistence/prd.md"
+Cohesion: 0.22
+Nodes (8): Further Notes, Out of Scope, Problem Statement, Session transcript file behavior, Solution, Status, Two observability channels (PR2 scope), User Stories
+
+### Community 115 - "Architecture decisions map"
+Cohesion: 0.22
+Nodes (9): ADR 0001 — Custom ACP client in the plugin, ADR 0002 — Kotlin ACP SDK, ADR 0003 — Per-project agent selection, Agent Synthesis, Architecture decisions map, Open Questions, Related, Summary (+1 more)
+
+### Community 116 - "wiki-lint.mjs"
 Cohesion: 0.22
 Nodes (5): exclude, files, pathMapPath, root, wikiDir
 
-### Community 98 - "TerminalSessionRegistry"
+### Community 117 - "LaunchMode"
+Cohesion: 0.28
+Nodes (6): worktreeLabel(), from(), fromDisplayLabel(), LaunchMode, ACP_CLIENT, PTY_PASSTHROUGH
+
+### Community 118 - "SessionDiagnosticsCollector"
+Cohesion: 0.28
+Nodes (3): RecordedError, SessionDiagnosticsCollector, SessionDiagnosticsCollectorTest
+
+### Community 119 - "TerminalSessionRegistry"
 Cohesion: 0.28
 Nodes (3): TerminalSession, ShellTerminalWidget, TerminalSessionRegistry
 
-### Community 99 - "bindTranscriptBlock"
-Cohesion: 0.42
-Nodes (8): bindAuthFailureLine(), bindErrorLine(), bindFinalAgent(), bindPlainLine(), bindStreamingAgent(), bindThought(), bindTranscriptBlock(), bindUserEcho()
+### Community 121 - "ResolvedLaunchInputs"
+Cohesion: 0.47
+Nodes (5): AgentLaunchResolver, Result, Local, ResolvedLaunchInputs, Wsl
 
-### Community 102 - "ProjectAgentSelectionState"
-Cohesion: 0.28
+### Community 123 - "ProjectAgentSelectionState"
+Cohesion: 0.31
 Nodes (3): PersistentStateComponent, ProjectAgentSelectionState, State
 
-### Community 105 - "selection"
+### Community 126 - "selection"
 Cohesion: 0.25
 Nodes (8): enabled, selection, contextOptimization, graphify, targetAgent, version, targetAgent, id
 
-### Community 106 - "package.json"
+### Community 127 - "Definition of Done"
 Cohesion: 0.25
-Nodes (7): devDependencies, name, private, scripts, prepare, wiki-lint, version
+Nodes (8): Changelog, Definition of Done, Documentation, ponytail, Refactoring, Tests, Wiki, Workflow gates
 
-### Community 107 - "Review"
+### Community 128 - "Review"
 Cohesion: 0.25
 Nodes (7): Assumption, Output, Purpose, Read First, Review, Review Priorities, Rules
 
-### Community 109 - "AiAssistantPresence"
+### Community 129 - "Implementation Decisions"
+Cohesion: 0.25
+Nodes (8): ADR alignment, Composition root relocation, Deep module interface (sketch), Implementation Decisions, Modules to modify, Ownership, VFS seam, Why this works (leverage and locality)
+
+### Community 130 - "acp-session-resume-orchestration/prd.md"
+Cohesion: 0.25
+Nodes (7): Further Notes, Out of Scope, Solution, Status, Target shape, User Stories, What callers gain (leverage + locality)
+
+### Community 131 - "Implementation Decisions"
+Cohesion: 0.25
+Nodes (8): ADR alignment, Implementation Decisions, Modules to create, Modules to modify, Modules unchanged (behavior preserved), Ownership / slice, Plan type cleanup, Seam design
+
+### Community 132 - "Problem Statement"
+Cohesion: 0.25
+Nodes (8): Contrast with PTY resume (healthy depth), Cross-slice coupling, Duplicated fallback paths and weak error recovery coverage, Misleading plan shape and dead field, Problem Statement, Shallow strategy, missing execution locality, Test coverage gap, Where logic lives today
+
+### Community 133 - "Implementation Decisions"
+Cohesion: 0.25
+Nodes (8): 20px left inset is intentional, ADR alignment, Implementation Decisions, Modules to modify, Nested scroll pane (informational, no change), Ownership, The fix, Why this works
+
+### Community 134 - "Implementation Decisions"
+Cohesion: 0.25
+Nodes (8): Copy and terminology, Focused project resolution, Implementation Decisions, Lifecycle, Modules touched, Placement and layout, Transcript directory and reveal, UI components
+
+### Community 135 - "Implementation Decisions"
+Cohesion: 0.25
+Nodes (8): ADR alignment, Deletion test summary, Implementation Decisions, Migration notes, Modules to consolidate, Modules to delete, Modules to keep unchanged (this PRD), Ownership
+
+### Community 136 - "Engineering Wiki Index"
+Cohesion: 0.25
+Nodes (8): Concepts, Debugging, Engineering Wiki Index, Known Traps, Source Notes, Subsystems, Synthesis, Workflows
+
+### Community 137 - "package.json"
+Cohesion: 0.25
+Nodes (7): devDependencies, name, private, scripts, prepare, wiki-lint, version
+
+### Community 139 - "CursorResumeProbeRequest"
+Cohesion: 0.32
+Nodes (5): applyCursorResumeFallbackForLocal(), applyCursorResumeFallbackForWsl(), resolvePtyConfiguration(), CursorResumeProbe, CursorResumeProbeRequest
+
+### Community 141 - "AiAssistantPresence"
 Cohesion: 0.29
 Nodes (3): AiAssistantPresence, fromPluginProbe(), AiAssistantPresenceTest
 
-### Community 111 - "headroom"
+### Community 142 - ".buildLaunchContext"
+Cohesion: 0.39
+Nodes (3): Project, Result, WorktreeLaunchCoordinator
+
+### Community 143 - "headroom"
 Cohesion: 0.29
 Nodes (7): headroom, enabled, guide, mcp, piExtension, rule, runtime
 
-### Community 112 - "Process"
-Cohesion: 0.29
-Nodes (6): 1. Explore, 2. Present candidates as an HTML report, 3. Grilling loop, Glossary, Improve Codebase Architecture, Process
-
-### Community 113 - "Functional Programming Principles"
+### Community 144 - "Functional Programming Principles"
 Cohesion: 0.29
 Nodes (6): Core vs. Shell, Data Transformation Style, Encapsulated Internal Mutation, Error Handling, Functional Programming Principles, Wrapping Impure Boundaries
 
-### Community 114 - "Headroom Consultation"
+### Community 145 - "Process"
 Cohesion: 0.29
-Nodes (6): Headroom Consultation, Operations, Pre-task consultation, Repository notes, Source hierarchy, When to consult
+Nodes (6): 1. Explore, 2. Present candidates as an HTML report, 3. Grilling loop, Glossary, Improve Codebase Architecture, Process
 
-### Community 120 - "Vertical slice migration"
+### Community 146 - "Repository navigation"
+Cohesion: 0.29
+Nodes (6): Both tracks, Narrative overview questions, Repository navigation, Structural topology questions, This repo's domain, This repo's slices
+
+### Community 147 - "Vertical slice migration"
 Cohesion: 0.29
 Nodes (6): Deep module check, Mode EXISTING — Strangler migration, Mode NEW — Greenfield, Step 0 — Detect layout and mode, Vertical slice migration, Where does this code belong?
 
-### Community 121 - "Domain Docs"
+### Community 148 - "acp-client-operations-wiring/prd.md"
+Cohesion: 0.29
+Nodes (6): Further Notes, Out of Scope, Problem Statement, Solution, Status, User Stories
+
+### Community 149 - "MouseAdapter"
+Cohesion: 0.33
+Nodes (5): MouseAdapter, MouseAdapter, MouseAdapter, MouseEvent, tryOpenUrl()
+
+### Community 150 - "CollapsibleToolPanel.kt"
+Cohesion: 0.29
+Nodes (6): componentResized(), keyPressed(), ComponentEvent, KeyEvent, MouseEvent, mouseClicked()
+
+### Community 154 - "Strict Output and Execution"
+Cohesion: 0.33
+Nodes (6): 1. Strict Output Rules, 2. Format Expectations, 3. Context and Scope, 4. Execution and Verification, definition-of-done, Strict Output and Execution
+
+### Community 155 - "Headroom Consultation"
+Cohesion: 0.33
+Nodes (5): Headroom Consultation, Operations, Pre-task consultation, Source hierarchy, When to consult
+
+### Community 156 - "Graphify (consultation overlay)"
+Cohesion: 0.33
+Nodes (5): Graphify (consultation overlay), Operations, Pre-task consultation, Source hierarchy, Structural question triggers
+
+### Community 157 - "2026-06-22"
+Cohesion: 0.33
+Nodes (6): 2026-06-22, Added, Changed, Documentation, Fixed, Removed
+
+### Community 158 - "2026-07-24"
+Cohesion: 0.33
+Nodes (6): 2026-07-24, Added, Changed, Documentation, Fixed, Removed
+
+### Community 159 - "Domain Docs"
 Cohesion: 0.33
 Nodes (5): Before exploring, read these, Domain Docs, File structure, Flag ADR conflicts, Use the glossary's vocabulary
 
-### Community 122 - "Issue tracker: Repo PRDs (`docs/prds/`)"
+### Community 160 - "Issue tracker: Repo specs (`docs/features/`)"
 Cohesion: 0.33
-Nodes (5): Conventions, Issue tracker: Repo PRDs (`docs/prds/`), Related configuration, When a skill says "fetch the relevant ticket", When a skill says "publish to the issue tracker"
+Nodes (5): Conventions, Issue tracker: Repo specs (`docs/features/`), Related configuration, When a skill says "fetch the relevant ticket", When a skill says "publish to the issue tracker"
 
-### Community 123 - "AgentEditorTabTitleProvider"
+### Community 161 - "Testing Decisions"
+Cohesion: 0.33
+Nodes (6): Modules not requiring dedicated timing tests, Modules to test, Prior art, Testing Decisions, Verification, What makes a good test
+
+### Community 162 - "Implementation Decisions"
+Cohesion: 0.33
+Nodes (6): ADR alignment, Implementation Decisions, Invariants the deep module owns, Modules to modify, Ownership, Seam layout (after)
+
+### Community 163 - "Domain context & ACP transcript model"
+Cohesion: 0.33
+Nodes (6): Agent Synthesis, Domain context & ACP transcript model, Open Questions, Related, Summary, Verified Facts
+
+### Community 164 - "Worktree subsystem"
+Cohesion: 0.33
+Nodes (6): Agent Synthesis, Open Questions, Related, Summary, Verified Facts, Worktree subsystem
+
+### Community 165 - "AgentEditorTabTitleProvider"
 Cohesion: 0.33
 Nodes (4): EditorTabTitleProvider, AgentEditorTabTitleProvider, Project, VirtualFile
 
-### Community 124 - "Warning Hygiene"
-Cohesion: 0.33
-Nodes (5): Enforcement, Migration (legacy code), Rationale, Warning Hygiene, Zero-Suppression Policy
+### Community 168 - ".createEditor"
+Cohesion: 0.40
+Nodes (3): AgentEditorFactory, FileEditor, Project
 
-### Community 129 - "OpenAgentEditorAction"
+### Community 169 - "CopySessionDiagnosticsAction"
+Cohesion: 0.40
+Nodes (3): CopySessionDiagnosticsAction, AnActionEvent, DumbAwareAction
+
+### Community 170 - "OpenAgentEditorAction"
 Cohesion: 0.40
 Nodes (3): AnActionEvent, DumbAwareAction, OpenAgentEditorAction
 
-### Community 133 - "custom"
+### Community 172 - "ExecutionTarget"
+Cohesion: 0.33
+Nodes (5): ExecutionTarget, LOCAL, WSL, from(), getInstance()
+
+### Community 176 - "custom"
 Cohesion: 0.40
 Nodes (5): piPackages, rules, shell, skills, custom
 
-### Community 134 - "Agentic Development Usage"
+### Community 177 - "Agentic Development Usage"
 Cohesion: 0.40
 Nodes (4): Agentic Development Usage, Artifact Rules, Daily Skill Use, Human Review Checklist
 
-### Community 135 - "AcpClientCapabilities"
+### Community 178 - "Changelog"
+Cohesion: 0.40
+Nodes (5): Changelog, commit, How to update, What **not** to record, What to record
+
+### Community 179 - "2026-06-16"
+Cohesion: 0.40
+Nodes (5): 2026-06-16, Added, Changed, Documentation, Fixed
+
+### Community 180 - "2026-06-20"
+Cohesion: 0.40
+Nodes (5): 2026-06-20, Added, Changed, Documentation, Fixed
+
+### Community 181 - "2026-06-21"
+Cohesion: 0.40
+Nodes (5): 2026-06-21, Added, Changed, Documentation, Fixed
+
+### Community 182 - "2026-06-26"
+Cohesion: 0.40
+Nodes (5): 2026-06-26, Changed, Documentation, Fixed, Removed
+
+### Community 183 - "AcpClientCapabilities"
 Cohesion: 0.50
 Nodes (3): ClientCapabilities, AcpClientCapabilities, Support
 
-### Community 140 - "gradlew"
-Cohesion: 0.83
-Nodes (3): gradlew script, die(), warn()
+### Community 184 - "Testing Decisions"
+Cohesion: 0.40
+Nodes (5): Modules to test, Prior art, Testing Decisions, Verification, What to test
 
-### Community 141 - "Documentation"
+### Community 185 - "Testing Decisions"
+Cohesion: 0.40
+Nodes (5): Modules to test, Prior art, Testing Decisions, Verification, What to test
+
+### Community 186 - "Testing Decisions"
+Cohesion: 0.40
+Nodes (5): Manual QA, Prior art, Seam (single primary), Testing Decisions, What makes a good test
+
+### Community 187 - "Testing Decisions"
+Cohesion: 0.40
+Nodes (5): Modules to test, Prior art, Testing Decisions, Verification, What makes a good test
+
+### Community 188 - "Quality gate & release workflow"
+Cohesion: 0.40
+Nodes (5): Agent Synthesis, Quality gate & release workflow, Related, Summary, Verified Facts
+
+### Community 192 - "Signature attribution"
+Cohesion: 0.50
+Nodes (4): Formatting guidance, Signature attribution, strict-output-execution, Trigger examples
+
+### Community 193 - "Documentation"
 Cohesion: 0.50
 Nodes (3): Context And Decisions, Documentation, Review Expectations
 
-### Community 142 - "Runtime Handoff"
+### Community 194 - "Runtime Handoff"
 Cohesion: 0.50
 Nodes (3): Handoff Format, Review Expectations, Runtime Handoff
 
-### Community 158 - "ExecutionTarget"
+### Community 195 - "2026-04-02"
+Cohesion: 0.50
+Nodes (4): 2026-04-02, Added, Changed, Fixed
+
+### Community 196 - "2026-04-26"
+Cohesion: 0.50
+Nodes (4): 2026-04-26, Added, Changed, Fixed
+
+### Community 197 - "2026-06-17"
+Cohesion: 0.50
+Nodes (4): 2026-06-17, Changed, Documentation, Fixed
+
+### Community 198 - "2026-06-19"
+Cohesion: 0.50
+Nodes (4): 2026-06-19, Added, Changed, Fixed
+
+### Community 199 - "gradlew"
+Cohesion: 0.83
+Nodes (3): gradlew script, die(), warn()
+
+### Community 214 - "2026-02-23"
 Cohesion: 0.67
-Nodes (3): ExecutionTarget, LOCAL, WSL
+Nodes (3): 2026-02-23, Added, Fixed
 
 ## Knowledge Gaps
-- **633 isolated node(s):** `Prerequisites`, `Install the matching pip extra`, `Curated backend paths`, `First graph build`, `pipx alternative (operator-managed)` (+628 more)
+- **1036 isolated node(s):** `manifestVersion`, `agenticConfigVersion`, `generatedAt`, `version`, `enabled` (+1031 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **126 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **86 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AgentSettingsState` connect `AgentSettingsState` to `.toAgentServerEntry`, `McpServer`, `PermissionCoordinator`, `AcpAgentEditor`, `ExecutionTarget`, `ResumeCapability`, `AgentSettingsConfigurable`, `AgentConfigRow`, `AcpLaunchPlan`, `AgentConfigurationResolutionInput`, `AnActionEvent`, `AgentWorktreeService`, `.buildWslTerminalStartupRequest`, `LaunchResumePlan`, `PtyResumeStrategyTest`, `.buildWorktreeChildren`, `AcpJsonImportDraft`, `WorktreeLaunchCoordinator`, `AcpJsonImporterExporterTest`, `AgentSettingsStateSupport`, `AcpLaunchArguments`, `PtyResumeStrategy`?**
-  _High betweenness centrality (0.106) - this node is a cross-community bridge._
-- **Why does `TranscriptBlock` connect `TranscriptBlock` to `PlanEntry`, `bindTranscriptBlock`, `StructuredUpdate`, `TranscriptPanel`, `CollapsibleToolPanel`, `TranscriptModel`, `AgentTextRow`?**
-  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `AgentSettingsState` connect `AgentSettingsState` to `AgentLaunchContext`, `.buildWorktreeChildren`, `McpServer`, `AcpAgentEditor`, `CursorResumeProbeRequest`, `AgentSettingsStateSupport`, `PermissionCoordinator`, `.buildLaunchContext`, `AgentSettingsConfigurable`, `.toAgentServerEntry`, `ExecutionTarget`, `AgentConfigRow`, `LaunchResumePlan`, `AgentConfigurationResolutionInput`, `PtyResumeStrategyTest`, `ResumeCapability`, `AcpJsonImportDraft`, `AcpJsonImporterExporterTest`, `ResolvedLaunchInputs`, `.buildLocalTerminalStartupRequest`?**
+  _High betweenness centrality (0.102) - this node is a cross-community bridge._
+- **Why does `TranscriptBlock` connect `TranscriptBlock` to `PlanEntry`, `StructuredUpdate`, `TranscriptPanel`, `AcpAgentEditor`, `CollapsibleToolPanel`, `AgentTextRow`, `TranscriptBlockViewFactory`?**
+  _High betweenness centrality (0.075) - this node is a cross-community bridge._
+- **Why does `AcpAgentEditor` connect `AcpAgentEditor` to `.createEditor`, `AcpSessionController`?**
+  _High betweenness centrality (0.065) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `AgentSettingsState` (e.g. with `.`skips UI when allow always is remembered`()` and `.`persists allow always across store instances`()`) actually correct?**
   _`AgentSettingsState` has 6 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 32 inferred relationships involving `TranscriptModel` (e.g. with `.`creates new plan block on first StartOrUpdatePlan`()` and `.`creates separate blocks for different plan IDs`()`) actually correct?**
-  _`TranscriptModel` has 32 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 20 inferred relationships involving `PlanEntry` (e.g. with `.`escapes HTML special characters in content`()` and `.`escapes plan ID in element ID attribute`()`) actually correct?**
-  _`PlanEntry` has 20 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Prerequisites`, `Install the matching pip extra`, `Curated backend paths` to the rest of the system?**
-  _633 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `PlanEntry` be split into smaller, more focused modules?**
-  _Cohesion score 0.05217757205975174 - nodes in this community are weakly interconnected._
+- **Are the 41 inferred relationships involving `TranscriptModel` (e.g. with `.`flushNow writes serialized blocks to file store`()` and `.`no write when session id is unset`()`) actually correct?**
+  _`TranscriptModel` has 41 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 21 inferred relationships involving `PlanEntry` (e.g. with `.`escapes HTML special characters in content`()` and `.`escapes plan ID in element ID attribute`()`) actually correct?**
+  _`PlanEntry` has 21 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `manifestVersion`, `agenticConfigVersion`, `generatedAt` to the rest of the system?**
+  _1036 weakly-connected nodes found - possible documentation gaps or missing edges._

@@ -26,6 +26,42 @@
       "source": "catalog"
     },
     {
+      "id": "skill-grilling",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill grilling --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-to-spec",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill to-spec --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
+      "id": "skill-to-tickets",
+      "kind": "skills-add",
+      "command": "npx -y skills@latest add mattpocock/skills --skill to-tickets --agent pi -y",
+      "requires": [
+        "jq",
+        "node",
+        "npx"
+      ],
+      "optional": false,
+      "source": "catalog"
+    },
+    {
       "id": "skill-diagnosing-bugs",
       "kind": "skills-add",
       "command": "npx -y skills@latest add mattpocock/skills --skill diagnosing-bugs --agent pi -y",
@@ -203,14 +239,12 @@
     {
       "id": "headroom-tool-install",
       "kind": "headroom-tool",
-      "command": "uv tool install --force --no-binary-package ast-grep-cli 'headroom-ai[proxy,mcp]'",
+      "command": "uv tool install --force 'headroom-ai[proxy,mcp]'",
       "exe": "uv",
       "args": [
         "tool",
         "install",
         "--force",
-        "--no-binary-package",
-        "ast-grep-cli",
         "headroom-ai[proxy,mcp]"
       ],
       "requires": [

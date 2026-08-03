@@ -27,6 +27,8 @@ This repository uses Gradle with ktlint, detekt, JaCoCo, and IntelliJ Platform p
 
 For the full gate chain: `./gradlew qualityGate` (format, compile, lint, detekt, tests, coverage).
 
+Wiki-only changes: `node scripts/wiki-lint.mjs --staged` (also runs in pre-commit hook and CI).
+
 ## Generic gate order (toolchain not installed)
 
 1. **Format** — formatting checks pass before continuing.
@@ -39,11 +41,11 @@ For the full gate chain: `./gradlew qualityGate` (format, compile, lint, detekt,
 **Absolute requirement:** Resolve every finding at the current gate before doing anything else — including the next gate, changelog, commit, or marking work complete.
 
 - **One gate at a time:** Stop on first failure; re-run that gate until green before moving on.
-- **No partial green:** Warnings, knip hints, fallow findings, test failures, and format drift are blocking unless project policy documents a carve-out.
+- **No partial green:** Warnings, test failures, and format drift are blocking unless project policy documents a carve-out.
 - **No deferral:** Do not leave follow-up fixes, baseline allowlists, or suppressions while a gate is red.
-- **No suppressions:** Do not add lint/test/tool suppressions (`eslint-disable`, `@ts-ignore`, knip/fallow ignore entries, baselines, allowlists). Fix the code or config root cause.
+- **No suppressions:** Do not add lint/test/tool suppressions (`@Suppress`, detekt baselines, allowlists). Fix the code or config root cause.
 - **No bypass:** Do not skip gate order or use `git commit --no-verify`.
-- **Pre-commit parity:** When the project uses Husky, fix every `lint-staged`, pre-commit, and wiki-lint finding before commit succeeds.
+- **Pre-commit parity:** Fix every pre-commit and wiki-lint finding before commit succeeds (`scripts/install-git-hooks.sh`).
 
 Do not skip gate order unless project policy documents an exception.
 
@@ -79,4 +81,4 @@ When graphify is installed (`command -v graphify` or `graphify-out/graph.json`):
 
 ## Optional docs-only path
 
-For docs-only changes, use a reduced validation path (for example docs build + link checks) instead of the full code gate sequence.
+For docs-only changes, use wiki lint (`node scripts/wiki-lint.mjs --staged`) instead of the full Gradle gate sequence.

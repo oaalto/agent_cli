@@ -6,7 +6,7 @@ Planning artifacts for this repo live as markdown PRDs under `docs/features/<fea
 
 - **Create a PRD**: `/to-spec` writes `docs/features/<feature_name>/prd.md` using the process PRD template.
 - **Read a PRD**: open the file under `docs/features/<feature_name>/`; treat content as **historical for behavior claims** until verified against code, tests, and `CONTEXT.md`.
-- **Split work**: `/to-tickets` produces implementation slices under `docs/issues/<feature_name>/<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
+- **Split work**: `/to-tickets` produces implementation slices as numbered files co-located with the PRD: `docs/features/<feature_name>/<NN>-<slice-slug>.md`; link each slice back to the PRD in its **Parent** section.
 - **Status**: record planning status in the PRD (draft / in review / accepted / superseded) in a `## Status` section near the top.
 - **Master list**: keep `docs/features/FEATURES.md` in sync with every PRD — it is the single source of truth for the feature portfolio.
   - Two sections: **Active (implementation order)** and **Implemented**. Top of Active = next to ship.
@@ -25,7 +25,7 @@ Create or update a file under `docs/features/<feature_name>/` (not GitHub/GitLab
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the referenced `docs/features/<feature_name>/prd.md` path. For implementation slices, read `docs/issues/<feature_name>/<slice-slug>.md`. If the human passes an external issue URL, treat it as supplementary historical context only.
+Read the referenced `docs/features/<feature_name>/prd.md` path. For implementation slices, read `docs/features/<feature_name>/<NN>-<slice-slug>.md`. If the human passes an external issue URL, treat it as supplementary historical context only.
 
 ## Related configuration
 
