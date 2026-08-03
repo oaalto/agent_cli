@@ -98,4 +98,63 @@ class AgentWorktreeStateServiceTest {
         assertTrue(stored.deleted)
         assertEquals("", stored.acpSessionId)
     }
+
+    @Test
+    fun `pending launch round trip preserves fields`() {
+        val service = AgentWorktreeStateService()
+        service.enqueuePendingLaunch(
+            worktreePath = "/repo/worktree-a",
+            configurationId = "cfg-a",
+            configurationName = "Agent A",
+            resume = true,
+        )
+
+        val pending = service.consumePendingLaunch("/repo/worktree-a")
+
+        assertEquals("/repo/worktree-a", pending?.worktreePath)
+        assertEquals("cfg-a", pending?.configurationId)
+        assertEquals("Agent A", pending?.configurationName)
+        assertTrue(pending?.resume ?: false)
+        assertTrue((pending?.createdAtEpochMs ?: 0L) > 0L)
+    }
+
+    @Test
+    fun `consume removes pending launch`() {
+        val service = AgentWorktreeStateService()
+        service.enqueuePendingLaunch(
+            worktreePath = "/repo/worktree-a",
+            configurationId = "cfg-a",
+            configurationName = "Agent A",
+            resume = false,
+        )
+
+        service.consumePendingLaunch("/repo/worktree-a")
+
+        assertNull(service.consumePendingLaunch("/repo/worktree-a"))
+    }
+
+    @Test
+    fun `re-enqueue replaces duplicate pending launch`() {
+        val service = AgentWorktreeStateService()
+        service.enqueuePendingLaunch(
+            worktreePath = "/repo/worktree-a",
+            configurationId = "cfg-a",
+            configurationName = "Agent A",
+            resume = false,
+        )
+        service.enqueuePendingLaunch(
+            worktreePath = "/repo/worktree-a",
+            configurationId = "cfg-b",
+            configurationName = "Agent B",
+            resume = true,
+        )
+        assertEquals(1, service.state.pendingLaunches.size)
+
+        val pending = service.consumePendingLaunch("/repo/worktree-a")
+
+        assertEquals("cfg-b", pending?.configurationId)
+        assertEquals("Agent B", pending?.configurationName)
+        assertTrue(pending?.resume ?: false)
+        assertEquals(0, service.state.pendingLaunches.size)
+    }
 }

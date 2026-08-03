@@ -6,13 +6,13 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `WorktreePendingLaunchHandoff.completePendingLaunchIfAny` exists and encapsulates consume → validate → launch-context → editor-open → touch ordering
-- [ ] `AgentPendingLaunchStartupActivity` delegates to the handoff module with no remaining orchestration logic
-- [ ] Path key invariant: enqueue and consume use the same normalized path key (`AgentWorktreeStateSupport.normalizedPathKey`)
-- [ ] Configuration gate: missing configuration at consume time shows error dialog and does not open editor
-- [ ] `WorktreeLaunchCoordinator` remains the launch-context seam; handoff module delegates to it without duplicating resume logic
-- [ ] `WorktreePendingLaunchHandoffTest` covers successful consume path and missing-configuration path using test doubles for persistence, coordinator, and editor open
-- [ ] `AgentWorktreeStateServiceTest` covers pending-launch enqueue/consume round-trip (fields preserved, consume removes record, re-enqueue replaces duplicate)
-- [ ] Existing `WorktreeLaunchCoordinatorTest` and other worktree tests pass unchanged; `./gradlew qualityGate` passes
+- [x] `WorktreePendingLaunchHandoff.completePendingLaunchIfAny` exists and encapsulates consume → validate → launch-context → editor-open → touch ordering
+- [x] `AgentPendingLaunchStartupActivity` delegates to the handoff module with no remaining orchestration logic
+- [x] Path key invariant: enqueue and consume use the same normalized path key (`AgentWorktreeStateSupport.normalizedPathKey`)
+- [x] Configuration gate: missing configuration at consume time shows error dialog and does not open editor
+- [x] `WorktreeLaunchCoordinator` remains the launch-context seam; handoff module delegates to it without duplicating resume logic
+- [x] `WorktreePendingLaunchHandoffTest` covers successful consume path and missing-configuration path using test doubles for persistence, coordinator, and editor open
+- [x] `AgentWorktreeStateServiceTest` covers pending-launch enqueue/consume round-trip (fields preserved, consume removes record, re-enqueue replaces duplicate)
+- [x] Existing `WorktreeLaunchCoordinatorTest` and other worktree tests pass unchanged; `./gradlew qualityGate` passes

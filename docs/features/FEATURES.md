@@ -12,24 +12,15 @@ Last updated: 2026-08-03
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 1 |
-| Ready-for-agent tickets | 2 |
-| Completed features | 9 |
+| Ready-for-agent features | 0 |
+| Ready-for-agent tickets | 0 |
+| Completed features | 10 |
 
 ---
 
 ## Active (implementation order)
 
-### 1. `worktree-pending-launch-handoff` — cross-project launch handoff deepening
-
-**Why first:** Speculative maintainability refactor; no known user-facing defect. Prioritize when extending worktree launch entry points or fixing a handoff bug.
-
-| # | Ticket | Blocked by |
-| --- | --- | --- |
-| 1 | [01 — handoff consume path](worktree-pending-launch-handoff/01-handoff-consume-path.md) | — |
-| 2 | [02 — handoff schedule and callers](worktree-pending-launch-handoff/02-handoff-schedule-and-callers.md) | 01 |
-
-**PRD:** [worktree-pending-launch-handoff/prd.md](worktree-pending-launch-handoff/prd.md)
+_No active features._
 
 ---
 
@@ -37,6 +28,7 @@ Last updated: 2026-08-03
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [worktree-pending-launch-handoff](worktree-pending-launch-handoff/) | 01–02 | All `done` (2026-08-03); `WorktreePendingLaunchHandoff` deep module |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/) | 01–04 | All `done`; resume orchestration extracted to `AcpSessionResumeOrchestrator` |
 | [acp-session-controller-deepening](acp-session-controller-deepening/) | 01–07 | All `done`; controller API shrunk to `start` / `prompt` / `cancelPrompt` / `dispose` |
 | [transcript-pipeline-consolidation](transcript-pipeline-consolidation/) | 01–03 | All `done` (2026-08-03) |

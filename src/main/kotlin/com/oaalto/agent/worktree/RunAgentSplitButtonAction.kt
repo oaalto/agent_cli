@@ -247,16 +247,15 @@ private class RunAgentInNewWorktreeAction :
                 worktreePath = createdWorktree.worktreePath,
                 branchName = createdWorktree.branchName,
             )
-        state.enqueuePendingLaunch(
-            worktreePath = record.worktreePath,
-            configurationId = record.configurationId,
-            configurationName = record.configurationName,
-            resume = false,
-        )
-
-        val openResult = worktreeService.openWorktreeProject(record.worktreePath)
+        val openResult =
+            WorktreePendingLaunchHandoff.scheduleLaunch(
+                originatingProject = project,
+                worktreePath = record.worktreePath,
+                configurationId = record.configurationId,
+                configurationName = record.configurationName,
+                resume = false,
+            )
         if (openResult.isFailure) {
-            state.consumePendingLaunch(record.worktreePath)
             val throwable = openResult.exceptionOrNull()
             val reason = throwable?.message ?: "Failed to open worktree project."
             agentCliLog.error(
@@ -299,18 +298,15 @@ private class OpenOrResumeWorktreeAction(
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val worktreeService = AgentWorktreeService(project)
-        val state = AgentWorktreeStateService.getInstance()
-        state.touch(worktreePath)
-        state.enqueuePendingLaunch(
-            worktreePath = worktreePath,
-            configurationId = configurationId,
-            configurationName = configurationName,
-            resume = resume,
-        )
-        val result = worktreeService.openWorktreeProject(worktreePath)
+        val result =
+            WorktreePendingLaunchHandoff.scheduleLaunch(
+                originatingProject = project,
+                worktreePath = worktreePath,
+                configurationId = configurationId,
+                configurationName = configurationName,
+                resume = resume,
+            )
         if (result.isFailure) {
-            state.consumePendingLaunch(worktreePath)
             val throwable = result.exceptionOrNull()
             val reason = throwable?.message ?: "Failed to open worktree project."
             val launchMode =

@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **Worktree pending-launch handoff** (`worktree/`): Introduced `WorktreePendingLaunchHandoff` deep module owning cross-project enqueue → open → consume → editor orchestration; `RunAgentSplitButtonAction` and `AgentPendingLaunchStartupActivity` are thin delegates. Unified `touch` to handoff completion only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Feature master list consolidation** (`docs/features/FEATURES.md`, `docs/agents/issue-tracker.md`, `.pi/skills/`, `.agents/skills/`): Merged `STATUS.md` into `FEATURES.md` (summary counts, per-feature ticket tables, upkeep rules); removed duplicate `STATUS.md`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Fixed

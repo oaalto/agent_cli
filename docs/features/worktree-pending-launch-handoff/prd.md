@@ -1,6 +1,6 @@
 ## Status
 
-draft
+implemented
 
 **Recommendation strength:** Speculative — the handoff works today; pain is maintainability and test locality, not a known user-facing defect. Prioritize only if worktree flows are being actively extended or if a handoff bug is reported.
 
