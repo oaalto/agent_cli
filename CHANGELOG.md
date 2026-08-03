@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-03
+
+### Fixed
+
+- **WSL resume test CI gate** (`WorktreeLaunchCoordinatorTest`): Skip `wsl resume context uses kernel resolved paths` on non-Windows runners via `Assume`; Linux CI was failing because temp paths are not drive-letter mapped to `/mnt/…`, blocking the 2.0 release JAR upload. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-07-28
 
 ### Changed

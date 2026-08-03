@@ -3,6 +3,7 @@ package com.oaalto.agent.worktree
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import com.oaalto.agent.worktree.resume.ResumeCapability
+import org.junit.Assume.assumeTrue
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -80,6 +81,10 @@ class WorktreeLaunchCoordinatorTest {
 
     @Test
     fun `wsl resume context uses kernel resolved paths`() {
+        assumeTrue(
+            "WSL drive-letter path mapping requires a Windows host temp path",
+            System.getProperty("os.name").lowercase().contains("windows"),
+        )
         val worktreeDir = Files.createTempDirectory("wt-wsl").toFile().apply { deleteOnExit() }
         val projectDir = Files.createTempDirectory("wt-wsl-proj").toFile().apply { deleteOnExit() }
         val configuration =
