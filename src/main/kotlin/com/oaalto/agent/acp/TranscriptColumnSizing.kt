@@ -10,6 +10,9 @@ internal fun applyTranscriptColumnWidth(
     child: JComponent,
     width: Int,
 ) {
+    if (applyTranscriptCodeBlockWidth(child, width)) {
+        return
+    }
     if (child is JTextPane || child is JEditorPane) {
         child.setSize(width, Int.MAX_VALUE)
         val height = child.preferredSize.height

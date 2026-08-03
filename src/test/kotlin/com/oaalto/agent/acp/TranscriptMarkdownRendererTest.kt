@@ -357,4 +357,36 @@ class TranscriptMarkdownRendererTest {
         assertIs<RenderedBlock.InlineText>(blocks[1]) // paragraph
         assertIs<RenderedBlock.CodeBlock>(blocks[2]) // code
     }
+
+    @Test
+    fun `closing fence on same line as code does not include trailing prose`() {
+        val input =
+            """```python
+if n <= 1: return n
+return fibonacci(n-1) + fibonacci(n-2)```Example: `fibonacci(10)` → `55`."""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        val code = blocks.filterIsInstance<RenderedBlock.CodeBlock>().singleOrNull()
+        assertTrue(code != null, "blocks=$blocks")
+        assertTrue(!code.code.contains("Example"), "code leaked prose: ${code.code}")
+        assertTrue(code.code.contains("fibonacci"))
+        val prose = blocks.filterIsInstance<RenderedBlock.InlineText>().singleOrNull()
+        assertTrue(prose != null, "blocks=$blocks")
+        assertTrue(prose.text.contains("Example"))
+    }
+
+    @Test
+    fun `closing fence without blank line before trailing prose`() {
+        val input =
+            """```python
+if n <= 1: return n
+return fibonacci(n-1) + fibonacci(n-2)
+```Example: `fibonacci(10)` → `55`."""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+
+        val code = blocks.filterIsInstance<RenderedBlock.CodeBlock>().single()
+        assertTrue(!code.code.contains("Example"), "code leaked prose: ${code.code}")
+        val prose = blocks.filterIsInstance<RenderedBlock.InlineText>().single()
+        assertTrue(prose.text.contains("Example"))
+    }
 }

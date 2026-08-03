@@ -1,5 +1,17 @@
 # Engineering Wiki Log
 
+## [2026-08-03] update | ACP inline closing fence normalization
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptAgentFenceNormalizer.kt`, `TranscriptMarkdownRenderer.kt`
+- Notes: Documented `normalizeAgentFences` for agent markdown with mid-line closing fences.
+
+## [2026-08-03] update | ACP fenced code block resize reflow
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptCodeBlockViewFactory.kt`, `TranscriptColumnSizing.kt`
+- Notes: Documented Editor-backed fenced code reflow on transcript column resize.
+
 ## [2026-08-03] update | Worktree pending-launch handoff module
 
 - Updated: [Worktree subsystem](subsystems/worktree.md)

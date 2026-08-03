@@ -7,6 +7,7 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JTextArea
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -144,6 +145,36 @@ class TranscriptBlockViewFactoryTest {
         )
 
         assertEquals(1, factory.createdCount)
+    }
+
+    @Test
+    fun `code block width adjustment preserves monospace text content`() {
+        val viewFactory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
+        val row =
+            viewFactory.create(
+                TranscriptBlock.FinalAgentText(
+                    blockId = "1",
+                    text = "```kotlin\nfun main()\n```",
+                ),
+                onToolToggle = {},
+            )
+
+        row.setSize(800, 200)
+        row.doLayout()
+        row.setSize(200, 200)
+        row.maximumSize
+
+        val codeArea = findCodeBlockTextArea(row)
+        assertEquals("fun main()", codeArea.text.trim())
+        val availableWidth = row.width - row.insets.left - row.insets.right
+        assertEquals(availableWidth, codeArea.preferredSize.width)
+    }
+
+    private fun findCodeBlockTextArea(row: JPanel): JTextArea {
+        val contentColumn = row.getComponent(0) as JPanel
+        return contentColumn.components
+            .filterIsInstance<JTextArea>()
+            .first { isTranscriptCodeBlock(it) }
     }
 
     @Test

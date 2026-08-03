@@ -12,6 +12,10 @@
 
 ### Fixed
 
+- **ACP transcript fenced code blocks** (`acp/TranscriptCodeBlockViewFactory.kt`, `acp/TranscriptColumnSizing.kt`): Reflow embedded read-only Editors and monospace fallbacks on transcript resize so finalized fenced code shows text instead of blank lines. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript inline closing fences** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptMarkdownRenderer.kt`): Normalize agent markdown when closing ``` shares a line with code or trailing prose so example text renders outside the code block. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **PTY resume coordinator test** (`WorktreeLaunchCoordinatorTest`): Use `claude` binary so the test does not depend on a live `cursor-agent` resume probe stripping `--continue`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Settings observability hints** (`settings/`): Removed auto-wrapping layout workarounds; session diagnostics and transcript help copy are split across shorter hint lines with spacing between groups, and the transcript-folder button line names the open project. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

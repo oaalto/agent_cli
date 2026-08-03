@@ -130,6 +130,8 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - Agent text and tool card bodies render via IntelliJ's `org.intellij.markdown` parser with GFM flavour.
 - Produces `RenderedBlock` variants (inline text, code blocks, tables, blockquotes, images, thematic breaks).
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
+- Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `applyTranscriptCodeBlockWidth` reflows them on transcript column resize so content stays visible after finalize and panel resize.
+- `normalizeAgentFences` splits inline closing fences (`code```Example`) onto their own lines before parsing so trailing prose is not swallowed into the code block.
 
 ### Plan visualization (`PlanPanel`, `PlanPanelRenderer`)
 

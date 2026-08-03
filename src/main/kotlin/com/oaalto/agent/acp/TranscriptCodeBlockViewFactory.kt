@@ -13,7 +13,42 @@ import javax.swing.JTextArea
 
 private const val CODE_BLOCK_LEFT_INSET = 20
 private const val MONO_FONT_SIZE = 12
-private const val EDITOR_CLIENT_KEY = "transcript.codeBlock.editor"
+internal const val TRANSCRIPT_CODE_BLOCK_MARKER = "transcript.codeBlock"
+internal const val TRANSCRIPT_CODE_BLOCK_EDITOR_KEY = "transcript.codeBlock.editor"
+
+internal fun isTranscriptCodeBlock(component: JComponent): Boolean =
+    component.getClientProperty(TRANSCRIPT_CODE_BLOCK_MARKER) == true
+
+/** Reflows embedded Editor or JTextArea code blocks after transcript column resize. */
+internal fun applyTranscriptCodeBlockWidth(
+    component: JComponent,
+    width: Int,
+): Boolean {
+    if (!isTranscriptCodeBlock(component)) {
+        return false
+    }
+    val editor =
+        component.getClientProperty(TRANSCRIPT_CODE_BLOCK_EDITOR_KEY) as? Editor
+    if (editor != null) {
+        val editorEx = editor as EditorEx
+        editorEx.settings.isUseSoftWraps = true
+        val editorComponent = editor.component
+        editorComponent.setSize(width, Int.MAX_VALUE)
+        val height = editorComponent.preferredSize.height
+        component.setSize(width, height)
+        component.preferredSize = Dimension(width, height)
+        component.maximumSize = Dimension(Int.MAX_VALUE, height)
+        return true
+    }
+    if (component is JTextArea) {
+        component.setSize(width, Int.MAX_VALUE)
+        val height = component.preferredSize.height
+        component.preferredSize = Dimension(width, height)
+        component.maximumSize = Dimension(Int.MAX_VALUE, height)
+        return true
+    }
+    return false
+}
 
 /** Creates read-only highlighted code blocks for transcript rows and tool card bodies. */
 internal interface TranscriptCodeBlockViewFactory {
@@ -41,12 +76,14 @@ internal class EditorFactoryTranscriptCodeBlockViewFactory(
                 editorEx.settings.isWheelFontChangeEnabled = false
                 editorEx.settings.additionalLinesCount = 0
                 editorEx.settings.additionalColumnsCount = 0
+                editorEx.settings.isUseSoftWraps = true
                 editorEx.component.isFocusable = false
             }
         return JPanel(BorderLayout()).apply {
             isOpaque = false
             border = JBUI.Borders.emptyLeft(CODE_BLOCK_LEFT_INSET)
-            putClientProperty(EDITOR_CLIENT_KEY, editor)
+            putClientProperty(TRANSCRIPT_CODE_BLOCK_MARKER, true)
+            putClientProperty(TRANSCRIPT_CODE_BLOCK_EDITOR_KEY, editor)
             add(editor.component, BorderLayout.CENTER)
             preferredSize = editor.component.preferredSize
             maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
@@ -54,9 +91,9 @@ internal class EditorFactoryTranscriptCodeBlockViewFactory(
     }
 
     override fun dispose(component: JComponent) {
-        val editor = component.getClientProperty(EDITOR_CLIENT_KEY) as? Editor ?: return
+        val editor = component.getClientProperty(TRANSCRIPT_CODE_BLOCK_EDITOR_KEY) as? Editor ?: return
         EditorFactory.getInstance().releaseEditor(editor)
-        component.putClientProperty(EDITOR_CLIENT_KEY, null)
+        component.putClientProperty(TRANSCRIPT_CODE_BLOCK_EDITOR_KEY, null)
     }
 }
 
@@ -73,6 +110,7 @@ internal object PlainMonospaceTranscriptCodeBlockViewFactory : TranscriptCodeBlo
             border = JBUI.Borders.emptyLeft(CODE_BLOCK_LEFT_INSET)
             lineWrap = true
             wrapStyleWord = true
+            putClientProperty(TRANSCRIPT_CODE_BLOCK_MARKER, true)
         }
 
     override fun dispose(component: JComponent) = Unit
