@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **Settings help text wrapping** (`settings/AgentSettingsUiFactory.kt`): Hint labels in Tools → Agent CLI settings use `JBLabel` HTML auto-wrapping so long MCP, environment, and observability copy wraps within the panel width. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **WSL resume context test on Linux** (`WorktreeLaunchCoordinatorTest`): Use a Windows drive-letter worktree path so kernel `/mnt/` mapping is asserted portably instead of a Linux temp path. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Detekt on JDK 25 hosts** (`gradle/gradle-daemon-jvm.properties`): Pin Gradle daemon to JDK 21 via `updateDaemonJvm` so detekt 1.23.x runs on a supported JVM when the system default is Java 25. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

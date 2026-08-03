@@ -22,6 +22,12 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
+private fun createSettingsHintLabel(text: String): JBLabel =
+    JBLabel("<html>$text</html>").apply {
+        foreground = JBUI.CurrentTheme.Label.disabledForeground()
+        setAllowAutoWrapping(true)
+    }
+
 internal object AgentSettingsUiFactory {
     fun createConfigurationTable(model: AgentConfigsTableModel): JBTable =
         JBTable(model).apply {
@@ -75,21 +81,15 @@ internal object AgentSettingsUiFactory {
 
     fun createDetailPanelHints(): DetailPanelHints {
         val mcpScopeHint =
-            JBLabel("MCP toggles apply only when Launch Mode is ACP. PTY Passthrough ignores them.").apply {
-                foreground = JBUI.CurrentTheme.Label.disabledForeground()
-            }
+            createSettingsHintLabel("MCP toggles apply only when Launch Mode is ACP. PTY Passthrough ignores them.")
         val mcpPluginsHint =
-            JBLabel(
+            createSettingsHintLabel(
                 "IntelliJ MCP requires JetBrains AI Assistant or the MCP Server plugin (Tools | MCP Server).",
-            ).apply {
-                foreground = JBUI.CurrentTheme.Label.disabledForeground()
-            }
+            )
         val envHint =
-            JBLabel(
+            createSettingsHintLabel(
                 "Environment variables apply only when Launch Mode is ACP. PTY Passthrough ignores them.",
-            ).apply {
-                foreground = JBUI.CurrentTheme.Label.disabledForeground()
-            }
+            )
         return DetailPanelHints(
             mcpScopeHint = mcpScopeHint,
             mcpPluginsHint = mcpPluginsHint,
@@ -148,21 +148,19 @@ internal object AgentSettingsUiFactory {
     }
 
     private fun createSessionDiagnosticsHint(): JBLabel =
-        JBLabel(
+        createSettingsHintLabel(
             "Session diagnostics are written to the IDE log file idea.log. " +
                 "Open the log folder via Help > Show Log in Explorer " +
                 "(macOS: Show Log in Finder). " +
                 "Grep idea.log for [agent-cli:...] to match transcript errors to log detail.",
-        ).apply {
-            foreground = JBUI.CurrentTheme.Label.disabledForeground()
-        }
+        )
 
     private fun createTranscriptHint(
         focusedProject: com.intellij.openapi.project.Project?,
         hasBasePath: Boolean,
     ): JBLabel {
         val projectDisplayName = focusedProject?.name
-        return JBLabel(
+        return createSettingsHintLabel(
             buildString {
                 append("Session transcript file is ACP Client only. ")
                 append("Files live at .idea/agent-cli/transcripts/ (workspace-local, not VCS). ")
@@ -174,9 +172,7 @@ internal object AgentSettingsUiFactory {
                     append("Open a project to view the transcript folder.")
                 }
             },
-        ).apply {
-            foreground = JBUI.CurrentTheme.Label.disabledForeground()
-        }
+        )
     }
 
     private fun createOpenTranscriptButton(
