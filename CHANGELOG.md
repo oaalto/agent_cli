@@ -8,6 +8,10 @@
 
 ### Fixed
 
+- **ACP transcript auto-scroll** (`acp/TranscriptPanel.kt`, `acp/TranscriptViewController.kt`, tests): Capture stick-to-bottom before sync updates grow the scroll range, then scroll after layout on the EDT so streaming transcript updates keep the viewport pinned when the user is already at the bottom. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript double scrollbar** (`acp/AcpEditorLayout.kt`, `acp/TranscriptPanel.kt`, tests): Remove the outer `JBScrollPane` wrapper left over from the old `JEditorPane` transcript; `TranscriptPanel` already owns scrolling, so nesting caused twin scrollbars, content jumping to the top on prompt submit, and prose blocks vanishing while tools/code stayed visible. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript code block layout** (`acp/TranscriptColumnSizing.kt`, `acp/TranscriptCodeBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptBlockViewFactory.kt`): Measure inline text and code-block heights with `setSize(width, 0)` instead of `Int.MAX_VALUE`, which inflated `preferredSize.height` to `Integer.MAX_VALUE` and let `BoxLayout` stretch prose panes over fenced code; remeasure embedded Editors with a bounded max height so soft-wrapped lines are not clipped. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP citation-style code fences** (`acp/TranscriptAgentFenceNormalizer.kt`): Split Cursor ` ```line:line:path/File.ext` fences when the file path merges with the first code line so `class Person(` stays in the block body and Kotlin highlighting applies. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

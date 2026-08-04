@@ -1,8 +1,18 @@
 # Engineering Wiki Log
 
+## [2026-08-04] update | ACP transcript layout scroll ownership
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `AcpEditorLayout.kt`, `TranscriptPanel.kt`
+- Notes: `transcriptArea` is `TranscriptPanel`'s own `JBScrollPane` in CENTER; removed obsolete outer wrapper that caused nested scrollbars.
+
 ## [2026-08-04] skip | Session transcript timestamped filenames
 
 - Reason: Filename presentation change in `TranscriptFileStore`; logical key and restore behavior already documented in ADR 0004 and CONTEXT.md.
+
+## [2026-08-04] skip | ACP transcript auto-scroll
+
+- Reason: Bug fix in `TranscriptPanel` stick-to-bottom timing only; no durable wiki fact change beyond existing scroll-on-stream behavior.
 
 ## [2026-08-03] update | ACP mid-line fences and code selection
 

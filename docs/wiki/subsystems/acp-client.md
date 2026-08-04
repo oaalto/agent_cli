@@ -49,7 +49,7 @@ The root panel is a nested `Splitter`:
 ```
 mainSplitter (TRANSCRIPT_SPLIT_RATIO = 0.72f)
 ├── transcriptColumn (left, 72%)
-│   ├── transcriptArea (TranscriptPanel wrapped in JBScrollPane, CENTER)
+│   ├── transcriptArea (TranscriptPanel's JBScrollPane, CENTER)
 │   ├── permissionPromptPanel (SOUTH)
 │   └── authPromptPanel (NORTH)
 └── bottomSplitter (right, 28%)

@@ -1,7 +1,6 @@
 package com.oaalto.agent.acp
 
 import com.intellij.openapi.ui.Splitter
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.acp.ui.AuthPromptPanel
 import com.oaalto.agent.acp.ui.PermissionPromptPanel
@@ -30,7 +29,8 @@ internal object AcpEditorLayout {
     fun buildRootPanel(components: EditorLayoutComponents): JPanel {
         val transcriptColumn =
             JPanel(BorderLayout()).apply {
-                add(JBScrollPane(components.transcriptArea), BorderLayout.CENTER)
+                // TranscriptPanel already owns a JBScrollPane; do not wrap it again.
+                add(components.transcriptArea, BorderLayout.CENTER)
                 add(components.permissionPromptPanel.component, BorderLayout.SOUTH)
                 add(components.authPromptPanel.component, BorderLayout.NORTH)
             }

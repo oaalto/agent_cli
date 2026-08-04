@@ -34,7 +34,6 @@ internal class TranscriptViewController(
         applyOnEdt {
             model.apply(update)
             transcriptPanel.sync(model.blocks())
-            transcriptPanel.scrollToEndIfAtBottom()
             onBlocksChanged?.invoke()
         }
     }

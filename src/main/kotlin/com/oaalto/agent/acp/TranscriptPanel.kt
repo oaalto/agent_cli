@@ -7,6 +7,7 @@ import com.oaalto.agent.AgentCliSessionContext
 import java.awt.Component
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 /** Vertical structured transcript container with incremental block sync. */
 internal class TranscriptPanel(
@@ -23,6 +24,7 @@ internal class TranscriptPanel(
         JBScrollPane(column).apply {
             border = JBUI.Borders.empty()
             verticalScrollBar.unitIncrement = 16
+            horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
         }
     private val componentsByBlockId = linkedMapOf<String, JPanel>()
 
@@ -35,6 +37,7 @@ internal class TranscriptPanel(
     val component: JComponent get() = scrollPane
 
     fun sync(blocks: List<TranscriptBlock>) {
+        val stickToBottom = isAtBottom()
         val seenIds = linkedSetOf<String>()
         blocks.forEachIndexed { index, block ->
             seenIds += block.blockId
@@ -56,15 +59,20 @@ internal class TranscriptPanel(
         }
         column.revalidate()
         column.repaint()
+        if (stickToBottom) {
+            scrollToEndAfterLayout()
+        }
     }
 
-    fun scrollToEndIfAtBottom() {
+    private fun isAtBottom(): Boolean {
         val bar = scrollPane.verticalScrollBar
-        val atBottom =
-            bar.maximum <= bar.visibleAmount ||
-                bar.value + bar.visibleAmount >= bar.maximum - SCROLL_BOTTOM_THRESHOLD
-        if (atBottom) {
-            bar.value = bar.maximum
+        return bar.maximum <= bar.visibleAmount ||
+            bar.value + bar.visibleAmount >= bar.maximum - SCROLL_BOTTOM_THRESHOLD
+    }
+
+    private fun scrollToEndAfterLayout() {
+        SwingUtilities.invokeLater {
+            scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
         }
     }
 
