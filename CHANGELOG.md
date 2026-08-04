@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **ACP transcript code block layout** (`acp/TranscriptColumnSizing.kt`, `acp/TranscriptCodeBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptBlockViewFactory.kt`): Measure inline text and code-block heights with `setSize(width, 0)` instead of `Int.MAX_VALUE`, which inflated `preferredSize.height` to `Integer.MAX_VALUE` and let `BoxLayout` stretch prose panes over fenced code; remeasure embedded Editors with a bounded max height so soft-wrapped lines are not clipped. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP citation-style code fences** (`acp/TranscriptAgentFenceNormalizer.kt`): Split Cursor ` ```line:line:path/File.ext` fences when the file path merges with the first code line so `class Person(` stays in the block body and Kotlin highlighting applies. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP tool card titles** (`acp/TranscriptRenderer.kt`, `acp/TranscriptEventIngestion.kt`, `acp/TranscriptModel.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptRenderHelpers.kt`): Hide opaque `call-*` tool call ids from tool card headers (badge already shows kind); stop null-title updates from overwriting a human title or widening the transcript column. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ## 2026-08-03

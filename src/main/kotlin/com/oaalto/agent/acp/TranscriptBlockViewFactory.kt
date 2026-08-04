@@ -340,6 +340,7 @@ private class AgentTextRow(
                 isOpaque = false
                 border = EmptyBorder(0, 0, 0, 0)
                 font = Font(MONO_FAMILY, Font.PLAIN, FONT_SIZE)
+                alignmentX = Component.LEFT_ALIGNMENT
             }
         apply(pane)
         contentColumn.add(pane)
@@ -457,6 +458,7 @@ private class AgentTextRow(
                 this.font =
                     font ?: Font(MONO_FAMILY, Font.PLAIN, FONT_SIZE)
                 foreground = colorProvider.getTextForeground()
+                alignmentX = Component.LEFT_ALIGNMENT
             }
         pane.text = text
         // Filter runs to only those within truncated text bounds

@@ -2,6 +2,70 @@ package com.oaalto.agent.acp
 
 private const val FENCE_MARKER = "```"
 
+/** Cursor citation fences: ` ```3:10:path/File.ktclass Foo(` — path extension is the language. */
+private val CITATION_KNOWN_EXTENSIONS =
+    listOf(
+        "kotlin",
+        "dockerfile",
+        "javascript",
+        "typescript",
+        "markdown",
+        "python",
+        "shell",
+        "bash",
+        "yaml",
+        "java",
+        "rust",
+        "ruby",
+        "swift",
+        "scala",
+        "groovy",
+        "csharp",
+        "docker",
+        "html",
+        "json",
+        "kts",
+        "cpp",
+        "php",
+        "css",
+        "xml",
+        "sql",
+        "kt",
+        "sh",
+        "py",
+        "js",
+        "ts",
+        "rb",
+        "rs",
+        "go",
+        "md",
+        "yml",
+        "c",
+    ).sortedByDescending { it.length }
+
+private val CITATION_FENCE_PREFIX =
+    Regex(
+        """^\d+:\d+:.+\.(${CITATION_KNOWN_EXTENSIONS.joinToString("|") { Regex.escape(it) }})(.*)$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+private val CITATION_EXTENSION_TO_LANG =
+    mapOf(
+        "kt" to "kotlin",
+        "kts" to "kotlin",
+        "java" to "java",
+        "py" to "python",
+        "js" to "javascript",
+        "ts" to "typescript",
+        "go" to "go",
+        "rs" to "rust",
+        "rb" to "ruby",
+        "sh" to "shell",
+        "md" to "markdown",
+        "yml" to "yaml",
+        "yaml" to "yaml",
+    )
+
 // Longest-first so `javascript` wins over `java`.
 private val FENCE_LANGUAGE_PREFIXES: List<String> =
     listOf(
@@ -93,7 +157,7 @@ private fun appendOpeningFenceLine(
             true
         }
         else -> {
-            val split = splitOpeningFenceInfo(afterFence)
+            val split = splitCitationFenceInfo(afterFence) ?: splitOpeningFenceInfo(afterFence)
             if (split == null) {
                 result.add(line)
                 false
@@ -109,6 +173,13 @@ private fun appendOpeningFenceLine(
             }
         }
     }
+}
+
+private fun splitCitationFenceInfo(info: String): Pair<String, String>? {
+    val match = CITATION_FENCE_PREFIX.find(info) ?: return null
+    val ext = match.groupValues[1].lowercase()
+    val lang = CITATION_EXTENSION_TO_LANG[ext] ?: ext
+    return lang to match.groupValues[2]
 }
 
 private fun splitOpeningFenceInfo(info: String): Pair<String, String>? {

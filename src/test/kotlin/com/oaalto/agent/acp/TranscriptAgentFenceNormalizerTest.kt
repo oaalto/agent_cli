@@ -121,4 +121,22 @@ After:"""
         val input = "```A slightly richer version with data classes:"
         assertEquals(input, normalizeAgentFences(input))
     }
+
+    @Test
+    fun `splits citation fence when path merges with first code line`() {
+        val input =
+            """```3:10:src/main/kotlin/Person.ktclass Person(
+ val name: String,
+) {
+}
+```"""
+        val expected =
+            """```kotlin
+class Person(
+ val name: String,
+) {
+}
+```"""
+        assertEquals(expected, normalizeAgentFences(input))
+    }
 }

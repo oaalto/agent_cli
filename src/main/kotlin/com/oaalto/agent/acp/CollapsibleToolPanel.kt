@@ -218,8 +218,8 @@ internal class CollapsibleToolPanel(
         bodyContainer.components.filterIsInstance<JComponent>().forEach { child ->
             applyTranscriptColumnWidth(child, width)
         }
-        bodyContainer.setSize(width, Int.MAX_VALUE)
-        val height = bodyContainer.preferredSize.height
+        bodyContainer.setSize(width, 0)
+        val height = bodyContainer.preferredSize.height.coerceAtLeast(1)
         bodyContainer.preferredSize = Dimension(width, height)
         revalidate()
     }

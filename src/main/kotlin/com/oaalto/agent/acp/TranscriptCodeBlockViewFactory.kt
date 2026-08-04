@@ -15,19 +15,28 @@ private const val CODE_BLOCK_LEFT_INSET = 20
 private const val MONO_FONT_SIZE = 12
 private const val CODE_BLOCK_DEFAULT_WIDTH = 480
 
+// Tall enough for soft-wrap measurement; Int.MAX_VALUE poisons JTextPane sizing elsewhere.
+private const val CODE_BLOCK_MEASURE_MAX_HEIGHT = 32_767
+
 internal fun measureTranscriptEditorCodeBlockSize(
     editor: Editor,
     width: Int,
 ): Dimension {
     val editorEx = editor as EditorEx
-    val editorComponent = editor.component
     val measureWidth = width.coerceAtLeast(1)
-    editorComponent.setSize(measureWidth, Int.MAX_VALUE)
     val lineHeight = effectiveTranscriptEditorLineHeight(editorEx)
     val lineCount = editor.document.lineCount.coerceAtLeast(1)
-    val minHeight = lineHeight * lineCount
-    val measuredHeight = editorComponent.preferredSize.height.coerceAtLeast(minHeight)
-    return Dimension(measureWidth, measuredHeight.coerceAtLeast(lineHeight))
+    val minHeight = (lineHeight * lineCount).coerceAtLeast(lineHeight)
+    val editorComponent = editor.component
+    editorComponent.setSize(measureWidth, CODE_BLOCK_MEASURE_MAX_HEIGHT)
+    val measured = editorComponent.preferredSize.height
+    val height =
+        if (measured in minHeight until CODE_BLOCK_MEASURE_MAX_HEIGHT) {
+            measured
+        } else {
+            minHeight
+        }
+    return Dimension(measureWidth, height)
 }
 
 /** Editor line height is 0 until the component is displayable; use font metrics as fallback. */
@@ -59,13 +68,14 @@ internal fun applyTranscriptCodeBlockWidth(
         editorEx.settings.isUseSoftWraps = true
         val size = measureTranscriptEditorCodeBlockSize(editor, width)
         component.setSize(size.width, size.height)
-        component.preferredSize = size
+        component.minimumSize = Dimension(0, size.height)
+        component.preferredSize = Dimension(size.width, size.height)
         component.maximumSize = Dimension(Int.MAX_VALUE, size.height)
         return true
     }
     if (component is JTextArea) {
-        component.setSize(width, Int.MAX_VALUE)
-        val height = component.preferredSize.height
+        component.setSize(width, 0)
+        val height = component.preferredSize.height.coerceAtLeast(1)
         component.preferredSize = Dimension(width, height)
         component.maximumSize = Dimension(Int.MAX_VALUE, height)
         return true
@@ -112,7 +122,6 @@ internal class EditorFactoryTranscriptCodeBlockViewFactory(
             minimumSize = Dimension(0, size.height)
             preferredSize = size
             maximumSize = Dimension(Int.MAX_VALUE, size.height)
-            editor.component.minimumSize = Dimension(0, size.height)
         }
     }
 
@@ -136,7 +145,9 @@ internal object PlainMonospaceTranscriptCodeBlockViewFactory : TranscriptCodeBlo
             border = JBUI.Borders.emptyLeft(CODE_BLOCK_LEFT_INSET)
             lineWrap = true
             wrapStyleWord = true
+            alignmentX = java.awt.Component.LEFT_ALIGNMENT
             putClientProperty(TRANSCRIPT_CODE_BLOCK_MARKER, true)
+            applyTranscriptCodeBlockWidth(this, CODE_BLOCK_DEFAULT_WIDTH)
         }
 
     override fun dispose(component: JComponent) = Unit

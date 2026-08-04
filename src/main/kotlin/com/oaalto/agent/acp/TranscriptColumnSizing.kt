@@ -14,12 +14,13 @@ internal fun applyTranscriptColumnWidth(
         return
     }
     if (child is JTextPane || child is JEditorPane) {
-        child.setSize(width, Int.MAX_VALUE)
-        val height = child.preferredSize.height
+        // Height 0 lets Swing measure wrapped text; Int.MAX_VALUE yields Integer.MAX_VALUE heights.
+        child.setSize(width, 0)
+        val height = child.preferredSize.height.coerceAtLeast(1)
         child.preferredSize = Dimension(width, height)
         child.maximumSize = Dimension(Int.MAX_VALUE, height)
     } else {
-        val height = child.preferredSize.height
+        val height = child.preferredSize.height.coerceAtLeast(1)
         child.setSize(width, height)
         child.preferredSize = Dimension(width, height)
         child.maximumSize = Dimension(Int.MAX_VALUE, height)

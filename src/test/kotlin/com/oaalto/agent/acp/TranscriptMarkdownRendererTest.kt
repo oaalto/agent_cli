@@ -275,6 +275,50 @@ fun main() {
         assertTrue(second.code.contains("summarize(listOf"))
     }
 
+    @Test
+    fun `person transcript renders two kotlin code blocks`() {
+        val dollar = "$"
+        val input =
+            """Added `Person` in `src/main/kotlin/Person.kt`:```kotlinclass Person(
+ val name: String,
+ val age: Int,
+) {
+ fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
+```Usage:
+
+```kotlinval person = Person("Ada",36)
+println(person.greet())println(person.isAdult())```"""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+
+        assertEquals(2, codeBlocks.size, blocks.toString())
+        assertTrue(codeBlocks[0].code.contains("class Person"))
+        assertTrue(codeBlocks[1].code.contains("val person"))
+        val usage = blocks.filterIsInstance<RenderedBlock.InlineText>().find { it.text == "Usage:" }
+        assertTrue(usage != null, "expected Usage inline text in $blocks")
+    }
+
+    @Test
+    fun `citation fence with merged path renders kotlin code block`() {
+        val dollar = "$"
+        val input =
+            """Here it is:
+
+```3:10:src/main/kotlin/Person.ktclass Person(
+ val name: String,
+ val age: Int,
+) {
+ fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
+```"""
+        val blocks = TranscriptMarkdownRenderer.parseToBlocks(input)
+        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+
+        assertEquals(1, codeBlocks.size, blocks.toString())
+        assertEquals("kotlin", codeBlocks[0].languageId)
+        assertTrue(codeBlocks[0].code.contains("class Person"))
+        assertTrue(codeBlocks[0].code.contains("fun greet()"))
+    }
+
     // -----------------------------------------------------------------------
     // Lists
     // -----------------------------------------------------------------------

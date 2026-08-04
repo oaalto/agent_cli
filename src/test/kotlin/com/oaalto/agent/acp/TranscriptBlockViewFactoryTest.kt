@@ -9,6 +9,7 @@ import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextArea
+import javax.swing.JTextPane
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -130,6 +131,94 @@ fun greet(person: String) {
 
         assertEquals(2, factory.createdCount)
         assertTrue(factory.codes.all { it.isNotBlank() }, factory.codes.toString())
+    }
+
+    @Test
+    fun `person transcript creates two code block views`() {
+        val dollar = "$"
+        val factory = RecordingCodeBlockViewFactory()
+        val viewFactory = TranscriptBlockViewFactory(factory)
+        viewFactory.create(
+            TranscriptBlock.FinalAgentText(
+                blockId = "1",
+                text =
+                    """Added `Person` in `src/main/kotlin/Person.kt`:```kotlinclass Person(
+ val name: String,
+ val age: Int,
+) {
+ fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
+```Usage:
+
+```kotlinval person = Person("Ada",36)
+println(person.greet())println(person.isAdult())```""",
+            ),
+            onToolToggle = {},
+        )
+
+        assertEquals(2, factory.createdCount)
+        assertTrue(factory.codes[0].contains("class Person"))
+        assertTrue(factory.codes[1].contains("val person"))
+    }
+
+    @Test
+    fun `citation fence transcript creates kotlin code block view`() {
+        val dollar = "$"
+        val factory = RecordingCodeBlockViewFactory()
+        val viewFactory = TranscriptBlockViewFactory(factory)
+        viewFactory.create(
+            TranscriptBlock.FinalAgentText(
+                blockId = "1",
+                text =
+                    """Here it is:
+
+```3:10:src/main/kotlin/Person.ktclass Person(
+ val name: String,
+ val age: Int,
+) {
+ fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
+```""",
+            ),
+            onToolToggle = {},
+        )
+
+        assertEquals(1, factory.createdCount)
+        assertEquals("kotlin", factory.languageIds.single())
+        assertTrue(factory.codes.single().contains("class Person"))
+    }
+
+    @Test
+    fun `final agent text row does not stretch inline text panes vertically`() {
+        val viewFactory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
+        val row =
+            viewFactory.create(
+                TranscriptBlock.FinalAgentText(
+                    blockId = "1",
+                    text =
+                        """Added in `file`:```kotlin
+fun main()
+```Usage:
+
+```kotlin
+println()
+```""",
+                ),
+                onToolToggle = {},
+            )
+
+        row.setSize(600, 600)
+        row.doLayout()
+        row.maximumSize
+
+        val contentColumn = row.getComponent(0) as JPanel
+        contentColumn.components.filterIsInstance<JTextPane>().forEach { pane ->
+            assertTrue(pane.height < 80, "inline pane stretched to height=${pane.height}")
+        }
+        val codeAreas =
+            contentColumn.components
+                .filterIsInstance<JTextArea>()
+                .filter { isTranscriptCodeBlock(it) }
+        assertEquals(2, codeAreas.size)
+        assertTrue(codeAreas.all { it.preferredSize.height > 10 })
     }
 
     @Test
@@ -296,6 +385,7 @@ fun greet(person: String) {
         row.setSize(800, 200)
         row.doLayout()
         row.setSize(400, 200)
+        row.doLayout()
         row.maximumSize
 
         val availableWidth = row.width - row.insets.left - row.insets.right
@@ -352,6 +442,7 @@ fun greet(person: String) {
         var disposedCount = 0
             private set
         val codes = mutableListOf<String>()
+        val languageIds = mutableListOf<String?>()
 
         override fun createReadOnlyCodeBlock(
             languageId: String?,
@@ -359,6 +450,7 @@ fun greet(person: String) {
         ): JPanel {
             createdCount += 1
             codes += code
+            languageIds += languageId
             return JPanel().apply {
                 preferredSize = Dimension(100, 48)
             }
