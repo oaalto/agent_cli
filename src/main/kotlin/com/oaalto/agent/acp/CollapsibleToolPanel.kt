@@ -16,14 +16,10 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
-import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
-import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JPanel
-
-private const val BODY_PART_GAP = 4
 
 /**
  * Collapsible tool-call card: badge header + optional mixed HTML / highlighted code body.
@@ -64,7 +60,13 @@ internal class CollapsibleToolPanel(
     private var expandable = false
     private var boundBodyParts: List<TranscriptBodyPart>? = null
     private var bodyBuilt = false
-    private val disposableCodeComponents = mutableListOf<JComponent>()
+    private val mapper: TranscriptBodyPartWidgetMapper =
+        TranscriptBodyPartWidgetMapper(
+            codeBlockViewFactory = codeBlockViewFactory,
+            colorProvider = colorProvider,
+            profile = BodyPartRenderProfile.TOOL,
+        )
+    internal val disposableCodeComponents = mutableListOf<JComponent>()
 
     init {
         border =
@@ -181,37 +183,14 @@ internal class CollapsibleToolPanel(
 
     private fun rebuildBody(parts: List<TranscriptBodyPart>) {
         clearBody()
-        parts.forEach { part ->
-            addBodyPart(part)
-            bodyContainer.add(Box.createVerticalStrut(JBUI.scale(BODY_PART_GAP)))
+        val (column, disposables) = mapper.buildBodyColumn(parts)
+        disposableCodeComponents.addAll(disposables)
+        // Move mapper's column children into bodyContainer
+        val widgets = column.components
+        for (widget in widgets) {
+            bodyContainer.add(widget)
         }
     }
-
-    private fun addBodyPart(part: TranscriptBodyPart) {
-        when (part) {
-            is TranscriptBodyPart.Html -> bodyContainer.add(createHtmlPart(part.fragment))
-            is TranscriptBodyPart.Code -> {
-                val codeComponent =
-                    codeBlockViewFactory.createReadOnlyCodeBlock(part.languageId, part.code).also {
-                        it.alignmentX = LEFT_ALIGNMENT
-                        it.maximumSize = Dimension(Int.MAX_VALUE, it.preferredSize.height)
-                    }
-                disposableCodeComponents += codeComponent
-                bodyContainer.add(codeComponent)
-            }
-            is TranscriptBodyPart.BlockQuote -> part.parts.forEach(::addBodyPart)
-            else -> bodyContainer.add(createHtmlPart(TranscriptHtmlBuilder.bodyPartToHtmlFragment(part)))
-        }
-    }
-
-    private fun createHtmlPart(fragment: String): JEditorPane =
-        JEditorPane("text/html", bodyHtml(listOf(fragment))).apply {
-            isEditable = false
-            isOpaque = false
-            border = JBUI.Borders.empty()
-            alignmentX = LEFT_ALIGNMENT
-            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-        }
 
     private fun clearBody() {
         disposeCodeComponents()
@@ -233,14 +212,5 @@ internal class CollapsibleToolPanel(
     override fun getMaximumSize(): Dimension {
         val pref = preferredSize
         return Dimension(Int.MAX_VALUE, pref.height)
-    }
-
-    private fun bodyHtml(fragments: List<String>): String {
-        if (fragments.isEmpty()) return ""
-        return (
-            TranscriptRenderHelpers.htmlDocumentStart() +
-                fragments.joinToString(TranscriptRenderHelpers.HTML_LINE_BREAK) +
-                TranscriptRenderHelpers.HTML_DOCUMENT_END
-        )
     }
 }

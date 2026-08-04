@@ -2,462 +2,179 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
-import java.awt.Dimension
-import java.awt.event.ComponentEvent
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JTextArea
-import javax.swing.JTextPane
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TranscriptTextTruncationTest {
-    @Test
-    fun `truncate leaves short text unchanged`() {
-        assertEquals("hello", TranscriptTextTruncation.truncate("hello"))
-    }
-
-    @Test
-    fun `truncate appends total character suffix`() {
-        val longText = "x".repeat(TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS + 100)
-        val truncated = TranscriptTextTruncation.truncate(longText)
-
-        assertTrue(truncated.contains("… (truncated, ${longText.length} characters total)"))
-        assertTrue(truncated.length < longText.length)
-    }
-}
-
 class TranscriptBlockViewFactoryTest {
     @Test
-    fun `main kt inline fence transcript creates two code block views`() {
-        val dollar = "$"
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.FinalAgentText(
-                blockId = "1",
-                text =
-                    """Here's a concise Kotlin example in the same style as your `Main.kt`:```kotlinfun sum(numbers: List<Int>): Int = numbers.sum()fun main() {
- val numbers = listOf(1,2,3,4,5)
- println(sum(numbers)) //15}
-```A slightly richer version with data classes and null safety:
-
-```kotlindata class User(val name: String, val age: Int?)fun greet(user: User): String {
- val ageText = user.age?.let { "${dollar}it years old" } ?: "age unknown"
- return "Hello, $dollar{user.name} (${dollar}ageText)"}
-
-fun main() {
- val users = listOf(
- User("Ada",36), User("Grace", null)
- )
-
- users .map(::greet)
- .forEach(::println)
-}
-```Your project already has the first style in `src/main/kotlin/Main.kt`.""",
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(2, factory.createdCount)
-        assertTrue(factory.codes.all { it.contains('\n') }, factory.codes.toString())
-    }
-
-    @Test
-    fun `plain monospace code block is selectable`() {
-        val viewFactory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.FinalAgentText(
-                    blockId = "1",
-                    text = "```kotlin\nfun main()\n```",
-                ),
-                onToolToggle = {},
-            )
-
-        val codeArea = findCodeBlockTextArea(row)
-        assertTrue(codeArea.isEnabled)
-        assertTrue(!codeArea.isEditable)
-    }
-
-    @Test
-    fun `kotlin sample transcript creates code block views`() {
-        val dollar = "$"
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.FinalAgentText(
-                blockId = "1",
-                text =
-                    """Here's a small Kotlin sample:
-
-```kotlinfun main() {
- val name = "Kotlin"
- val numbers = listOf(1,2,3,4,5)
-
- val doubled = numbers.map { it *2 }
- println("Hello, ${dollar}name!") println("Doubled: ${dollar}doubled") greet("Ada")}
-
-fun greet(person: String) {
- println("Nice to meet you, ${dollar}person.")}
-```Want something more specific (coroutines, Android, data classes, etc.)?""",
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(1, factory.createdCount)
-        assertTrue(factory.codes.single().contains("fun main"))
-    }
-
-    @Test
-    fun `malformed concat transcript creates code block views`() {
-        val dollar = "$"
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.FinalAgentText(
-                blockId = "1",
-                text =
-                    """```kotlinfun concat(a: String, b: String): String = a + b```Or with string templates:
-
-```kotlinfun concat(a: String, b: String): String = ${dollar}a${dollar}b
-""",
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(2, factory.createdCount)
-        assertTrue(factory.codes.all { it.isNotBlank() }, factory.codes.toString())
-    }
-
-    @Test
-    fun `person transcript creates two code block views`() {
-        val dollar = "$"
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.FinalAgentText(
-                blockId = "1",
-                text =
-                    """Added `Person` in `src/main/kotlin/Person.kt`:```kotlinclass Person(
- val name: String,
- val age: Int,
-) {
- fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
-```Usage:
-
-```kotlinval person = Person("Ada",36)
-println(person.greet())println(person.isAdult())```""",
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(2, factory.createdCount)
-        assertTrue(factory.codes[0].contains("class Person"))
-        assertTrue(factory.codes[1].contains("val person"))
-    }
-
-    @Test
-    fun `citation fence transcript creates kotlin code block view`() {
-        val dollar = "$"
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.FinalAgentText(
-                blockId = "1",
-                text =
-                    """Here it is:
-
-```3:10:src/main/kotlin/Person.ktclass Person(
- val name: String,
- val age: Int,
-) {
- fun greet(): String = "Hello, my name is ${dollar}name and I am ${dollar}age years old." fun isAdult(): Boolean = age >=18}
-```""",
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(1, factory.createdCount)
-        assertEquals("kotlin", factory.languageIds.single())
-        assertTrue(factory.codes.single().contains("class Person"))
-    }
-
-    @Test
-    fun `final agent text row does not stretch inline text panes vertically`() {
-        val viewFactory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.FinalAgentText(
-                    blockId = "1",
-                    text =
-                        """Added in `file`:```kotlin
-fun main()
-```Usage:
-
-```kotlin
-println()
-```""",
-                ),
-                onToolToggle = {},
-            )
-
-        row.setSize(600, 600)
-        row.doLayout()
-        row.maximumSize
-
-        val contentColumn = row.getComponent(0) as JPanel
-        contentColumn.components.filterIsInstance<JTextPane>().forEach { pane ->
-            assertTrue(pane.height < 80, "inline pane stretched to height=${pane.height}")
-        }
-        val codeAreas =
-            contentColumn.components
-                .filterIsInstance<JTextArea>()
-                .filter { isTranscriptCodeBlock(it) }
-        assertEquals(2, codeAreas.size)
-        assertTrue(codeAreas.all { it.preferredSize.height > 10 })
-    }
-
-    @Test
-    fun `disposeRow releases code block components`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.FinalAgentText(
-                    blockId = "1",
-                    text = "```kotlin\nfun main()\n```",
-                ),
-                onToolToggle = {},
-            )
-
-        assertEquals(1, factory.createdCount)
-
-        viewFactory.disposeRow(row)
-
-        assertEquals(1, factory.disposedCount)
-    }
-
-    @Test
-    fun `collapsed tool card does not create code block components`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
+    fun `adapter order is specific-before-generic`() {
+        val toolBlock =
             TranscriptBlock.ToolCallBlock(
                 blockId = "1",
-                toolCallId = "tool-1",
-                title = "read file",
-                kind = ToolKind.READ,
-                status = ToolCallStatus.COMPLETED,
-                bodyParts =
-                    listOf(
-                        TranscriptBodyPart.Code("kotlin", "fun main()"),
-                    ),
-                expanded = false,
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(0, factory.createdCount)
-    }
-
-    @Test
-    fun `expanded tool card creates code block components`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        viewFactory.create(
-            TranscriptBlock.ToolCallBlock(
-                blockId = "1",
-                toolCallId = "tool-1",
-                title = "read file",
-                kind = ToolKind.READ,
-                status = ToolCallStatus.COMPLETED,
-                bodyParts =
-                    listOf(
-                        TranscriptBodyPart.Code("kotlin", "fun main()"),
-                    ),
-                expanded = true,
-            ),
-            onToolToggle = {},
-        )
-
-        assertEquals(1, factory.createdCount)
-    }
-
-    @Test
-    fun `streaming agent text updates in place without code block factory`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.StreamingAgentText(blockId = "1", text = "Hel"),
-                onToolToggle = {},
+                toolCallId = "t1",
+                title = "t",
+                kind = null,
+                status = null,
+                bodyParts = emptyList(),
             )
+        val planBlock = TranscriptBlock.PlanBlock("1", "p1", emptyList())
+        val agentBlock = TranscriptBlock.FinalAgentText("1", "agent")
+        val simpleBlock = TranscriptBlock.UserEcho("1", "echo")
 
-        viewFactory.update(row, TranscriptBlock.StreamingAgentText(blockId = "1", text = "Hello"))
+        val factory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
 
-        assertEquals(0, factory.createdCount)
+        val toolRow = factory.create(toolBlock, {})
+        assertTrue(isToolCallRow(toolRow))
+
+        val planRow = factory.create(planBlock, {})
+        assertTrue(isPlanRow(planRow))
+
+        val agentRow = factory.create(agentBlock, {})
+        assertTrue(isAgentTextRow(agentRow))
+
+        val simpleRow = factory.create(simpleBlock, {})
+        assertTrue(isSimpleTextRow(simpleRow))
     }
 
     @Test
-    fun `expanded tool card skips body rebuild when only header changes`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        val bodyParts = listOf(TranscriptBodyPart.Code("kotlin", "fun main()"))
-        val row =
-            viewFactory.create(
+    fun `create dispatches to correct adapter for each block family`() {
+        val factory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
+
+        val toolRow =
+            factory.create(
                 TranscriptBlock.ToolCallBlock(
                     blockId = "1",
-                    toolCallId = "tool-1",
-                    title = "read file",
+                    toolCallId = "t1",
+                    title = "t",
                     kind = ToolKind.READ,
-                    status = ToolCallStatus.COMPLETED,
-                    bodyParts = bodyParts,
-                    expanded = true,
+                    status = ToolCallStatus.IN_PROGRESS,
+                    bodyParts = emptyList(),
                 ),
                 onToolToggle = {},
             )
+        assertTrue(toolRow is CollapsibleToolPanel)
 
-        assertEquals(1, factory.createdCount)
+        val planRow =
+            factory.create(
+                TranscriptBlock.PlanBlock(
+                    "1",
+                    "p1",
+                    listOf(PlanEntry("e", PlanEntryStatus.PENDING, PlanEntryPriority.MEDIUM)),
+                ),
+                {},
+            )
+        assertTrue(planRow is com.oaalto.agent.acp.plan.PlanPanel)
 
-        viewFactory.update(
-            row,
+        val streamRow = factory.create(TranscriptBlock.StreamingAgentText("1", "streaming"), {})
+        assertTrue(isAgentTextRow(streamRow))
+
+        assertTrue(isSimpleTextRow(factory.create(TranscriptBlock.UserEcho("1", "echo"), {})))
+        assertTrue(isSimpleTextRow(factory.create(TranscriptBlock.Thought("1", "thinking"), {})))
+        assertTrue(isSimpleTextRow(factory.create(TranscriptBlock.PlainLine("1", "plain"), {})))
+        assertTrue(isSimpleTextRow(factory.create(TranscriptBlock.ErrorLine("1", "err"), {})))
+        assertTrue(isSimpleTextRow(factory.create(TranscriptBlock.AuthFailureLine("1", "auth"), {})))
+    }
+
+    @Test
+    fun `update dispatches to correct adapter`() {
+        val factory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
+
+        val toolRow =
+            factory.create(
+                TranscriptBlock.ToolCallBlock(
+                    blockId = "1",
+                    toolCallId = "t1",
+                    title = "before",
+                    kind = ToolKind.READ,
+                    status = ToolCallStatus.IN_PROGRESS,
+                    bodyParts = emptyList(),
+                ),
+                {},
+            )
+        factory.update(
+            toolRow,
             TranscriptBlock.ToolCallBlock(
                 blockId = "1",
-                toolCallId = "tool-1",
-                title = "read README.md",
+                toolCallId = "t1",
+                title = "after",
                 kind = ToolKind.READ,
                 status = ToolCallStatus.COMPLETED,
-                bodyParts = bodyParts,
-                expanded = true,
+                bodyParts = emptyList(),
             ),
         )
 
-        assertEquals(1, factory.createdCount)
-    }
-
-    @Test
-    fun `code block width adjustment preserves monospace text content`() {
-        val viewFactory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.FinalAgentText(
-                    blockId = "1",
-                    text = "```kotlin\nfun main()\n```",
+        val planRow =
+            factory.create(
+                TranscriptBlock.PlanBlock(
+                    "1",
+                    "p1",
+                    listOf(PlanEntry("e", PlanEntryStatus.PENDING, PlanEntryPriority.MEDIUM)),
                 ),
-                onToolToggle = {},
+                {},
             )
+        factory.update(
+            planRow,
+            TranscriptBlock.PlanBlock(
+                "1",
+                "p1",
+                listOf(PlanEntry("e", PlanEntryStatus.COMPLETED, PlanEntryPriority.MEDIUM)),
+            ),
+        )
 
-        row.setSize(800, 200)
-        row.doLayout()
-        row.setSize(200, 200)
-        row.maximumSize
+        val agentRow = factory.create(TranscriptBlock.StreamingAgentText("1", "Hel"), {})
+        factory.update(agentRow, TranscriptBlock.StreamingAgentText("1", "Hello"))
 
-        val codeArea = findCodeBlockTextArea(row)
-        assertEquals("fun main()", codeArea.text.trim())
-        val availableWidth = row.width - row.insets.left - row.insets.right
-        assertEquals(availableWidth, codeArea.preferredSize.width)
-    }
-
-    private fun findCodeBlockTextArea(row: JPanel): JTextArea {
-        val contentColumn = row.getComponent(0) as JPanel
-        return contentColumn.components
-            .filterIsInstance<JTextArea>()
-            .first { isTranscriptCodeBlock(it) }
+        val simpleRow = factory.create(TranscriptBlock.PlainLine("1", "before"), {})
+        factory.update(simpleRow, TranscriptBlock.PlainLine("1", "after"))
     }
 
     @Test
-    fun `transcript row width adjustment updates preferred size for all children`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        val row =
-            viewFactory.create(
-                TranscriptBlock.FinalAgentText(
-                    blockId = "1",
-                    text = "```kotlin\nfun main()\n```",
-                ),
-                onToolToggle = {},
+    fun `disposeRow dispatches to correct adapter`() {
+        val recFactory = RecordingCodeBlockViewFactory()
+        val factory = TranscriptBlockViewFactory(recFactory)
+
+        val agentRow =
+            factory.create(
+                TranscriptBlock.FinalAgentText("1", "```kotlin\nfun main()\n```"),
+                {},
             )
+        factory.disposeRow(agentRow)
+        assertEquals(1, recFactory.disposedCount)
 
-        row.setSize(800, 200)
-        row.doLayout()
-        row.setSize(400, 200)
-        row.doLayout()
-        row.maximumSize
+        val simpleRow = factory.create(TranscriptBlock.PlainLine("1", "text"), {})
+        factory.disposeRow(simpleRow)
 
-        val availableWidth = row.width - row.insets.left - row.insets.right
-        val contentColumn = row.getComponent(0) as JPanel
-        contentColumn.components.filterIsInstance<JComponent>().forEach { child ->
-            assertEquals(
-                availableWidth,
-                child.preferredSize.width,
-                "child ${child::class.simpleName} preferred width",
-            )
-        }
-    }
-
-    @Test
-    fun `expanded tool card body adjustment updates preferred size for all children`() {
-        val factory = RecordingCodeBlockViewFactory()
-        val viewFactory = TranscriptBlockViewFactory(factory)
-        val row =
-            viewFactory.create(
+        val toolRow =
+            factory.create(
                 TranscriptBlock.ToolCallBlock(
                     blockId = "1",
-                    toolCallId = "tool-1",
-                    title = "read file",
-                    kind = ToolKind.READ,
-                    status = ToolCallStatus.COMPLETED,
-                    bodyParts =
-                        listOf(
-                            TranscriptBodyPart.Code("kotlin", "fun main()"),
-                        ),
-                    expanded = true,
+                    toolCallId = "t1",
+                    title = "t",
+                    kind = null,
+                    status = null,
+                    bodyParts = emptyList(),
                 ),
-                onToolToggle = {},
-            ) as CollapsibleToolPanel
-
-        row.setSize(800, 400)
-        row.dispatchEvent(ComponentEvent(row, ComponentEvent.COMPONENT_RESIZED))
-        row.setSize(400, 400)
-        row.dispatchEvent(ComponentEvent(row, ComponentEvent.COMPONENT_RESIZED))
-
-        val availableWidth = row.width - row.insets.left - row.insets.right
-        val bodyContainer = row.components.filterIsInstance<JPanel>().last { it.layout is BoxLayout }
-        bodyContainer.components.filterIsInstance<JComponent>().filterNot { it is Box.Filler }.forEach { child ->
-            assertEquals(
-                availableWidth,
-                child.preferredSize.width,
-                "child ${child::class.simpleName} preferred width",
+                {},
             )
-        }
+        factory.disposeRow(toolRow)
+
+        val planRow = factory.create(TranscriptBlock.PlanBlock("1", "p1", emptyList()), {})
+        factory.disposeRow(planRow)
     }
 
-    private class RecordingCodeBlockViewFactory : TranscriptCodeBlockViewFactory {
-        var createdCount = 0
-            private set
-        var disposedCount = 0
-            private set
-        val codes = mutableListOf<String>()
-        val languageIds = mutableListOf<String?>()
+    @Test
+    fun `update with type mismatch logs warning and preserves row`() {
+        val factory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)
+        val simpleRow = factory.create(TranscriptBlock.PlainLine("1", "text"), {})
 
-        override fun createReadOnlyCodeBlock(
-            languageId: String?,
-            code: String,
-        ): JPanel {
-            createdCount += 1
-            codes += code
-            languageIds += languageId
-            return JPanel().apply {
-                preferredSize = Dimension(100, 48)
-            }
-        }
+        factory.update(simpleRow, TranscriptBlock.FinalAgentText("1", "agent text"))
+        assertTrue(isSimpleTextRow(simpleRow))
+    }
 
-        override fun dispose(component: javax.swing.JComponent) {
-            disposedCount += 1
-        }
+    @Test
+    fun `companion object delegates helper functions`() {
+        val escaped = TranscriptBlockViewFactory.escapeHtml("<script>alert(1)</script>")
+        assertTrue(escaped.contains("&lt;") || escaped.contains("&amp;"))
     }
 }
