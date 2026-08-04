@@ -1,5 +1,15 @@
 # Engineering Wiki Log
 
+## [2026-08-04] skip | ACP transcript content-renderer tickets
+
+- Reason: Ticket slice files and FEATURES.md ticket table only; PRD and wiki already document the content-render seam.
+
+## [2026-08-04] update | Transcript content renderer seam
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md), [ACP client subsystem](subsystems/acp-client.md)
+- Sources: grill-with-docs-batch acceptance for `acp-transcript-content-renderer` PRD, `CONTEXT.md`
+- Notes: `TranscriptContentRenderer.renderMarkdownText` is canonical markdown→body-part seam; one parse pipeline, two post-parse paths today; `ContentRenderOptions` and sibling PRD landing order documented.
+
 ## [2026-08-04] update | ACP transcript layout scroll ownership
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md)

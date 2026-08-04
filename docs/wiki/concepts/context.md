@@ -2,7 +2,7 @@
 title: Domain context & ACP transcript model
 type: concept
 status: current
-updated: 2026-07-24
+updated: 2026-08-04
 sources:
   - CONTEXT.md
   - docs/wiki/subsystems/acp-client.md
@@ -23,14 +23,14 @@ sources:
 - `TranscriptFooter` shows cumulative token usage and optional cost; turns orange above 80% context usage.
 - `PlanPanel` / `PlanPanelRenderer` render plan checklists in the transcript with status icons and priority styling.
 - `PromptInputBar` provides slash-command autocomplete from `AvailableCommandsUpdate` events.
-- `TranscriptMarkdownRenderer` parses agent text via IntelliJ's GFM Markdown AST.
+- `TranscriptContentRenderer.renderMarkdownText` is the canonical seam: markdown/plain agent or tool text → `List<TranscriptBodyPart>`. `TranscriptMarkdownRenderer` (GFM AST walk → internal `RenderedBlock` shapes) is an implementation detail behind that module.
 
 - Layout split: ~72% transcript column (scroll + auth north + permission south) / ~28% bottom (20% prompt input / 80% shell) per `AcpEditorLayout.buildRootPanel`.
 - Streaming finalize triggers include: non-chunk `SessionUpdate`, `PromptResponseEvent`, user prompt send, cancel/dispose/errors, and `onError` listener path.
 
 ## Agent Synthesis
 
-- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace: ACP events enter via `TranscriptEventIngestion` (or out-of-band `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
+- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace: ACP events enter via `TranscriptEventIngestion` (or out-of-band `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` → `TranscriptBlockViewFactory`. Text bodies should route through `TranscriptContentRenderer` (not direct `TranscriptMarkdownRenderer` / `TranscriptBlockConverter` calls).
 - `CONTEXT.md` is glossary + pointers; durable implementation detail belongs in this page, subsystem wiki pages, and source.
 
 ## Open Questions

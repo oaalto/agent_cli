@@ -2,7 +2,7 @@
 title: ACP client subsystem
 type: subsystem
 status: current
-updated: 2026-07-24
+updated: 2026-08-04
 sources:
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsFactory.kt
@@ -20,6 +20,7 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptContentRenderer.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/SlashCommandMatcher.kt
@@ -67,8 +68,9 @@ The transcript renders via a vertical `BoxLayout` column of block rows inside a 
 1. **`TranscriptViewController`** — EDT-safe bridge between `TranscriptModel` and `TranscriptPanel`. Public API: `apply(StructuredUpdate)`, `appendPlainLine()`, `appendError()`, `finalizeAgentStream()`.
 2. **`TranscriptModel`** — holds `List<TranscriptBlock>`; emits blocks on updates.
 3. **`TranscriptPanel`** — renders blocks via `TranscriptBlockViewFactory` (Swing block views, `JTextPane` / nested `JEditorPane` fragments per block row).
-4. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks.
-5. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
+4. **`TranscriptContentRenderer`** — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
+5. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks (streaming path; final markdown uses content renderer).
+6. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
 ### Prompt event routing (`TranscriptEventIngestion`)
 
@@ -125,10 +127,11 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - Registered as an IntelliJ service; `DefaultTranscriptColorProvider` is the fallback.
 - Used by `TranscriptRenderer`, `PlanPanel`, badges, and tool cards for consistent theming.
 
-### Markdown rendering (`TranscriptMarkdownRenderer`)
+### Content rendering (`TranscriptContentRenderer`)
 
-- Agent text and tool card bodies render via IntelliJ's `org.intellij.markdown` parser with GFM flavour.
-- Produces `RenderedBlock` variants (inline text, code blocks, tables, blockquotes, images, thematic breaks).
+- Canonical seam: `renderMarkdownText(text, options)` → ordered `List<TranscriptBodyPart>` for both `FinalAgentText` rows and completed tool-card text bodies.
+- One markdown parse pipeline (IntelliJ `org.intellij.markdown`, GFM flavour) behind the module; internal `RenderedBlock` AST is package-private. Today agent final text and tool text still diverge **after** parse (widget assembly vs HTML fragments) — content-renderer consolidation unifies the body-part stream; block-view decomposition then shares one part → widget mapper.
+- `ContentRenderOptions` carries truncation ceiling, highlighted-code budget, fence-normalization flag (`applyFenceNormalization`), and optional markdown heuristic skip for plain tool dumps.
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
 - Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `measureTranscriptEditorCodeBlockSize` sizes them at creation (font-metrics fallback when `lineHeight` is 0 before first paint) and `applyTranscriptCodeBlockWidth` reflows on transcript column resize; `AgentTextRow` remeasures on EDT after markdown rebuild.
 - Agent stream finalizes when the prompt flow completes (`AcpPromptExecutor`), not only on `PromptResponseEvent`.

@@ -66,7 +66,11 @@ See [ADR 0001](docs/adr/0001-custom-acp-client-in-plugin.md).
 
 ### Transcript
 
-ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) and `agent/acp/`. Distinct from **Session transcript file**.
+ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) and `agent/acp/`. Distinct from **Session transcript file** and **Transcript content renderer**.
+
+### Transcript content renderer
+
+Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Distinct from **Transcript** (whole pane) and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
 
 ### Session transcript file
 
