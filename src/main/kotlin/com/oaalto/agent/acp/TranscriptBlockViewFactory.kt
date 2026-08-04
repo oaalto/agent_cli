@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
-import com.oaalto.agent.acp.plan.PlanPanel
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Desktop
@@ -213,97 +212,89 @@ private fun mergeRuns(runs: List<StyledRun>): List<MergedRun> {
     return segments
 }
 
-/** Maps [TranscriptBlock] snapshots to Swing row components. */
+/** Maps [TranscriptBlock] snapshots to Swing row components via adapter dispatch. */
 internal class TranscriptBlockViewFactory(
-    private val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
-    private val logContextProvider: () -> AgentCliSessionContext? = { null },
+    codeBlockViewFactory: TranscriptCodeBlockViewFactory,
+    logContextProvider: () -> AgentCliSessionContext? = { null },
+    colorProviderArg: TranscriptColorProvider = colorProvider,
+    columnWidth: Int = 600,
 ) {
     private val log = AgentCliLog.getInstance(TranscriptBlockViewFactory::class.java)
+    private val context =
+        RowContext(
+            columnWidth = columnWidth,
+            codeBlockViewFactory = codeBlockViewFactory,
+            colorProvider = colorProviderArg,
+            logContextProvider = logContextProvider,
+        )
+
+    /**
+     * Registered adapters in priority order.
+     * More specific adapters first: Tool → Plan → Agent text → Simple text.
+     */
+    private val adapters =
+        listOf<TranscriptBlockRowAdapter>(
+            ToolCallRowAdapter(),
+            PlanRowAdapter(),
+            SimpleTextRowAdapter(),
+        )
 
     fun create(
         block: TranscriptBlock,
         onToolToggle: (toolCallId: String) -> Unit,
-    ): JPanel =
-        when (block) {
-            is TranscriptBlock.ToolCallBlock ->
-                CollapsibleToolPanel(onToolToggle, codeBlockViewFactory).apply { bind(block) }
-            is TranscriptBlock.PlanBlock ->
-                PlanPanel().apply { bind(block) }
-            else -> AgentTextRow(codeBlockViewFactory).apply { bind(block) }
+    ): JPanel {
+        // Try registered adapters first
+        for (adapter in adapters) {
+            if (adapter.matches(block)) {
+                return adapter.create(context, block, onToolToggle)
+            }
         }
+        // Legacy inline path for non-adapter block families
+        return AgentTextRow(codeBlockViewFactory).apply { bind(block) }
+    }
+
+    private val codeBlockViewFactory: TranscriptCodeBlockViewFactory
+        get() = context.codeBlockViewFactory
 
     fun update(
         component: JPanel,
         block: TranscriptBlock,
     ) {
-        when {
-            isToolCallMatch(component, block) ->
-                (component as CollapsibleToolPanel).bind(
-                    block as TranscriptBlock.ToolCallBlock,
-                )
-            isPlanMatch(component, block) ->
-                (component as PlanPanel).bind(block as TranscriptBlock.PlanBlock)
-            isTextRowMatch(component, block) -> (component as AgentTextRow).bind(block)
-            isTypeMismatch(component, block) -> logTypeMismatch(component, block)
-            else -> logTextRowMismatch(component, block)
+        // Try registered adapters first
+        for (adapter in adapters) {
+            if (adapter.update(context, component, block)) return
+        }
+        // Legacy inline path for non-adapter block families
+        if (component is AgentTextRow) {
+            (component as AgentTextRow).bind(block)
+        } else {
+            log.warn(
+                "Transcript block/component type mismatch: " +
+                    "component=${component::class.simpleName}, block=${block::class.simpleName}",
+                context = context.logContextProvider(),
+            )
         }
     }
 
-    private fun isToolCallMatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ): Boolean =
-        component is CollapsibleToolPanel &&
-            block is TranscriptBlock.ToolCallBlock
-
-    private fun isPlanMatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ): Boolean = component is PlanPanel && block is TranscriptBlock.PlanBlock
-
-    private fun isTextRowMatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ): Boolean =
-        component is AgentTextRow &&
-            block !is TranscriptBlock.ToolCallBlock &&
-            block !is TranscriptBlock.PlanBlock
-
-    private fun isTypeMismatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ): Boolean =
-        component is CollapsibleToolPanel ||
-            component is PlanPanel ||
-            block is TranscriptBlock.ToolCallBlock ||
-            block is TranscriptBlock.PlanBlock
-
-    private fun logTypeMismatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ) {
-        log.warn(
-            "Transcript block/component type mismatch: " +
-                "component=${component::class.simpleName}, block=${block::class.simpleName}",
-            context = logContextProvider(),
-        )
-    }
-
-    private fun logTextRowMismatch(
-        component: JPanel,
-        block: TranscriptBlock,
-    ) {
-        log.warn(
-            "Transcript text row type mismatch: " +
-                "component=${component::class.simpleName}, block=${block::class.simpleName}",
-            context = logContextProvider(),
-        )
-    }
-
     fun disposeRow(component: JPanel) {
-        when (component) {
-            is CollapsibleToolPanel -> component.disposeCodeComponents()
-            is AgentTextRow -> component.disposeCodeComponents()
+        // Try registered adapters first
+        for (adapter in adapters) {
+            if (isToolCallRow(component) && adapter is ToolCallRowAdapter) {
+                adapter.dispose(context, component)
+                return
+            }
+            if (isPlanRow(component) && adapter is PlanRowAdapter) {
+                adapter.dispose(context, component)
+                return
+            }
+            if (isSimpleTextRow(component) && adapter is SimpleTextRowAdapter) {
+                adapter.dispose(context, component)
+                return
+            }
+        }
+        // Legacy inline path
+        if (component is AgentTextRow) {
+            component.disposeCodeComponents()
         }
     }
 

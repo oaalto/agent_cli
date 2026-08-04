@@ -2,6 +2,14 @@
 
 ## 2026-08-04
 
+### Added
+
+- **ACP transcript plan row adapter** (`acp/PlanRowAdapter.kt`, `acp/PlanRowAdapterTest.kt`, `acp/TranscriptBlockViewFactory.kt`): Extracted `PlanRowAdapter` as thin wrapper around `PlanPanel`; factory dispatches plan blocks through adapter, removed inline plan handling from coordinator; `isPlanRow` marker added; headless EDT tests cover entry count, status icons, in-place update by plan id. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **ACP transcript tool call row adapter** (`acp/ToolCallRowAdapter.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`): Extracted `ToolCallRowAdapter` as thin wrapper around `CollapsibleToolPanel`; factory dispatches tool blocks through adapter, removed inline tool handling from coordinator; `CollapsibleToolPanel.disposableCodeComponents` exposed as `internal` for testability. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **ACP transcript row adapter scaffold and simple text** (`acp/TranscriptBlockRowAdapter.kt`, `acp/SimpleTextRowAdapter.kt`, `acp/TranscriptBlockViewFactory.kt`, tests): Introduced `TranscriptBlockRowAdapter` interface and `RowContext` data class; `SimpleTextRowAdapter` handles `UserEcho`, `Thought`, `PlainLine`, `ErrorLine`, `AuthFailureLine` blocks; `TranscriptBlockViewFactory` now delegates to registered adapters with adapter-first dispatch and legacy inline fallback for tool call, plan, and agent text. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
 ### Changed
 
 - **ACP transcript markdown renderer test consolidation** (`acp/TranscriptMarkdownRendererTest.kt`): Removed 35 tests duplicated by `TranscriptContentRendererTest`; retained 5 parser-level tests (likelyContainsMarkdown positive, ordered list items, strikethrough, blockquote with multiple paragraphs, untagged fence null language). made by: Olli Aalto. made with: pi. model: qwen-qwq
@@ -13,6 +21,10 @@
 - **Session transcript filenames** (`acp/TranscriptFileStore.kt`, tests, docs): Timestamped human-readable names `{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` under `.idea/agent-cli/transcripts/`; logical key remains `acpSessionId`; legacy `<acpSessionId>.txt` files still restore. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Documentation
+
+- **ACP transcript block-view decomposition tickets** (`docs/features/acp-transcript-block-view-decomposition/01-05`, `docs/features/FEATURES.md`): Five vertical slices — row adapter scaffold + simple text, tool call adapter, plan adapter, body-part mapper + agent text adapter, coordinator cleanup. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript block-view decomposition grill** (`CONTEXT.md`, `docs/wiki/concepts/context.md`, `docs/wiki/subsystems/acp-client.md`, `docs/features/acp-transcript-block-view-decomposition/prd.md`, `docs/features/acp-transcript-package-restructure/prd.md`, `docs/adr/0005-transcript-row-adapter-registry.md`, `docs/adr/0006-transcript-simple-vs-agent-row-shells.md`): Accepted grill-with-docs-batch decisions — row adapter glossary, coordinator vs panel ownership, `RowContext` shape, `TranscriptBodyPartWidgetMapper`, adapter registration order, separate simple/agent row shells. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript content-renderer tickets** (`docs/features/acp-transcript-content-renderer/01-03`, `docs/features/FEATURES.md`): Three vertical slices — tool-text content renderer, agent-text routing, helper consolidation and parse-entry audit. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
