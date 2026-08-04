@@ -1,12 +1,12 @@
 ## Status
 
-ready-for-agent
+implemented
 
 **Triage:** `ready-for-agent`
 
 ## Problem Statement
 
-`TranscriptBlockViewFactory` is a shallow god-module (~650 lines) that owns row creation, row update, markdown widget assembly, tool-card wiring, plan-panel attachment, width adjustment, link handling, and disposal for every `TranscriptBlock` variant. Its **interface** (what a maintainer must understand to change one block type) is nearly as large as the combined row implementations — poor **depth**, poor **locality**.
+`TranscriptBlockViewFactory` is a shallow god-module (~580 lines) that owns row creation, row update, markdown widget assembly, tool-card wiring, plan-panel attachment, width adjustment, link handling, and disposal for every `TranscriptBlock` variant. Its **interface** (what a maintainer must understand to change one block type) is nearly as large as the combined row implementations — poor **depth**, poor **locality**.
 
 Changes to agent text layout routinely risk breaking tool cards, plan rows, or streaming rows because they share one `update()` method with intertwined match logic. Detekt suppressions (`CyclomaticComplexMethod`) and extracted one-off helpers signal the module is doing too much. Tests mount the entire factory to assert single-row behaviour, so failures are hard to localize.
 
@@ -47,7 +47,7 @@ interface TranscriptBlockRowAdapter {
 9. As a maintainer, I want the factory coordinator to pass the **deletion test** — deleting it would scatter dispatch logic to `TranscriptPanel`, confirming it earns its keep as a thin registry.
 10. As a developer writing EDT tests, I want adapters testable with minimal `RowContext` fakes, so that headless CI does not require full editor fixtures.
 11. As a developer coordinating content-renderer work, I want agent and tool adapters to consume `TranscriptBodyPart` lists from the unified content module, so that adapters only map parts → widgets.
-12. As a user resizing the IDE window, I want width adjustment invoked uniformly through `RowContext.onColumnWidthChanged`, so that every adapter remeasures consistently.
+12. As a user resizing the IDE window, I want width adjustment applied consistently across row types, so that every row remeasures on column resize (per-row `ComponentAdapter` listeners + shared `applyTranscriptColumnWidth` helper — not a central `RowContext` callback).
 13. As a developer disposing editors on row removal, I want `dispose()` implemented per adapter, so that code-block editors in agent rows do not leak when tool rows are removed.
 14. As a developer fixing link click handling in agent markdown, I want hyperlink listeners scoped to `AgentTextRowAdapter`, so that plain-line rows stay simple.
 15. As a reviewer enforcing detekt rules, I want cyclomatic complexity distributed across adapters below threshold, so that suppressions can be removed.
@@ -63,10 +63,11 @@ interface TranscriptBlockRowAdapter {
 
 ### Coordinator responsibilities (keep in factory)
 
-- Adapter registration order (specific before generic).
-- `blockId` → component reuse map.
-- Delegating `create` / `update` / `dispose` / `widthAdjustment` to matched adapter.
+- Adapter registration order (specific before generic: Tool → Plan → Agent text → Simple text).
+- Delegating `create` / `update` / `dispose` to matched adapter.
 - Logging type-mismatch diagnostics (preserve existing mismatch logs for debugging).
+
+`TranscriptPanel` retains the `blockId` → component reuse map and calls the factory for row lifecycle — the coordinator is stateless.
 
 ### Adapter responsibilities (move out)
 
@@ -74,6 +75,7 @@ interface TranscriptBlockRowAdapter {
 - In-place streaming update vs full rebuild policy for agent text.
 - Tool card expand/collapse body lazy build.
 - Plan panel identity matching by plan id.
+- Per-row column-width listeners (shared sizing helpers, not a context callback).
 
 ### Shared context object
 
@@ -83,9 +85,15 @@ data class RowContext(
     val columnWidth: Int,
     val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
     val colorProvider: TranscriptColorProvider,
-    val onColumnWidthChanged: (Int) -> Unit,
+    val logContextProvider: () -> AgentCliSessionContext?,
 )
 ```
+
+`onToolToggle` is passed to `ToolCallRowAdapter` at construction — not part of `RowContext`.
+
+### Body-part widget mapper (in scope)
+
+Extract `TranscriptBodyPartWidgetMapper` in the view layer. Agent and tool adapters delegate to it with `BodyPartRenderProfile.AGENT` vs `.TOOL` for profile-specific fallbacks (e.g. headings, lists).
 
 ### Seam for testing
 
@@ -95,9 +103,9 @@ data class RowContext(
 
 ### Migration strategy
 
-1. Extract `SimpleTextRowAdapter` first (lowest risk).
-2. Extract `ToolCallRowAdapter` and `PlanRowAdapter`.
-3. Extract `AgentTextRowAdapter` last (highest complexity: markdown body parts, code blocks, streaming).
+1. Extract `SimpleTextRowAdapter` first (lowest risk) — files land in `acp/` package root; mechanical move to `transcript/view/rows/` with package restructure.
+2. Extract `ToolCallRowAdapter` and `PlanRowAdapter` (either order).
+3. Extract `AgentTextRowAdapter` last (highest complexity: mapper extraction, markdown body parts, code blocks, streaming).
 
 ### Dependencies
 
@@ -128,7 +136,8 @@ data class RowContext(
 
 ### Verification
 
-- `./gradlew qualityGate` passes; detekt `CyclomaticComplexMethod` suppression on factory `update` removed.
+- `./gradlew qualityGate` passes.
+- Coordinator `update()` stays under cyclomatic threshold without new suppressions; complexity lives in adapters/mapper. Adapter files each stay under threshold or justify localized suppressions. (Factory `update()` has no suppression today; `TranscriptBlockLabelBinder` and `TranscriptEventIngestion` suppressions are out of scope.)
 
 ## Out of Scope
 
@@ -141,4 +150,4 @@ data class RowContext(
 ## Further Notes
 
 - Architecture review strength: **Strong** — pairs with content-renderer unification as top regression fix.
-- Existing detekt suppressions on factory are acceptance criteria for done: remove or reduce to adapter level only.
+- Existing detekt suppressions on factory are acceptance criteria for done: coordinator stays under threshold; distribute complexity to adapters/mapper.

@@ -1,5 +1,23 @@
 # Engineering Wiki Log
 
+## [2026-08-04] update | Body-part widget mapper and agent text adapter implementation
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md), [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptBodyPartWidgetMapper.kt`, `AgentTextRowAdapter.kt`, `CollapsibleToolPanel.kt`, `TranscriptBlockViewFactory.kt`
+- Notes: `TranscriptBodyPartWidgetMapper` with `BodyPartRenderProfile` enum unifies body-part → widget rendering; `AgentTextRowAdapter` handles StreamingAgentText and FinalAgentText; factory uses pure adapter dispatch; `CollapsibleToolPanel` uses mapper with TOOL profile.
+
+## [2026-08-04] update | Row adapter scaffold and simple text implementation
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md), [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `TranscriptBlockRowAdapter.kt`, `SimpleTextRowAdapter.kt`, `TranscriptBlockViewFactory.kt`, ADR 0005, ADR 0006
+- Notes: `TranscriptBlockRowAdapter` interface and `RowContext` data class implemented; `SimpleTextRowAdapter` handles UserEcho, Thought, PlainLine, ErrorLine, AuthFailureLine; factory delegates to registered adapters with adapter-first dispatch.
+
+## [2026-08-04] update | Transcript row adapter decomposition
+
+- Updated: [Domain context & ACP transcript model](concepts/context.md), [ACP client subsystem](subsystems/acp-client.md)
+- Sources: grill-with-docs-batch acceptance for `acp-transcript-block-view-decomposition` PRD, ADR 0005, ADR 0006, `CONTEXT.md`
+- Notes: Row adapter registry pattern; `TranscriptPanel` owns `blockId` map; factory is stateless dispatcher; `TranscriptBodyPartWidgetMapper` planned; separate simple vs agent row shells.
+
 ## [2026-08-04] skip | Agent text content-renderer routing (ticket 02)
 
 - Reason: Implementation follows existing PRD/wiki seam; no new durable architecture beyond ticket 01 docs.
@@ -190,3 +208,8 @@
 - Updated: [ACP client subsystem](subsystems/acp-client.md)
 - Sources: `docs/features/acp-client-operations-wiring/prd.md`
 - Notes: Session operations section now references `SessionFilesystemOperations` deep module, `AcpClientSessionOperationsFactory` composition root, and `ScopedFileSystemAccess` VFS seam. Test surface at deep module interface documented.
+
+## [2026-08-04] skip | ACP transcript block-view decomposition
+
+- Sources: `docs/features/acp-transcript-block-view-decomposition/prd.md`, tickets 01–05
+- Notes: Wiki already updated during tickets 01–04 (ADR 0005/0006, row adapter glossary, coordinator shape). No further wiki changes for ticket 05 (coordinator cleanup and verification).

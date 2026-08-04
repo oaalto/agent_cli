@@ -70,7 +70,11 @@ ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry poin
 
 ### Transcript content renderer
 
-Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Distinct from **Transcript** (whole pane) and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
+Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Distinct from **Transcript** (whole pane), **Row adapter**, and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
+
+### Row adapter
+
+View-layer object (`TranscriptBlockRowAdapter` implementation) that maps one `TranscriptBlock` family to a reusable Swing row (`JPanel`). The coordinator (`TranscriptBlockViewFactory`) dispatches `create` / `update` / `dispose` to the matching adapter; `TranscriptPanel` owns the `blockId` → component reuse map. Distinct from **Transcript content renderer** (markdown → body parts) and **Transcript** (whole pane). See [ADR 0005](docs/adr/0005-transcript-row-adapter-registry.md), [acp-transcript-block-view-decomposition PRD](docs/features/acp-transcript-block-view-decomposition/prd.md).
 
 ### Session transcript file
 

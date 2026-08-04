@@ -5,6 +5,8 @@ status: current
 updated: 2026-08-04
 sources:
   - CONTEXT.md
+  - docs/adr/0005-transcript-row-adapter-registry.md
+  - docs/adr/0006-transcript-simple-vs-agent-row-shells.md
   - docs/wiki/subsystems/acp-client.md
 ---
 
@@ -30,7 +32,7 @@ sources:
 
 ## Agent Synthesis
 
-- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace: ACP events enter via `TranscriptEventIngestion` (or out-of-band `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` → `TranscriptBlockViewFactory`. Text bodies should route through `TranscriptContentRenderer` (not direct `TranscriptMarkdownRenderer` / `TranscriptBlockConverter` calls).
+- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace: ACP events enter via `TranscriptEventIngestion` (or out-of-band `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` (sync + `blockId` reuse) → `TranscriptBlockViewFactory` (adapter dispatch) → row adapter. Text bodies route through `TranscriptContentRenderer` before widget mapping (not direct `TranscriptMarkdownRenderer` / `TranscriptBlockConverter` calls).
 - `CONTEXT.md` is glossary + pointers; durable implementation detail belongs in this page, subsystem wiki pages, and source.
 
 ## Open Questions

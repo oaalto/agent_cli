@@ -4,6 +4,8 @@ type: subsystem
 status: current
 updated: 2026-08-04
 sources:
+  - docs/adr/0005-transcript-row-adapter-registry.md
+  - docs/adr/0006-transcript-simple-vs-agent-row-shells.md
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsFactory.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
@@ -67,10 +69,13 @@ The transcript renders via a vertical `BoxLayout` column of block rows inside a 
 
 1. **`TranscriptViewController`** — EDT-safe bridge between `TranscriptModel` and `TranscriptPanel`. Public API: `apply(StructuredUpdate)`, `appendPlainLine()`, `appendError()`, `finalizeAgentStream()`.
 2. **`TranscriptModel`** — holds `List<TranscriptBlock>`; emits blocks on updates.
-3. **`TranscriptPanel`** — renders blocks via `TranscriptBlockViewFactory` (Swing block views, `JTextPane` / nested `JEditorPane` fragments per block row).
-4. **`TranscriptContentRenderer`** — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
-5. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks (streaming path; final markdown uses content renderer).
-6. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
+3. **`TranscriptPanel`** — owns the `blockId` → row component reuse map; calls `TranscriptBlockViewFactory` to create/update/dispose rows inside a vertical `BoxLayout` column.
+4. **`TranscriptBlockViewFactory`** — thin coordinator/registry: fixed adapter order (Tool → Plan → Agent text → Simple text), dispatches `create` / `update` / `dispose`, logs type-mismatch diagnostics. Stateless — no `blockId` map.
+5. **Row adapters** (`TranscriptBlockRowAdapter`) — one implementation per block family: `ToolCallRowAdapter` (`CollapsibleToolPanel`), `PlanRowAdapter` (`PlanPanel`), `AgentTextRowAdapter` (body-part column + streaming), `SimpleTextRowAdapter` (`JTextPane` via label binder). Land in `acp/` during decomposition; move to `transcript/view/rows/` with package restructure.
+6. **`TranscriptBodyPartWidgetMapper`** (planned) — shared view seam mapping `TranscriptBodyPart` → Swing widgets for agent rows and tool-card bodies; `BodyPartRenderProfile` distinguishes agent vs tool fallbacks.
+7. **`TranscriptContentRenderer`** — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
+8. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks (streaming path; final markdown uses content renderer). Owned by simple-text and agent-text adapters.
+9. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
 ### Prompt event routing (`TranscriptEventIngestion`)
 
@@ -130,7 +135,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 ### Content rendering (`TranscriptContentRenderer`)
 
 - Canonical seam: `renderMarkdownText(text, options)` → ordered `List<TranscriptBodyPart>` for both `FinalAgentText` rows and completed tool-card text bodies.
-- One markdown parse pipeline (IntelliJ `org.intellij.markdown`, GFM flavour) behind the module; internal `RenderedBlock` AST is package-private. Today agent final text and tool text still diverge **after** parse (widget assembly vs HTML fragments) — content-renderer consolidation unifies the body-part stream; block-view decomposition then shares one part → widget mapper.
+- One markdown parse pipeline (IntelliJ `org.intellij.markdown`, GFM flavour) behind the module; internal `RenderedBlock` AST is package-private. Agent and tool rows consume the same body-part stream; `TranscriptBodyPartWidgetMapper` (block-view decomposition) unifies part → widget mapping with profile-specific fallbacks.
 - `ContentRenderOptions` carries truncation ceiling, highlighted-code budget, fence-normalization flag (`applyFenceNormalization`), and optional markdown heuristic skip for plain tool dumps.
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
 - Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `measureTranscriptEditorCodeBlockSize` sizes them at creation (font-metrics fallback when `lineHeight` is 0 before first paint) and `applyTranscriptCodeBlockWidth` reflows on transcript column resize; `AgentTextRow` remeasures on EDT after markdown rebuild.

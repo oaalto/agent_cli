@@ -2,7 +2,13 @@
 
 ## 2026-08-04
 
+### Changed
+
+- **ACP transcript coordinator cleanup and verification** (`acp/TranscriptBlockViewFactory.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBlockViewFactoryTest.kt`, `acp/TranscriptTextTruncationTest.kt`): Reduced factory test to coordinator dispatch smoke (adapter order, create/update/dispose routing, mismatch logging, companion delegates); migrated agent-text behaviour tests (code block creation, width adjustment, streaming) to `AgentTextRowAdapterTest`; migrated tool-card body tests to `ToolCallRowAdapterTest`; extracted `TranscriptTextTruncationTest` from factory test. Factory `update()` stays under cyclomatic threshold without suppressions. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
 ### Added
+
+- **ACP transcript body-part widget mapper** (`acp/TranscriptBodyPartWidgetMapper.kt`, `acp/AgentTextRowAdapter.kt`, tests): Introduced `TranscriptBodyPartWidgetMapper` with `BodyPartRenderProfile` enum (AGENT/TOOL) to unify body-part → widget rendering across agent rows and tool panels; created `AgentTextRowAdapter` matching `StreamingAgentText` and `FinalAgentText` with multi-part widget layout, streaming cursor support, and finalize rebuilds; `AgentTextRow` and helper functions removed from `TranscriptBlockViewFactory` which now uses pure adapter dispatch; `CollapsibleToolPanel` refactored to use mapper with TOOL profile. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
 - **ACP transcript plan row adapter** (`acp/PlanRowAdapter.kt`, `acp/PlanRowAdapterTest.kt`, `acp/TranscriptBlockViewFactory.kt`): Extracted `PlanRowAdapter` as thin wrapper around `PlanPanel`; factory dispatches plan blocks through adapter, removed inline plan handling from coordinator; `isPlanRow` marker added; headless EDT tests cover entry count, status icons, in-place update by plan id. made by: Olli Aalto. made with: pi. model: qwen-qwq
 

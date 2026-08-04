@@ -18,7 +18,7 @@ Repackage transcript modules into three subpackages under `acp/transcript/`:
 | --- | --- |
 | `transcript/model/` | `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, `TranscriptEventIngestion` |
 | `transcript/render/` | Content renderer, markdown renderer, HTML/table builders, tool call renderers, fence normalizer, fence language resolver |
-| `transcript/view/` | `TranscriptViewController`, `TranscriptPanel`, block view factory (+ row adapters), label binder, code block view factory, column sizing, collapsible tool panel |
+| `transcript/view/` | `TranscriptViewController`, `TranscriptPanel`, block view factory (+ row adapters under `transcript/view/rows/`), label binder, code block view factory, column sizing, collapsible tool panel, `TranscriptBodyPartWidgetMapper` |
 
 `plan/` remains `acp/plan/` — plan blocks integrate at view adapter seam only.
 
@@ -53,7 +53,7 @@ Repackage transcript modules into three subpackages under `acp/transcript/`:
 
 ### Move timing
 
-- **Blocked by (soft):** `acp-transcript-content-renderer` and `acp-transcript-block-view-decomposition` — perform package restructure after those land to avoid move-then-rename churn. If urgent, can move current names first.
+- **Blocked by (soft):** `acp-transcript-content-renderer` (done) and `acp-transcript-block-view-decomposition` — perform package restructure after block-view adapters land in `acp/` to avoid move-then-rename churn. Adapter files (`*RowAdapter.kt`) and `TranscriptBodyPartWidgetMapper` move to `transcript/view/rows/` in this PR.
 
 ### Package dependency rules
 

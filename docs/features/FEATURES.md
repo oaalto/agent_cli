@@ -12,9 +12,9 @@ Last updated: 2026-08-04
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 5 |
-| Ready-for-agent tickets | 2 |
-| Completed features | 11 |
+| Ready-for-agent features | 4 |
+| Ready-for-agent tickets | 0 |
+| Completed features | 12 |
 
 ---
 
@@ -22,11 +22,19 @@ Last updated: 2026-08-04
 
 | Feature | Status | Rationale | PRD |
 | --- | --- | --- | --- |
-| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | `ready-for-agent` | Split 650-line block view factory into row adapters; depends on stable body parts from content renderer | [prd.md](acp-transcript-block-view-decomposition/prd.md) |
-| [acp-transcript-panel-integration-tests](acp-transcript-panel-integration-tests/) | `ready-for-agent` | Mounted-panel harness for sync/scroll/layout regressions; safety net for view refactors (parallel with above) | [prd.md](acp-transcript-panel-integration-tests/prd.md) |
+| [acp-transcript-panel-integration-tests](acp-transcript-panel-integration-tests/) | `ready-for-agent` | Mounted-panel harness for sync/scroll/layout regressions; safety net for view refactors | [prd.md](acp-transcript-panel-integration-tests/prd.md) |
 | [acp-transcript-finalize-policy](acp-transcript-finalize-policy/) | `ready-for-agent` | Centralize `FinalizeAgentStream` emission policy scattered across ingestion and prompt executor | [prd.md](acp-transcript-finalize-policy/prd.md) |
 | [acp-transcript-fence-normalization](acp-transcript-fence-normalization/) | `ready-for-agent` | Single fence normalizer for streaming binder vs final markdown render paths | [prd.md](acp-transcript-fence-normalization/prd.md) |
-| [acp-transcript-package-restructure](acp-transcript-package-restructure/) | `ready-for-agent` | `transcript/model|render|view/` repackage after functional refactors stabilize | [prd.md](acp-transcript-package-restructure/prd.md) |
+| [acp-transcript-package-restructure](acp-transcript-package-restructure/) | `ready-for-agent` | `transcript/model\|render\|view/` repackage after functional refactors stabilize | [prd.md](acp-transcript-package-restructure/prd.md) |
+
+---
+
+## Architecture conflicts
+
+| Features | Note |
+| --- | --- |
+| panel-integration-tests ↔ fence-normalization | Parallel — no blocking edge |
+| package-restructure → all functional refactors | Package move waits for content-renderer and block-view-decomposition to stabilize |
 
 ---
 
@@ -34,6 +42,7 @@ Last updated: 2026-08-04
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–05 | All `done` (2026-08-04); coordinator shrunk to ~85-line adapter registry, `TranscriptBodyPartWidgetMapper` shared across agent/tool, per-adapter tests |
 | [acp-transcript-content-renderer](acp-transcript-content-renderer/) | 01–03 | All `done` (2026-08-04); unified dual markdown→body-part pipelines |
 | [worktree-pending-launch-handoff](worktree-pending-launch-handoff/) | 01–02 | All `done` (2026-08-03); `WorktreePendingLaunchHandoff` deep module |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/) | 01–04 | All `done`; resume orchestration extracted to `AcpSessionResumeOrchestrator` |
