@@ -454,7 +454,7 @@ println()
         }
 
     @Test
-    fun `finalize disposes streaming code components`() =
+    fun `final to streaming disposes code editor components`() =
         runOnEdt {
             val recFactory = RecordingCodeBlockViewFactory()
             val ctx = createTestRowContext(recFactory)
@@ -473,8 +473,89 @@ println()
             adapter.update(ctx, row, TranscriptBlock.StreamingAgentText("1", "stream"))
             assertTrue(
                 recFactory.disposedCount > disposedBeforeStream,
-                "streaming should dispose code editor components (disposedCount=${recFactory.disposedCount})",
+                "final→stream should dispose code editor components (disposedCount=${recFactory.disposedCount})",
             )
+        }
+
+    @Test
+    fun `streaming to final rebuilds body parts without disposing code editors`() =
+        runOnEdt {
+            // ponytail: stream→final rebuilds widgets (rebuildBodyParts), not a dispose path.
+            // The mapper's buildBodyColumn creates fresh code blocks; disposeCodeComponents runs
+            // inside rebuildBodyParts on the old widgets, which is part of the rebuild, not disposal.
+            // This test documents the observed behaviour: stream→final goes through rebuildBodyParts.
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx = createTestRowContext(recFactory)
+            val adapter = AgentTextRowAdapter()
+
+            // Create streaming row (no code editors)
+            val row =
+                adapter.create(
+                    ctx,
+                    TranscriptBlock.StreamingAgentText("1", "streaming text"),
+                    onToolToggle = {},
+                )
+            assertEquals(0, recFactory.createdCount)
+            assertEquals(0, recFactory.disposedCount)
+
+            // Finalize to agent text with code blocks
+            adapter.update(
+                ctx,
+                row,
+                TranscriptBlock.FinalAgentText("1", "```kotlin\nfun b()\n```"),
+            )
+
+            // Code blocks created by rebuild (not disposal)
+            assertEquals(1, recFactory.createdCount)
+            // No dispose on the streaming→final path — streaming had no code editors
+            assertEquals(0, recFactory.disposedCount)
+        }
+
+    @Test
+    fun `streaming agent text uses injected color provider`() =
+        runOnEdt {
+            val customForeground = java.awt.Color(255, 128, 0)
+            val customProvider =
+                object : TranscriptColorProvider {
+                    override fun getPanelBackground() = java.awt.Color.WHITE
+
+                    override fun getTextForeground() = customForeground
+
+                    override fun getErrorForeground() = java.awt.Color.RED
+
+                    override fun getLinkForeground() = java.awt.Color.BLUE
+
+                    override fun getUserEchoColor() = java.awt.Color.BLACK
+
+                    override fun getThoughtColor() = java.awt.Color.GRAY
+
+                    override fun getBadgeBackground(status: com.agentclientprotocol.model.ToolCallStatus?) =
+                        java.awt.Color.GRAY
+
+                    override fun getBadgeForeground(status: com.agentclientprotocol.model.ToolCallStatus?) =
+                        java.awt.Color.WHITE
+
+                    override fun toHtml(color: java.awt.Color) = "#000000"
+                }
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = recFactory,
+                    colorProvider = customProvider,
+                    logContextProvider = { null },
+                )
+            val adapter = AgentTextRowAdapter()
+            val row =
+                adapter.create(
+                    ctx,
+                    TranscriptBlock.StreamingAgentText("1", "Hello"),
+                    onToolToggle = {},
+                )
+
+            val contentColumn = row.getComponent(0) as JPanel
+            val textPane = contentColumn.components.filterIsInstance<JTextPane>().single()
+            assertEquals(customForeground, textPane.foreground)
         }
 
     private fun findStreamingText(row: JPanel): String {

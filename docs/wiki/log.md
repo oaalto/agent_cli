@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | Third review follow-ups (ticket 08)
+
+- No wiki update: test fixes and changelog corrections only; no durable knowledge changes.
+
 ## [2026-08-04] update | Body-part widget mapper and agent text adapter implementation
 
 - Updated: [Domain context & ACP transcript model](concepts/context.md), [ACP client subsystem](subsystems/acp-client.md)

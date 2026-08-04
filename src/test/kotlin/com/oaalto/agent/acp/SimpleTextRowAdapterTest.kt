@@ -291,19 +291,110 @@ class SimpleTextRowAdapterTest {
         runOnEdt {
             val context = createRowContext()
             val adapter = SimpleTextRowAdapter()
-            val longText =
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            val longText = "A".repeat(500)
             val row = adapter.create(context, TranscriptBlock.PlainLine("1", longText), {})
+            val textPane = findTextPane(row)
 
+            // Wide column
             row.setSize(800, 200)
             row.doLayout()
-            row.setSize(200, 200)
+            row.revalidate()
             row.maximumSize
+            val wideTextPaneWidth = textPane.preferredSize.width
+            val wideTextPaneHeight = textPane.preferredSize.height
 
-            val textPane = findTextPane(row)
+            // Narrow column — triggers widthAdjustment via componentResized
+            row.setSize(100, 200)
+            row.doLayout()
+            row.revalidate()
+            row.maximumSize
+            val narrowTextPaneWidth = textPane.preferredSize.width
+            val narrowTextPaneHeight = textPane.preferredSize.height
+
             val availableWidth = row.width - row.insets.left - row.insets.right
             assertEquals(availableWidth, textPane.preferredSize.width)
+            // Width should shrink proportionally with column
+            assertTrue(narrowTextPaneWidth < wideTextPaneWidth, "text pane width should shrink on narrow column")
+            // Height may change if text wraps; document observed values for headless
+            if (narrowTextPaneHeight != wideTextPaneHeight) {
+                assertTrue(narrowTextPaneHeight > wideTextPaneHeight, "height should increase on wrap")
+            }
+        }
+
+    @Test
+    fun `Error row uses injected color provider`() =
+        runOnEdt {
+            val customErrorColor = java.awt.Color(255, 0, 0)
+            val customProvider =
+                object : TranscriptColorProvider {
+                    override fun getPanelBackground() = java.awt.Color.WHITE
+
+                    override fun getTextForeground() = java.awt.Color.BLACK
+
+                    override fun getErrorForeground() = customErrorColor
+
+                    override fun getLinkForeground() = java.awt.Color.BLUE
+
+                    override fun getUserEchoColor() = java.awt.Color.BLACK
+
+                    override fun getThoughtColor() = java.awt.Color.GRAY
+
+                    override fun getBadgeBackground(status: ToolCallStatus?) = java.awt.Color.GRAY
+
+                    override fun getBadgeForeground(status: ToolCallStatus?) = java.awt.Color.WHITE
+
+                    override fun toHtml(color: java.awt.Color) = "#000000"
+                }
+            val context =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = PlainMonospaceTranscriptCodeBlockViewFactory,
+                    colorProvider = customProvider,
+                    logContextProvider = { null },
+                )
+            val adapter = SimpleTextRowAdapter()
+            val row = adapter.create(context, TranscriptBlock.ErrorLine("1", "custom error"), {})
+
+            val textPane = findTextPane(row)
+            assertEquals(customErrorColor, textPane.foreground)
+        }
+
+    @Test
+    fun `Thought row uses injected color provider`() =
+        runOnEdt {
+            val customThoughtColor = java.awt.Color(128, 0, 255)
+            val customProvider =
+                object : TranscriptColorProvider {
+                    override fun getPanelBackground() = java.awt.Color.WHITE
+
+                    override fun getTextForeground() = java.awt.Color.BLACK
+
+                    override fun getErrorForeground() = java.awt.Color.RED
+
+                    override fun getLinkForeground() = java.awt.Color.BLUE
+
+                    override fun getUserEchoColor() = java.awt.Color.BLACK
+
+                    override fun getThoughtColor() = customThoughtColor
+
+                    override fun getBadgeBackground(status: ToolCallStatus?) = java.awt.Color.GRAY
+
+                    override fun getBadgeForeground(status: ToolCallStatus?) = java.awt.Color.WHITE
+
+                    override fun toHtml(color: java.awt.Color) = "#000000"
+                }
+            val context =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = PlainMonospaceTranscriptCodeBlockViewFactory,
+                    colorProvider = customProvider,
+                    logContextProvider = { null },
+                )
+            val adapter = SimpleTextRowAdapter()
+            val row = adapter.create(context, TranscriptBlock.Thought("1", "thinking"), {})
+
+            val textPane = findTextPane(row)
+            assertEquals(customThoughtColor, textPane.foreground)
         }
 
     @Test

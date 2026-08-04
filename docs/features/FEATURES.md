@@ -13,7 +13,7 @@ Last updated: 2026-08-05
 | Metric | Count |
 | --- | --- |
 | Ready-for-agent features | 4 |
-| Ready-for-agent tickets | 1 |
+| Ready-for-agent tickets | 0 |
 | Completed features | 12 |
 
 ---
@@ -41,7 +41,7 @@ Last updated: 2026-08-05
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
-| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–07 | All `done` (2026-08-05); adapter decomposition + review follow-ups, color provider contract |
+| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–08 | All `done` (2026-08-05); adapter registry + 4 row adapters, mapper, test gaps closed in ticket 08 |
 | [acp-transcript-content-renderer](acp-transcript-content-renderer/) | 01–03 | All `done` (2026-08-04); unified dual markdown→body-part pipelines |
 | [worktree-pending-launch-handoff](worktree-pending-launch-handoff/) | 01–02 | All `done` (2026-08-03); `WorktreePendingLaunchHandoff` deep module |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/) | 01–04 | All `done`; resume orchestration extracted to `AcpSessionResumeOrchestrator` |

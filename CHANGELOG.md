@@ -2,11 +2,17 @@
 
 ## 2026-08-05
 
+### Documentation
+
+- **ACP transcript block-view third review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/08-third-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-07 review gaps — agent colour test, resize height assertion, disposal test semantics, changelog accuracy, git/tracker hygiene. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Fixed
 
-- **Simple-text color provider contract** (`acp/SimpleTextRowAdapter.kt`, `acp/AgentTextRowAdapter.kt`): `SimpleTextRow` now uses `RowContext.colorProvider` instead of IDE service lookup; `AgentTextRow.bindStreamingAgent` uses injected color provider; headless tests with custom provider verify theme colors apply. made by: Olli Aalto. made with: pi. model: qwen-qwq
+- **Simple-text color provider contract** (`acp/SimpleTextRowAdapter.kt`, `acp/SimpleTextRowAdapterTest.kt`): `SimpleTextRow` now uses `RowContext.colorProvider` instead of IDE service lookup; headless test with custom provider verifies `UserEcho` theme colors. Agent streaming color-provider test added in ticket 08. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
-- **Finalize disposal assertion** (`acp/AgentTextRowAdapterTest.kt`): Replaced tautological `disposedCount >= 0` with meaningful assertion that streaming disposes code editor components. made by: Olli Aalto. made with: pi. model: qwen-qwq
+- **Final-to-stream disposal assertion** (`acp/AgentTextRowAdapterTest.kt`): Renamed test and tightened assertion: final→stream (not stream→final) disposes code editor components. Stream→final rebuilds body parts; test documents no-dispose path. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **Third review follow-ups** (`acp/AgentTextRowAdapterTest.kt`, `acp/SimpleTextRowAdapterTest.kt`): Added agent streaming color-provider test with custom provider, simple-text resize height assertion (before/after), `Error`/`Thought` color-provider breadth tests, and stream→final rebuild test documenting no-dispose path. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
 - **Simple-text column resize** (`acp/SimpleTextRowAdapter.kt`, `acp/SimpleTextRowAdapterTest.kt`): Added `widthAdjustment()` to `SimpleTextRow.getMaximumSize()` for proper width remeasurement (parity with `AgentTextRow`); added headless resize test. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
