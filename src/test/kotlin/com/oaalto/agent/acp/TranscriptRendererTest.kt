@@ -218,6 +218,26 @@ class TranscriptRendererTest {
     }
 
     @Test
+    fun `displayToolTitle omits opaque call ids`() {
+        val callId = "call-d6183ca2-ef5c-4b21-87f9-74b76b7e5958-0fc_dfe19c84-ba19-93ae-97e6-a9b096edd045_0"
+
+        assertEquals("", TranscriptRenderer.displayToolTitle(null, callId))
+        assertEquals("", TranscriptRenderer.displayToolTitle(callId, callId))
+        assertEquals("", TranscriptRenderer.displayToolTitle(callId))
+        assertEquals("read README.md", TranscriptRenderer.displayToolTitle("read README.md", callId))
+        assertEquals("read README.md", TranscriptRenderer.displayToolTitle("  read README.md  "))
+    }
+
+    @Test
+    fun `formatToolStatusHtml omits title span for opaque call ids`() {
+        val callId = "call-abc-def_0"
+        val html = TranscriptRenderHelpers.formatToolStatusHtml(callId, ToolKind.SEARCH, ToolCallStatus.COMPLETED)
+
+        assertTrue(html.contains("search"))
+        assertTrue(!html.contains(callId))
+    }
+
+    @Test
     fun `formatToolStatus uses badge-first plain text without legacy syntax`() {
         assertEquals(
             "✓ edit edit file",

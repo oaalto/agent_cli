@@ -255,6 +255,24 @@ class TranscriptEventIngestionTest {
     }
 
     @Test
+    fun `maps tool call update with null title without falling back to call id`() {
+        val callId = "call-d6183ca2-ef5c-4b21-87f9-74b76b7e5958-0fc_dfe19c84-ba19-93ae-97e6-a9b096edd045_0"
+        val updates =
+            TranscriptEventIngestion.mapUpdate(
+                SessionUpdate.ToolCallUpdate(
+                    toolCallId = ToolCallId(callId),
+                    title = null,
+                    kind = ToolKind.SEARCH,
+                    status = ToolCallStatus.COMPLETED,
+                    content = emptyList(),
+                ),
+            )
+
+        val mapped = assertIs<StructuredUpdate.StartOrUpdateToolCall>(updates.single())
+        assertEquals("", mapped.title)
+    }
+
+    @Test
     fun `empty agent chunk produces no updates`() {
         val updates =
             TranscriptEventIngestion.ingest(

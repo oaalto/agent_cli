@@ -5,6 +5,7 @@ import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -73,6 +74,7 @@ internal class CollapsibleToolPanel(
             )
         background = JBColor.PanelBackground
         isOpaque = true
+        alignmentX = Component.LEFT_ALIGNMENT
         headerPanel.add(badgeLabel)
         headerPanel.add(titleLabel)
         headerPanel.add(chevronLabel)
@@ -120,7 +122,9 @@ internal class CollapsibleToolPanel(
         badgeLabel.text = badgeText
         badgeLabel.background = colorProvider.getBadgeBackground(block.status)
         badgeLabel.foreground = colorProvider.getBadgeForeground(block.status)
-        titleLabel.text = block.title
+        val displayTitle = TranscriptRenderer.displayToolTitle(block.title, block.toolCallId)
+        titleLabel.text = displayTitle
+        titleLabel.isVisible = displayTitle.isNotEmpty()
         titleLabel.foreground = colorProvider.getTextForeground()
 
         expandable = block.hasBodyContent
@@ -218,6 +222,11 @@ internal class CollapsibleToolPanel(
         val height = bodyContainer.preferredSize.height
         bodyContainer.preferredSize = Dimension(width, height)
         revalidate()
+    }
+
+    override fun getMaximumSize(): Dimension {
+        val pref = preferredSize
+        return Dimension(Int.MAX_VALUE, pref.height)
     }
 
     private fun bodyHtml(fragments: List<String>): String {

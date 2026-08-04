@@ -104,7 +104,7 @@ internal class TranscriptModel {
                 }
             blocks[existingIndex] =
                 existing.copy(
-                    title = update.title,
+                    title = update.title.takeIf { it.isNotBlank() } ?: existing.title,
                     kind = update.kind ?: existing.kind,
                     status = update.status ?: existing.status,
                     bodyParts = mergedBodyParts,

@@ -121,7 +121,7 @@ internal object TranscriptEventIngestion {
     private fun mapToolCall(update: SessionUpdate.ToolCall): StructuredUpdate.StartOrUpdateToolCall =
         StructuredUpdate.StartOrUpdateToolCall(
             toolCallId = update.toolCallId.value,
-            title = update.title,
+            title = TranscriptRenderer.displayToolTitle(update.title, update.toolCallId.value),
             kind = update.kind,
             status = update.status,
             bodyParts = renderToolCallBodyParts(update.content, update.status),
@@ -130,7 +130,7 @@ internal object TranscriptEventIngestion {
     private fun mapToolCallUpdate(update: SessionUpdate.ToolCallUpdate): StructuredUpdate.StartOrUpdateToolCall =
         StructuredUpdate.StartOrUpdateToolCall(
             toolCallId = update.toolCallId.value,
-            title = update.title ?: update.toolCallId.value,
+            title = TranscriptRenderer.displayToolTitle(update.title, update.toolCallId.value),
             kind = update.kind,
             status = update.status,
             bodyParts = renderToolCallBodyParts(update.content, update.status),

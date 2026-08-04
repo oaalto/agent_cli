@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-04
+
+### Fixed
+
+- **ACP tool card titles** (`acp/TranscriptRenderer.kt`, `acp/TranscriptEventIngestion.kt`, `acp/TranscriptModel.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptRenderHelpers.kt`): Hide opaque `call-*` tool call ids from tool card headers (badge already shows kind); stop null-title updates from overwriting a human title or widening the transcript column. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ## 2026-08-03
 
 ### Changed

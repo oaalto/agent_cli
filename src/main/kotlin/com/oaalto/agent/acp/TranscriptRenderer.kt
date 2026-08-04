@@ -14,6 +14,27 @@ import com.agentclientprotocol.model.ToolKind
 object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")
 
+    /** Cursor ACP tool call ids (e.g. `call-<uuid>_0`); not useful as a visible title. */
+    private val TOOL_CALL_ID_TITLE_PATTERN = Regex("^call-[\\w-]+$", RegexOption.IGNORE_CASE)
+
+    /**
+     * Returns a human-readable tool title for transcript UI, or empty when the value is
+     * missing or is the opaque ACP tool call id (badge already shows kind).
+     */
+    fun displayToolTitle(
+        title: String?,
+        toolCallId: String? = null,
+    ): String {
+        val trimmed = title?.trim().orEmpty()
+        val visible =
+            trimmed.takeUnless {
+                it.isEmpty() ||
+                    (toolCallId != null && it == toolCallId) ||
+                    TOOL_CALL_ID_TITLE_PATTERN.matches(it)
+            }
+        return visible.orEmpty()
+    }
+
     fun formatError(message: String): String = "Error: $message"
 
     fun formatAuthFailure(message: String): String = "Auth failed: $message"

@@ -58,7 +58,7 @@ internal object TranscriptRenderHelpers {
         val kindLabel = kind?.name?.lowercase()?.replace('_', ' ') ?: "tool"
         val badgeColor = TranscriptBadgeStyle.colorHex(status)
         val badgeFgColor = TranscriptBadgeStyle.foregroundColorHex(status)
-        val escapedTitle = escapeHtml(title)
+        val displayTitle = TranscriptRenderer.displayToolTitle(title)
         val escapedKind = escapeHtml(kindLabel)
         val badgeLabel = TranscriptBadgeStyle.label(status, escapedKind)
         val provider = getProvider()
@@ -66,10 +66,16 @@ internal object TranscriptRenderHelpers {
         val outerStyle = "color:$textColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
         val badgeStyle = "background-color:$badgeColor;color:$badgeFgColor;padding:1px 4px;border-radius:3px"
         val titleStyle = "color:$textColor;font-family:$FONT_FAMILY;font-size:$FONT_SIZE"
+        val titleSpan =
+            if (displayTitle.isEmpty()) {
+                ""
+            } else {
+                " <span style=\"$titleStyle\">${escapeHtml(displayTitle)}</span>"
+            }
         return (
             "<span style=\"$outerStyle\">" +
-                "<span style=\"$badgeStyle\">$badgeLabel</span> " +
-                "<span style=\"$titleStyle\">$escapedTitle</span>" +
+                "<span style=\"$badgeStyle\">$badgeLabel</span>" +
+                titleSpan +
                 "</span>"
         )
     }
