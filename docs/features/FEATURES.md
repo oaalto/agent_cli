@@ -6,14 +6,14 @@ Master list of features tracked in `docs/features/`. PRD status (`## Status` sec
 
 **Implemented** features are listed separately, most recently completed first.
 
-Last updated: 2026-08-04
+Last updated: 2026-08-05
 
 ## Summary
 
 | Metric | Count |
 | --- | --- |
 | Ready-for-agent features | 4 |
-| Ready-for-agent tickets | 0 |
+| Ready-for-agent tickets | 1 |
 | Completed features | 12 |
 
 ---
@@ -34,7 +34,6 @@ Last updated: 2026-08-04
 | Features | Note |
 | --- | --- |
 | panel-integration-tests ↔ fence-normalization | Parallel — no blocking edge |
-| package-restructure → all functional refactors | Package move waits for content-renderer and block-view-decomposition to stabilize |
 
 ---
 
@@ -42,7 +41,7 @@ Last updated: 2026-08-04
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
-| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–05 | All `done` (2026-08-04); coordinator shrunk to ~85-line adapter registry, `TranscriptBodyPartWidgetMapper` shared across agent/tool, per-adapter tests |
+| [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–07 | All `done` (2026-08-05); adapter decomposition + review follow-ups, color provider contract |
 | [acp-transcript-content-renderer](acp-transcript-content-renderer/) | 01–03 | All `done` (2026-08-04); unified dual markdown→body-part pipelines |
 | [worktree-pending-launch-handoff](worktree-pending-launch-handoff/) | 01–02 | All `done` (2026-08-03); `WorktreePendingLaunchHandoff` deep module |
 | [acp-session-resume-orchestration](acp-session-resume-orchestration/) | 01–04 | All `done`; resume orchestration extracted to `AcpSessionResumeOrchestrator` |

@@ -389,6 +389,102 @@ println()
             assertEquals(false, result)
         }
 
+    @Test
+    fun `streaming to finalized agent text rebuilds in place at same blockId`() =
+        runOnEdt {
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx = createTestRowContext(recFactory)
+            val adapter = AgentTextRowAdapter()
+
+            // Create streaming row
+            val row =
+                adapter.create(
+                    ctx,
+                    TranscriptBlock.StreamingAgentText("1", "Hel"),
+                    onToolToggle = {},
+                )
+            val initialChildCount = row.componentCount
+
+            // Update to final agent text with code blocks
+            adapter.update(
+                ctx,
+                row,
+                TranscriptBlock.FinalAgentText("1", "```kotlin\nfun main()\n```"),
+            )
+
+            // Code blocks should be created
+            assertEquals(1, recFactory.createdCount)
+            // Row type unchanged
+            assertTrue(isAgentTextRow(row))
+            // Child count should be stable (no explosion)
+            assertTrue(
+                row.componentCount <= initialChildCount + 1,
+                "child count should not explode on finalize",
+            )
+        }
+
+    @Test
+    fun `finalize disposes streaming JTextPane cursor and removes cursor`() =
+        runOnEdt {
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx = createTestRowContext(recFactory)
+            val adapter = AgentTextRowAdapter()
+
+            val row =
+                adapter.create(
+                    ctx,
+                    TranscriptBlock.StreamingAgentText("1", "streaming"),
+                    onToolToggle = {},
+                )
+
+            // Streaming row should contain cursor
+            val streamingText = findStreamingText(row)
+            assertTrue(streamingText.contains(TranscriptStreamingCursor.CURSOR_CHAR))
+
+            // Finalize
+            adapter.update(
+                ctx,
+                row,
+                TranscriptBlock.FinalAgentText("1", "final text"),
+            )
+
+            // After finalize, cursor should be gone
+            val finalText = findStreamingText(row)
+            assertFalse(finalText.contains(TranscriptStreamingCursor.CURSOR_CHAR))
+        }
+
+    @Test
+    fun `finalize disposes streaming code components`() =
+        runOnEdt {
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx = createTestRowContext(recFactory)
+            val adapter = AgentTextRowAdapter()
+
+            // Create final agent text with code blocks
+            val row =
+                adapter.create(
+                    ctx,
+                    TranscriptBlock.FinalAgentText("1", "```kotlin\nfun a()\n```"),
+                    onToolToggle = {},
+                )
+            assertEquals(1, recFactory.createdCount)
+            assertEquals(0, recFactory.disposedCount)
+            val disposedBeforeStream = recFactory.disposedCount
+            adapter.update(ctx, row, TranscriptBlock.StreamingAgentText("1", "stream"))
+            assertTrue(
+                recFactory.disposedCount > disposedBeforeStream,
+                "streaming should dispose code editor components (disposedCount=${recFactory.disposedCount})",
+            )
+        }
+
+    private fun findStreamingText(row: JPanel): String {
+        val contentColumn = row.getComponent(0) as JPanel
+        for (comp in contentColumn.components) {
+            if (comp is JTextPane) return comp.text
+        }
+        throw AssertionError("No JTextPane found")
+    }
+
     private fun findCodeBlockTextArea(row: JPanel): JTextArea {
         val contentColumn = row.getComponent(0) as JPanel
         return contentColumn.components

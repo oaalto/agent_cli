@@ -46,10 +46,6 @@ internal class SimpleTextRowAdapter : TranscriptBlockRowAdapter {
         row: JPanel,
         block: TranscriptBlock,
     ): Boolean {
-        if (row is SimpleTextRow) {
-            row.bind(block)
-            return true
-        }
         if (!matches(block)) {
             log.warn(
                 "SimpleTextRowAdapter update type mismatch: " +
@@ -57,6 +53,10 @@ internal class SimpleTextRowAdapter : TranscriptBlockRowAdapter {
                 context = context.logContextProvider(),
             )
             return false
+        }
+        if (row is SimpleTextRow) {
+            row.bind(block)
+            return true
         }
         log.warn(
             "SimpleTextRowAdapter update mismatch: " +
@@ -94,53 +94,53 @@ internal class SimpleTextRowAdapter : TranscriptBlockRowAdapter {
             addComponentListener(
                 object : ComponentAdapter() {
                     override fun componentResized(event: ComponentEvent) {
-                        val w = width - insets.left - insets.right
-                        if (w > 0) {
-                            textPane.preferredSize = Dimension(w, textPane.preferredSize.height)
-                        }
+                        widthAdjustment()
                     }
                 },
             )
         }
 
         override fun getMaximumSize(): Dimension {
+            widthAdjustment()
             val pref = preferredSize
             return Dimension(Int.MAX_VALUE, pref.height)
         }
 
-        fun bind(block: TranscriptBlock) {
-            val colorProvider = context.colorProvider
-            textPane.foreground = colorProvider.getTextForeground()
-            when (block) {
-                is TranscriptBlock.UserEcho -> {
-                    textPane.foreground = colorProvider.getUserEchoColor()
-                    textPane.text = "> ${block.text}"
-                }
-                is TranscriptBlock.Thought -> {
-                    textPane.foreground = colorProvider.getThoughtColor()
-                    textPane.text = "[thought] ${block.text}"
-                }
-                is TranscriptBlock.PlainLine -> {
-                    textPane.foreground =
-                        if (block.isUserPrompt) {
-                            colorProvider.getUserEchoColor()
-                        } else {
-                            colorProvider.getTextForeground()
-                        }
-                    textPane.text = block.text
-                }
-                is TranscriptBlock.ErrorLine -> {
-                    textPane.foreground = colorProvider.getErrorForeground()
-                    textPane.text = TranscriptRenderer.formatError(block.message)
-                }
-                is TranscriptBlock.AuthFailureLine -> {
-                    textPane.foreground = colorProvider.getErrorForeground()
-                    textPane.text = TranscriptRenderer.formatAuthFailure(block.message)
-                }
-                else -> Unit
+        private fun widthAdjustment() {
+            val w = width - insets.left - insets.right
+            if (w > 0) {
+                applyTranscriptColumnWidth(textPane, w)
             }
+        }
+
+        fun bind(block: TranscriptBlock) {
+            textPane.text = formatSimpleText(block)
+            textPane.foreground = resolveColor(block)
             revalidate()
             repaint()
+        }
+
+        private fun formatSimpleText(block: TranscriptBlock): String =
+            when (block) {
+                is TranscriptBlock.UserEcho -> "> ${block.text}"
+                is TranscriptBlock.Thought -> "[thought] ${block.text}"
+                is TranscriptBlock.PlainLine -> block.text
+                is TranscriptBlock.ErrorLine -> TranscriptRenderer.formatError(block.message)
+                is TranscriptBlock.AuthFailureLine -> TranscriptRenderer.formatAuthFailure(block.message)
+                else -> ""
+            }
+
+        private fun resolveColor(block: TranscriptBlock): java.awt.Color {
+            val cp = context.colorProvider
+            return when (block) {
+                is TranscriptBlock.UserEcho -> cp.getUserEchoColor()
+                is TranscriptBlock.Thought -> cp.getThoughtColor()
+                is TranscriptBlock.PlainLine ->
+                    if (block.isUserPrompt) cp.getUserEchoColor() else cp.getTextForeground()
+                is TranscriptBlock.ErrorLine -> cp.getErrorForeground()
+                is TranscriptBlock.AuthFailureLine -> cp.getErrorForeground()
+                else -> cp.getTextForeground()
+            }
         }
     }
 }

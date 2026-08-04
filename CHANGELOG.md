@@ -1,10 +1,32 @@
 # Changelog
 
+## 2026-08-05
+
+### Fixed
+
+- **Simple-text color provider contract** (`acp/SimpleTextRowAdapter.kt`, `acp/AgentTextRowAdapter.kt`): `SimpleTextRow` now uses `RowContext.colorProvider` instead of IDE service lookup; `AgentTextRow.bindStreamingAgent` uses injected color provider; headless tests with custom provider verify theme colors apply. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **Finalize disposal assertion** (`acp/AgentTextRowAdapterTest.kt`): Replaced tautological `disposedCount >= 0` with meaningful assertion that streaming disposes code editor components. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **Simple-text column resize** (`acp/SimpleTextRowAdapter.kt`, `acp/SimpleTextRowAdapterTest.kt`): Added `widthAdjustment()` to `SimpleTextRow.getMaximumSize()` for proper width remeasurement (parity with `AgentTextRow`); added headless resize test. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+### Documentation
+
+- **ACP transcript block-view decomposition feature close-out** (`docs/features/acp-transcript-block-view-decomposition/07-second-review-follow-ups.md`, `docs/features/FEATURES.md`): Marked tickets 06 and 07 as done; moved feature to Implemented; cleared architecture conflict for package restructure. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
 ## 2026-08-04
+
+### Documentation
+
+- **ACP transcript block-view second review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/07-second-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-06 review gaps — simple-text color-provider contract, finalize disposal assertion, column-resize and mismatch adapter tests, feature close-out. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript block-view review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/06-review-follow-ups.md`, `docs/features/FEATURES.md`): Single tracer bullet for post-implementation code-review gaps — simple-text mismatch/resize/bind seam, mapper and agent finalize tests, migrated tool-card tests, link-open logging, coordinator fallback. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Changed
 
 - **ACP transcript coordinator cleanup and verification** (`acp/TranscriptBlockViewFactory.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBlockViewFactoryTest.kt`, `acp/TranscriptTextTruncationTest.kt`): Reduced factory test to coordinator dispatch smoke (adapter order, create/update/dispose routing, mismatch logging, companion delegates); migrated agent-text behaviour tests (code block creation, width adjustment, streaming) to `AgentTextRowAdapterTest`; migrated tool-card body tests to `ToolCallRowAdapterTest`; extracted `TranscriptTextTruncationTest` from factory test. Factory `update()` stays under cyclomatic threshold without suppressions. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **ACP transcript block-view review follow-ups** (`acp/SimpleTextRowAdapter.kt`, `acp/TranscriptBlockRowAdapter.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/TranscriptBodyPartWidgetMapper.kt`, `acp/TranscriptPanel.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBodyPartWidgetMapperTest.kt`): Fixed `SimpleTextRowAdapter.update()` to check block type before row type (mismatch logging); replaced `SimpleTextRow.bind()` with `bindTranscriptBlock` delegation; simple-text resize now uses `applyTranscriptColumnWidth` for proper wrapped height remeasurement; added optional `project` field to `RowContext` and wired through `TranscriptBlockViewFactory` and `TranscriptPanel.create()`; removed broken undocumented `AgentTextRowAdapter` fallback in coordinator; `tryOpenUrl` logs warning on failure with specific exception types; added headless tests for streaming-to-finalize agent text at same `blockId`; added dedicated `TranscriptBodyPartWidgetMapperTest` covering code blocks, HTML fallback, blockquotes, highlight-budget, agent/tool profile parity; added tool-card resize and collapsed-body tests. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
 ### Added
 

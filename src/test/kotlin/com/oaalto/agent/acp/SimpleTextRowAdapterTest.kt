@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.ui.JBColor
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -245,6 +246,77 @@ class SimpleTextRowAdapterTest {
             assertTrue(isSimpleTextRow(row))
             factory.disposeRow(row)
             // No exception = success
+        }
+
+    @Test
+    fun `simple text row uses injected color provider`() =
+        runOnEdt {
+            val customUserEchoColor = java.awt.Color(255, 128, 0)
+            val customProvider =
+                object : TranscriptColorProvider {
+                    override fun getPanelBackground() = java.awt.Color.WHITE
+
+                    override fun getTextForeground() = java.awt.Color.BLACK
+
+                    override fun getErrorForeground() = java.awt.Color.RED
+
+                    override fun getLinkForeground() = java.awt.Color.BLUE
+
+                    override fun getUserEchoColor() = customUserEchoColor
+
+                    override fun getThoughtColor() = java.awt.Color.GRAY
+
+                    override fun getBadgeBackground(status: ToolCallStatus?) = java.awt.Color.GRAY
+
+                    override fun getBadgeForeground(status: ToolCallStatus?) = java.awt.Color.WHITE
+
+                    override fun toHtml(color: java.awt.Color) = "#000000"
+                }
+            val context =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = PlainMonospaceTranscriptCodeBlockViewFactory,
+                    colorProvider = customProvider,
+                    logContextProvider = { null },
+                )
+            val adapter = SimpleTextRowAdapter()
+            val row = adapter.create(context, TranscriptBlock.UserEcho("1", "hello"), {})
+
+            val textPane = findTextPane(row)
+            assertEquals(customUserEchoColor, textPane.foreground)
+        }
+
+    @Test
+    fun `simple text column resize remeasures wrapped row height`() =
+        runOnEdt {
+            val context = createRowContext()
+            val adapter = SimpleTextRowAdapter()
+            val longText =
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            val row = adapter.create(context, TranscriptBlock.PlainLine("1", longText), {})
+
+            row.setSize(800, 200)
+            row.doLayout()
+            row.setSize(200, 200)
+            row.maximumSize
+
+            val textPane = findTextPane(row)
+            val availableWidth = row.width - row.insets.left - row.insets.right
+            assertEquals(availableWidth, textPane.preferredSize.width)
+        }
+
+    @Test
+    fun `update returns false for non-simple-text block and preserves prior text`() =
+        runOnEdt {
+            val context = createRowContext()
+            val adapter = SimpleTextRowAdapter()
+            val row = adapter.create(context, TranscriptBlock.PlainLine("1", "original text"), {})
+
+            val result = adapter.update(context, row, TranscriptBlock.FinalAgentText("2", "agent text"))
+            assertFalse(result, "update should reject non-simple-text block")
+            val textPane = findTextPane(row)
+            assertEquals("original text", textPane.text, "prior bound text should be preserved")
         }
 
     private fun createRowContext(): RowContext =

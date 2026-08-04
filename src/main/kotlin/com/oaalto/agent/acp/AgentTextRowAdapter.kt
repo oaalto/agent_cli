@@ -156,8 +156,10 @@ internal class AgentTextRowAdapter : TranscriptBlockRowAdapter {
         }
 
         private fun bindStreamingAgent(block: TranscriptBlock.StreamingAgentText) {
-            // Streaming uses simple text pane with cursor via label binder
-            setupSimpleTextPane { it.bindTranscriptBlock(block) }
+            setupSimpleTextPane { pane ->
+                pane.foreground = context.colorProvider.getTextForeground()
+                pane.text = normalizeAgentFences(block.text) + TranscriptStreamingCursor.CURSOR_CHAR
+            }
         }
 
         fun disposeCodeComponents() {
