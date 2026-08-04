@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **ACP transcript markdown renderer test consolidation** (`acp/TranscriptMarkdownRendererTest.kt`): Removed 35 tests duplicated by `TranscriptContentRendererTest`; retained 5 parser-level tests (likelyContainsMarkdown positive, ordered list items, strikethrough, blockquote with multiple paragraphs, untagged fence null language). made by: Olli Aalto. made with: pi. model: qwen-qwq
+
 - **ACP transcript agent text routing** (`acp/TranscriptBodyPart.kt`, `TranscriptBlockConverter.kt`, `TranscriptBlockViewFactory.kt`, `TranscriptHtmlBuilder.kt`, `TranscriptContentRenderer.kt`, tests): Route `FinalAgentText` through `TranscriptContentRenderer` with `ContentRenderOptions.AGENT_TEXT`; expand body-part variants (heading, list, blockquote, image, inline text) and map them to Swing in `AgentTextRow`; share HTML fallback via `bodyPartToHtmlFragment`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript content renderer** (`acp/TranscriptContentRenderer.kt`, `TranscriptToolCallContentRenderer.kt`, `TranscriptBlockConverter.kt`): Introduce `renderMarkdownText` with `ContentRenderOptions`; route completed tool-card text and embedded text resources through the shared seam; remove `TranscriptToolCallTextBodyRenderer`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
