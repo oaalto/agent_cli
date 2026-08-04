@@ -70,7 +70,7 @@ ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry poin
 
 ### Session transcript file
 
-Workspace-local plain-text record of an ACP session conversation, keyed by `acpSessionId`, written incrementally while the editor is open. Restored as plain lines when the session is resumed. ACP Client mode only. See [ADR 0004](docs/adr/0004-session-observability.md).
+Workspace-local plain-text record of an ACP session conversation, keyed by `acpSessionId`, written incrementally while the editor is open. Files are named `{timestamp}_{acpSessionId}.txt` (local start time, human-readable) under `.idea/agent-cli/transcripts/`; the logical key remains `acpSessionId` for resume and restore. Restored as plain lines when the session is resumed. ACP Client mode only. See [ADR 0004](docs/adr/0004-session-observability.md).
 
 ### Session diagnostics
 

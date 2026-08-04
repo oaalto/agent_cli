@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-04] skip | Session transcript timestamped filenames
+
+- Reason: Filename presentation change in `TranscriptFileStore`; logical key and restore behavior already documented in ADR 0004 and CONTEXT.md.
+
 ## [2026-08-03] update | ACP mid-line fences and code selection
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md)

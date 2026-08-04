@@ -40,7 +40,9 @@ Transcript errors shown to the user include a correlation token (e.g. `[agent-cl
 | Property | Value |
 |----------|-------|
 | Key | `acpSessionId` |
-| Path | `<project>/.idea/agent-cli/transcripts/<acpSessionId>.txt` |
+| Path | `<project>/.idea/agent-cli/transcripts/{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` |
+| Filename | Human-readable local session-start timestamp prefix; logical key remains `acpSessionId` |
+| Legacy | Pre-change files at `<acpSessionId>.txt` are read on restore; new sessions use the timestamped pattern |
 | Scope | Workspace-local (not VCS) |
 | Write | Debounced full snapshot (~300–500ms) of plain-text render from `TranscriptModel.blocks()` |
 | Restore | On editor open with resumed session: read file → replay lines as plain transcript text (no block reconstruction) |

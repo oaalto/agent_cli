@@ -59,6 +59,7 @@ internal class SessionTranscriptCoordinator(
     }
 
     fun bindSession(sessionId: String) {
+        fileStore?.bindSession(sessionId)
         snapshotWriter?.setSessionId(sessionId)
     }
 

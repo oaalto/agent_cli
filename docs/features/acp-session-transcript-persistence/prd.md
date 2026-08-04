@@ -23,7 +23,7 @@ Persist an ACP session's conversation as a workspace-local **Session transcript 
 | Channel | Audience | Medium | PR2 delivers |
 | --- | --- | --- | --- |
 | **Transcript** (live UI) | User | In-tab ACP editor | Correlation tokens on error lines; unchanged rich rendering for live turns |
-| **Session transcript file** | User | `<project>/.idea/agent-cli/transcripts/<acpSessionId>.txt` | Debounced full snapshot of plain-text render |
+| **Session transcript file** | User | `<project>/.idea/agent-cli/transcripts/{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` | Debounced full snapshot of plain-text render |
 | **Session diagnostics** | Developer | IDE log via `AgentCliLog` (PR1) | Matching warn/error lines share correlation token with transcript errors |
 
 **Copy session diagnostics** (new editor action): copies a clipboard bundle with correlation token(s), `configId`, `sessionId`, `launchMode`, `worktreePath`, and recent errors — for bug reports. Complements grep-by-token; does not replace it.
@@ -34,7 +34,7 @@ Persist an ACP session's conversation as a workspace-local **Session transcript 
 | --- | --- |
 | Scope | **ACP Client** mode only |
 | Key | `acpSessionId` (not `worktreeId`) |
-| Path | Workspace-local under project `.idea/agent-cli/transcripts/<acpSessionId>.txt` (not VCS) |
+| Path | Workspace-local under project `.idea/agent-cli/transcripts/{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` (not VCS); legacy `<acpSessionId>.txt` read on restore |
 | Pre-session | Buffer serialized plain text in memory until `acpSessionId` is known, then create/overwrite file |
 | Write | Debounced full snapshot (~300–500 ms) of plain-text render derived from `TranscriptModel` blocks |
 | Restore | On editor open with resumed session: read file → replay lines as plain **Transcript** text (no block/UI reconstruction) |
@@ -114,7 +114,8 @@ PTY Passthrough: no **Session transcript file** — terminal scrollback and agen
 ### Session transcript file store
 
 - Introduce **TranscriptFileStore** (name as implemented) responsible for:
-  - Resolving workspace-local path: `<project>/.idea/agent-cli/transcripts/<acpSessionId>.txt`
+  - Resolving workspace-local path: `<project>/.idea/agent-cli/transcripts/{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` (session-start timestamp, local timezone)
+  - Lookup by `acpSessionId` suffix on restore; legacy `<acpSessionId>.txt` read fallback
   - Creating transcript directory on first write if missing
   - Atomic or equivalent safe overwrite of full snapshot content (debounced writer replaces entire file)
   - Reading full file text for restore; treat missing file as empty (no user error)

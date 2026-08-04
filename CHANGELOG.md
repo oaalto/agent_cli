@@ -2,6 +2,10 @@
 
 ## 2026-08-04
 
+### Changed
+
+- **Session transcript filenames** (`acp/TranscriptFileStore.kt`, tests, docs): Timestamped human-readable names `{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` under `.idea/agent-cli/transcripts/`; logical key remains `acpSessionId`; legacy `<acpSessionId>.txt` files still restore. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Fixed
 
 - **ACP transcript code block layout** (`acp/TranscriptColumnSizing.kt`, `acp/TranscriptCodeBlockViewFactory.kt`, `acp/CollapsibleToolPanel.kt`, `acp/TranscriptBlockViewFactory.kt`): Measure inline text and code-block heights with `setSize(width, 0)` instead of `Int.MAX_VALUE`, which inflated `preferredSize.height` to `Integer.MAX_VALUE` and let `BoxLayout` stretch prose panes over fenced code; remeasure embedded Editors with a bounded max height so soft-wrapped lines are not clipped. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
