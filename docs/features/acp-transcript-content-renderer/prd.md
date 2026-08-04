@@ -1,8 +1,8 @@
 ## Status
 
-ready-for-agent
+done
 
-**Triage:** `ready-for-agent`
+**Triage:** `done`
 
 ## Problem Statement
 
