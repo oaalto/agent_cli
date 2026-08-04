@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.AgentCliLog
 import java.awt.Component
 import java.awt.Desktop
 import java.awt.Dimension
@@ -11,6 +12,7 @@ import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.URI
+import java.net.URISyntaxException
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
@@ -273,14 +275,20 @@ internal class TranscriptBodyPartWidgetMapper(
     }
 
     companion object {
+        private val log = AgentCliLog.getInstance(TranscriptBodyPartWidgetMapper::class.java)
+
         fun tryOpenUrl(url: String) {
             try {
                 val uri = URI(url)
                 if (uri.scheme == "http" || uri.scheme == "https") {
                     Desktop.getDesktop().browse(uri)
                 }
-            } catch (_: Exception) {
-                // silently ignore
+            } catch (e: URISyntaxException) {
+                log.warn("Failed to open URL: invalid URI: $url", e)
+            } catch (e: java.awt.HeadlessException) {
+                log.warn("Failed to open URL: headless environment", e)
+            } catch (e: java.io.IOException) {
+                log.warn("Failed to open URL: $url", e)
             }
         }
     }

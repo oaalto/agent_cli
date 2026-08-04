@@ -237,6 +237,76 @@ class ToolCallRowAdapterTest {
         }
 
     @Test
+    fun `expanded tool card body remeasures children on resize`() =
+        runOnEdt {
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = recFactory,
+                    colorProvider = DefaultTranscriptColorProvider(),
+                    logContextProvider = { null },
+                )
+            val adapter = ToolCallRowAdapter()
+            val block =
+                TranscriptBlock.ToolCallBlock(
+                    blockId = "1",
+                    toolCallId = "t1",
+                    title = "execute",
+                    kind = ToolKind.EDIT,
+                    status = ToolCallStatus.COMPLETED,
+                    expanded = true,
+                    bodyParts = listOf(TranscriptBodyPart.Code("kotlin", "fun main()")),
+                )
+            val row = adapter.create(ctx, block, {})
+
+            val initialHeight = row.preferredSize.height
+
+            // Resize row wider
+            row.setSize(800, 0)
+            row.doLayout()
+
+            val widerHeight = row.preferredSize.height
+            assertTrue(
+                widerHeight <= initialHeight,
+                "wider column should not increase height for single-line code block",
+            )
+
+            // Code block width should update
+            val codeComponent = (row as CollapsibleToolPanel).disposableCodeComponents.first()
+            assertTrue(codeComponent.preferredSize.width > 0)
+        }
+
+    @Test
+    fun `collapsed tool card skips code-block component creation`() =
+        runOnEdt {
+            val recFactory = RecordingCodeBlockViewFactory()
+            val ctx =
+                RowContext(
+                    columnWidth = 600,
+                    codeBlockViewFactory = recFactory,
+                    colorProvider = DefaultTranscriptColorProvider(),
+                    logContextProvider = { null },
+                )
+            val adapter = ToolCallRowAdapter()
+            val block =
+                TranscriptBlock.ToolCallBlock(
+                    blockId = "1",
+                    toolCallId = "t1",
+                    title = "execute",
+                    kind = ToolKind.EDIT,
+                    status = ToolCallStatus.COMPLETED,
+                    expanded = false,
+                    bodyParts = listOf(TranscriptBodyPart.Code("kotlin", "fun main()")),
+                )
+            val row = adapter.create(ctx, block, {})
+
+            // Collapsed card should not create code components
+            assertEquals(0, recFactory.createdCount)
+            assertEquals(0, (row as CollapsibleToolPanel).disposableCodeComponents.size)
+        }
+
+    @Test
     fun `factory creates tool row via adapter`() =
         runOnEdt {
             val factory = TranscriptBlockViewFactory(PlainMonospaceTranscriptCodeBlockViewFactory)

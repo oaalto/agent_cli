@@ -122,7 +122,12 @@ internal class TranscriptPanel(
             logContextProvider: () -> AgentCliSessionContext? = { null },
         ): TranscriptPanel =
             TranscriptPanel(
-                blockViewFactory = TranscriptBlockViewFactory(codeBlockViewFactory, logContextProvider),
+                blockViewFactory =
+                    TranscriptBlockViewFactory(
+                        codeBlockViewFactory,
+                        logContextProvider,
+                        project = project,
+                    ),
                 onToolToggle = onToolToggle,
             )
     }

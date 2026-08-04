@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.intellij.openapi.components.serviceOrNull
+import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import javax.swing.JPanel
@@ -15,10 +16,12 @@ internal class TranscriptBlockViewFactory(
     logContextProvider: () -> AgentCliSessionContext? = { null },
     colorProviderArg: TranscriptColorProvider = colorProvider,
     columnWidth: Int = 600,
+    project: Project? = null,
 ) {
     private val log = AgentCliLog.getInstance(TranscriptBlockViewFactory::class.java)
     private val context =
         RowContext(
+            project = project,
             columnWidth = columnWidth,
             codeBlockViewFactory = codeBlockViewFactory,
             colorProvider = colorProviderArg,
@@ -50,8 +53,9 @@ internal class TranscriptBlockViewFactory(
             "No adapter matched block: ${block::class.simpleName}",
             context = context.logContextProvider(),
         )
-        // Fallback: should not happen with current block types
-        return AgentTextRowAdapter().create(context, block, onToolToggle)
+        // Unknown block: return empty panel to avoid crashes.
+        // With current TranscriptBlock types, all variants are covered by registered adapters.
+        return JPanel()
     }
 
     fun update(

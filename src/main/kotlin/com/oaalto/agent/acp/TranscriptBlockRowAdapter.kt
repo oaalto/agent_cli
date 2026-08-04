@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentCliSessionContext
 import javax.swing.JPanel
 
@@ -9,6 +10,7 @@ import javax.swing.JPanel
  * [onToolToggle] is intentionally NOT on RowContext; callers pass it separately to [create].
  */
 internal data class RowContext(
+    val project: Project? = null,
     val columnWidth: Int = 600,
     val codeBlockViewFactory: TranscriptCodeBlockViewFactory,
     val colorProvider: TranscriptColorProvider,
