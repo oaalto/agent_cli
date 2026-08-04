@@ -4,7 +4,7 @@ package com.oaalto.agent.acp
 internal object TranscriptTextTruncation {
     fun truncate(
         text: String,
-        maxCharacters: Int = TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS,
+        maxCharacters: Int = TranscriptContentRenderer.MAX_TEXT_CHARACTERS,
     ): String {
         if (text.length <= maxCharacters) {
             return text

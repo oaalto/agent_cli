@@ -9,28 +9,47 @@ internal object TranscriptBlockConverter {
     fun convertBlocksToBodyParts(
         blocks: List<RenderedBlock>,
         counter: HighlightedCounter = HighlightedCounter(),
+        maxHighlightedCodeBlocks: Int = TranscriptContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS,
+        maxTextCharacters: Int = TranscriptContentRenderer.MAX_TEXT_CHARACTERS,
     ): List<TranscriptBodyPart> =
         blocks.flatMap { block ->
-            blockToBodyParts(block, counter)
+            blockToBodyParts(block, counter, maxHighlightedCodeBlocks, maxTextCharacters)
         }
 
     private fun blockToBodyParts(
         block: RenderedBlock,
         counter: HighlightedCounter,
+        maxHighlightedCodeBlocks: Int,
+        maxTextCharacters: Int,
     ): List<TranscriptBodyPart> =
         when (block) {
-            is RenderedBlock.InlineText -> inlineTextToBodyParts(block)
-            is RenderedBlock.CodeBlock -> codeBlockToBodyParts(block, counter)
+            is RenderedBlock.InlineText -> inlineTextToBodyParts(block, maxTextCharacters)
+            is RenderedBlock.CodeBlock ->
+                codeBlockToBodyParts(
+                    block,
+                    counter,
+                    maxHighlightedCodeBlocks,
+                    maxTextCharacters,
+                )
             is RenderedBlock.Table -> listOf(TranscriptBodyPart.Html(TranscriptTableBuilder.buildTableHtml(block)))
             is RenderedBlock.Image -> imageToBodyParts(block)
             is RenderedBlock.ThematicBreak ->
                 listOf(TranscriptBodyPart.Html("<hr style='border:none;border-top:1px solid #555;margin:8px 20px'/>"))
-            is RenderedBlock.BlockQuote -> blockQuoteToBodyParts(block, counter)
+            is RenderedBlock.BlockQuote ->
+                blockQuoteToBodyParts(
+                    block,
+                    counter,
+                    maxHighlightedCodeBlocks,
+                    maxTextCharacters,
+                )
             is RenderedBlock.CustomHtml -> listOf(TranscriptBodyPart.Html(block.html))
         }
 
-    private fun inlineTextToBodyParts(block: RenderedBlock.InlineText): List<TranscriptBodyPart> {
-        val displayText = TranscriptTextTruncation.truncate(block.text)
+    private fun inlineTextToBodyParts(
+        block: RenderedBlock.InlineText,
+        maxTextCharacters: Int,
+    ): List<TranscriptBodyPart> {
+        val displayText = TranscriptTextTruncation.truncate(block.text, maxTextCharacters)
         if (displayText.isEmpty()) return emptyList()
         val html = TranscriptHtmlBuilder.buildStyledSpan(displayText, block.runs, block.headingLevel > 0)
         return listOf(TranscriptBodyPart.Html(html))
@@ -39,14 +58,16 @@ internal object TranscriptBlockConverter {
     private fun codeBlockToBodyParts(
         block: RenderedBlock.CodeBlock,
         counter: HighlightedCounter,
+        maxHighlightedCodeBlocks: Int,
+        maxTextCharacters: Int,
     ): List<TranscriptBodyPart> {
-        val displayCode = TranscriptTextTruncation.truncate(block.code)
+        val displayCode = TranscriptTextTruncation.truncate(block.code, maxTextCharacters)
         if (displayCode.isEmpty()) return emptyList()
-        return if (counter.value < TranscriptToolCallContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS) {
+        return if (counter.value < maxHighlightedCodeBlocks) {
             counter.value++
             listOf(TranscriptBodyPart.Code(block.languageId, displayCode))
         } else {
-            listOf(TranscriptBodyPart.Html(TranscriptHtmlBuilder.buildPlainPre(displayCode)))
+            listOf(TranscriptBodyPart.Html(TranscriptHtmlBuilder.buildPlainPre(displayCode, maxTextCharacters)))
         }
     }
 
@@ -63,8 +84,10 @@ internal object TranscriptBlockConverter {
     private fun blockQuoteToBodyParts(
         block: RenderedBlock.BlockQuote,
         counter: HighlightedCounter,
+        maxHighlightedCodeBlocks: Int,
+        maxTextCharacters: Int,
     ): List<TranscriptBodyPart> =
         block.blocks.flatMap { inner ->
-            blockToBodyParts(inner, counter)
+            blockToBodyParts(inner, counter, maxHighlightedCodeBlocks, maxTextCharacters)
         }
 }

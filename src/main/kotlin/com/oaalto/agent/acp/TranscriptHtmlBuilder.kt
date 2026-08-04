@@ -56,12 +56,15 @@ internal object TranscriptHtmlBuilder {
     private const val MUTED_REFERENCE_STYLE =
         "margin-left:20px;color:#999999;font-family:monospace;font-size:12px"
 
-    fun buildPlainPre(text: String): String {
+    fun buildPlainPre(
+        text: String,
+        maxCharacters: Int = TranscriptContentRenderer.MAX_TEXT_CHARACTERS,
+    ): String {
         val openTag = "<pre style=\"$PRE_STYLE\">"
         val closeTag = "</pre>"
         val maxInnerChars =
             (
-                TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS -
+                maxCharacters -
                     openTag.length -
                     closeTag.length
             ).coerceAtLeast(0)

@@ -11,11 +11,11 @@ import com.agentclientprotocol.model.ToolCallStatus
  * Bodies render only when [status] is [ToolCallStatus.COMPLETED] or [ToolCallStatus.FAILED].
  */
 internal object TranscriptToolCallContentRenderer {
-    /** Maximum characters rendered in a single text or diff body before truncation. */
-    internal const val MAX_TEXT_CHARACTERS: Int = 16 * 1024
+    /** @see TranscriptContentRenderer.MAX_TEXT_CHARACTERS */
+    internal const val MAX_TEXT_CHARACTERS: Int = TranscriptContentRenderer.MAX_TEXT_CHARACTERS
 
-    /** Maximum fenced code blocks highlighted per text body; additional blocks stay plain pre. */
-    internal const val MAX_HIGHLIGHTED_CODE_BLOCKS: Int = 8
+    /** @see TranscriptContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS */
+    internal const val MAX_HIGHLIGHTED_CODE_BLOCKS: Int = TranscriptContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS
 
     private const val PRE_STYLE =
         "margin-left:20px;color:#999999;border-left:2px solid #444444;" +
@@ -56,7 +56,11 @@ internal object TranscriptToolCallContentRenderer {
 
     private fun renderContentBlockParts(block: ContentBlock): List<TranscriptBodyPart> =
         when (block) {
-            is ContentBlock.Text -> TranscriptToolCallTextBodyRenderer.renderTextBodyParts(block.text)
+            is ContentBlock.Text ->
+                TranscriptContentRenderer.renderMarkdownText(
+                    block.text,
+                    ContentRenderOptions.DEFAULT,
+                )
             is ContentBlock.Image ->
                 listOf(TranscriptBodyPart.Html(renderPrePlaceholder("[image: ${block.mimeType}]")))
             is ContentBlock.Audio ->
@@ -69,7 +73,10 @@ internal object TranscriptToolCallContentRenderer {
     private fun renderEmbeddedResourceParts(resource: EmbeddedResourceResource): List<TranscriptBodyPart> =
         when (resource) {
             is EmbeddedResourceResource.TextResourceContents ->
-                TranscriptToolCallTextBodyRenderer.renderTextBodyParts(resource.text)
+                TranscriptContentRenderer.renderMarkdownText(
+                    resource.text,
+                    ContentRenderOptions.DEFAULT,
+                )
             is EmbeddedResourceResource.BlobResourceContents ->
                 listOf(TranscriptBodyPart.Html(renderPrePlaceholder("[binary resource: ${resource.uri}]")))
         }

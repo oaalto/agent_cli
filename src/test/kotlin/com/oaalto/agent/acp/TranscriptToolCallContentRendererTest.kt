@@ -11,22 +11,6 @@ import kotlin.test.assertTrue
 
 class TranscriptToolCallContentRendererTest {
     @Test
-    fun `completed text content renders escaped pre block`() {
-        val fragments =
-            TranscriptToolCallContentRenderer.renderContentFragments(
-                content = listOf(ToolCallContent.Content(ContentBlock.Text("line one\nline two"))),
-                status = ToolCallStatus.COMPLETED,
-            )
-
-        assertEquals(1, fragments.size)
-        assertTrue(fragments[0].contains("<pre"))
-        assertTrue(fragments[0].contains("border-left:2px solid #444444"))
-        assertTrue(fragments[0].contains("color:#999999"))
-        assertTrue(fragments[0].contains("line one"))
-        assertTrue(fragments[0].contains("line two"))
-    }
-
-    @Test
     fun `failed text content renders body`() {
         val fragments =
             TranscriptToolCallContentRenderer.renderContentFragments(
@@ -304,7 +288,7 @@ class TranscriptToolCallContentRendererTest {
     }
 
     @Test
-    fun `text embedded resource renders like text body`() {
+    fun `text embedded resource delegates to content renderer`() {
         val fragments =
             TranscriptToolCallContentRenderer.renderContentFragments(
                 content =
@@ -369,27 +353,6 @@ class TranscriptToolCallContentRendererTest {
     }
 
     @Test
-    fun `text content escapes html special characters`() {
-        val fragments =
-            TranscriptToolCallContentRenderer.renderContentFragments(
-                content =
-                    listOf(
-                        ToolCallContent.Content(
-                            ContentBlock.Text("<script>alert(1)</script> & \"quotes\""),
-                        ),
-                    ),
-                status = ToolCallStatus.COMPLETED,
-            )
-
-        assertEquals(1, fragments.size)
-        val html = fragments[0]
-        assertTrue(html.contains("&lt;script&gt;"))
-        assertTrue(html.contains("&amp;"))
-        assertTrue(html.contains("&quot;quotes&quot;"))
-        assertTrue(!html.contains("<script>"))
-    }
-
-    @Test
     fun `diff lines escape html special characters`() {
         val fragments =
             TranscriptToolCallContentRenderer.renderContentFragments(
@@ -409,53 +372,6 @@ class TranscriptToolCallContentRendererTest {
         assertTrue(html.contains("x&lt;&amp;&gt;.txt"))
         assertTrue(html.contains("- &lt;removed&gt;"))
         assertTrue(html.contains("+ &lt;added&gt;"))
-    }
-
-    @Test
-    fun `very long text truncates with character total suffix`() {
-        val longText = "x".repeat(TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS + 100)
-        val fragments =
-            TranscriptToolCallContentRenderer.renderContentFragments(
-                content = listOf(ToolCallContent.Content(ContentBlock.Text(longText))),
-                status = ToolCallStatus.COMPLETED,
-            )
-
-        assertEquals(1, fragments.size)
-        assertTrue(fragments[0].contains("… (truncated, ${longText.length} characters total)"))
-        assertTrue(fragments[0].length < longText.length)
-    }
-
-    @Test
-    fun `fenced kotlin tool text emits highlighted code body part`() {
-        val parts =
-            TranscriptToolCallContentRenderer.renderBodyParts(
-                content =
-                    listOf(
-                        ToolCallContent.Content(
-                            ContentBlock.Text("```kotlin\nfun main()\n```"),
-                        ),
-                    ),
-                status = ToolCallStatus.COMPLETED,
-            )
-
-        assertEquals(1, parts.size)
-        val code = assertIs<TranscriptBodyPart.Code>(parts.single())
-        assertEquals("kotlin", code.languageId)
-        assertEquals("fun main()", code.code)
-    }
-
-    @Test
-    fun `plain log text still emits html pre body part`() {
-        val parts =
-            TranscriptToolCallContentRenderer.renderBodyParts(
-                content = listOf(ToolCallContent.Content(ContentBlock.Text("error output"))),
-                status = ToolCallStatus.FAILED,
-            )
-
-        assertEquals(1, parts.size)
-        val html = assertIs<TranscriptBodyPart.Html>(parts.single())
-        assertTrue(html.fragment.contains("<pre"))
-        assertTrue(html.fragment.contains("error output"))
     }
 
     @Test

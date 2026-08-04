@@ -4,7 +4,17 @@
 
 ### Changed
 
+- **ACP transcript content renderer** (`acp/TranscriptContentRenderer.kt`, `TranscriptToolCallContentRenderer.kt`, `TranscriptBlockConverter.kt`): Introduce `renderMarkdownText` with `ContentRenderOptions`; route completed tool-card text and embedded text resources through the shared seam; remove `TranscriptToolCallTextBodyRenderer`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Session transcript filenames** (`acp/TranscriptFileStore.kt`, tests, docs): Timestamped human-readable names `{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` under `.idea/agent-cli/transcripts/`; logical key remains `acpSessionId`; legacy `<acpSessionId>.txt` files still restore. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+### Documentation
+
+- **ACP transcript content-renderer tickets** (`docs/features/acp-transcript-content-renderer/01-03`, `docs/features/FEATURES.md`): Three vertical slices — tool-text content renderer, agent-text routing, helper consolidation and parse-entry audit. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript content-renderer grill** (`CONTEXT.md`, `docs/wiki/concepts/context.md`, `docs/wiki/subsystems/acp-client.md`, `docs/features/acp-transcript-content-renderer/prd.md`, sibling PRD cross-links): Accepted grill-with-docs-batch decisions — sharpened problem statement (one parse, two post-parse paths), `TranscriptContentRenderer` as canonical body-part seam, `ContentRenderOptions` fields, landing order vs fence-normalization and block-view PRDs. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript rendering deepening specs** (`docs/features/acp-transcript-content-renderer/`, `acp-transcript-block-view-decomposition/`, `acp-transcript-finalize-policy/`, `acp-transcript-fence-normalization/`, `acp-transcript-panel-integration-tests/`, `acp-transcript-package-restructure/`, `docs/features/FEATURES.md`): Six `ready-for-agent` PRDs from architecture review — unified content renderer, block view adapter decomposition, finalize policy, fence normalization, mounted-panel test harness, and package restructure. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Fixed
 
