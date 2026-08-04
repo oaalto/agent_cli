@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-04] skip | Agent text content-renderer routing (ticket 02)
+
+- Reason: Implementation follows existing PRD/wiki seam; no new durable architecture beyond ticket 01 docs.
+
 ## [2026-08-04] skip | ACP transcript content-renderer tickets
 
 - Reason: Ticket slice files and FEATURES.md ticket table only; PRD and wiki already document the content-render seam.

@@ -36,7 +36,7 @@ internal object TranscriptToolCallContentRenderer {
     fun renderContentFragments(
         content: List<ToolCallContent>?,
         status: ToolCallStatus?,
-    ): List<String> = renderBodyParts(content, status).map(::bodyPartToHtmlFragment)
+    ): List<String> = renderBodyParts(content, status).map(TranscriptHtmlBuilder::bodyPartToHtmlFragment)
 
     private fun shouldRenderContent(status: ToolCallStatus?): Boolean =
         status == ToolCallStatus.COMPLETED || status == ToolCallStatus.FAILED
@@ -91,12 +91,6 @@ internal object TranscriptToolCallContentRenderer {
                 "[terminal output] id=$escapedId</span>"
         )
     }
-
-    private fun bodyPartToHtmlFragment(part: TranscriptBodyPart): String =
-        when (part) {
-            is TranscriptBodyPart.Html -> part.fragment
-            is TranscriptBodyPart.Code -> TranscriptHtmlBuilder.buildPlainPre(part.code)
-        }
 
     private fun escapeHtml(text: String): String = TranscriptRenderHelpers.escapeHtml(text)
 }

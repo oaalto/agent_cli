@@ -9,6 +9,13 @@ internal data class ContentRenderOptions(
 ) {
     companion object {
         val DEFAULT: ContentRenderOptions = ContentRenderOptions()
+
+        /** Options for final agent markdown rows: always parse, normalize malformed fences. */
+        val AGENT_TEXT: ContentRenderOptions =
+            ContentRenderOptions(
+                useMarkdownHeuristic = false,
+                applyFenceNormalization = true,
+            )
     }
 }
 

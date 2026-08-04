@@ -8,17 +8,26 @@ class TranscriptFencedAgentTextLimitsTest {
     @Test
     fun `markdown code blocks beyond highlight cap remain as code blocks`() {
         val fences =
-            (1..TranscriptToolCallContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS + 2).joinToString("\n") { index ->
+            (1..TranscriptContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS + 2).joinToString("\n") { index ->
                 "```kotlin\nfun block$index()\n```"
             }
-        val blocks = TranscriptMarkdownRenderer.parseToBlocks(fences)
-        val codeBlocks = blocks.filterIsInstance<RenderedBlock.CodeBlock>()
+        val parts =
+            TranscriptContentRenderer.renderMarkdownText(
+                fences,
+                ContentRenderOptions.AGENT_TEXT,
+            )
+        val codeParts = parts.filterIsInstance<TranscriptBodyPart.Code>()
+        val plainPre =
+            parts
+                .filterIsInstance<TranscriptBodyPart.Html>()
+                .filter { it.fragment.contains("<pre") }
 
         assertEquals(
-            TranscriptToolCallContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS + 2,
-            codeBlocks.size,
+            TranscriptContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS + 2,
+            codeParts.size + plainPre.size,
         )
-        val truncated = TranscriptTextTruncation.truncate(codeBlocks.first().code)
-        assertTrue(truncated.length <= TranscriptToolCallContentRenderer.MAX_TEXT_CHARACTERS)
+        val firstCode = codeParts.first()
+        val truncated = TranscriptTextTruncation.truncate(firstCode.code)
+        assertTrue(truncated.length <= TranscriptContentRenderer.MAX_TEXT_CHARACTERS)
     }
 }

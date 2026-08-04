@@ -23,18 +23,20 @@ internal object TranscriptBlockConverter {
         maxTextCharacters: Int,
     ): List<TranscriptBodyPart> =
         when (block) {
-            is RenderedBlock.InlineText -> inlineTextToBodyParts(block, maxTextCharacters)
+            is RenderedBlock.InlineText ->
+                listOfNotNull(inlineTextToBodyPart(block, maxTextCharacters))
             is RenderedBlock.CodeBlock ->
-                codeBlockToBodyParts(
-                    block,
-                    counter,
-                    maxHighlightedCodeBlocks,
-                    maxTextCharacters,
+                listOfNotNull(
+                    codeBlockToBodyPart(
+                        block,
+                        counter,
+                        maxHighlightedCodeBlocks,
+                        maxTextCharacters,
+                    ),
                 )
             is RenderedBlock.Table -> listOf(TranscriptBodyPart.Html(TranscriptTableBuilder.buildTableHtml(block)))
-            is RenderedBlock.Image -> imageToBodyParts(block)
-            is RenderedBlock.ThematicBreak ->
-                listOf(TranscriptBodyPart.Html("<hr style='border:none;border-top:1px solid #555;margin:8px 20px'/>"))
+            is RenderedBlock.Image -> listOf(TranscriptBodyPart.Image(block.altText, block.url))
+            is RenderedBlock.ThematicBreak -> listOf(TranscriptBodyPart.ThematicBreak)
             is RenderedBlock.BlockQuote ->
                 blockQuoteToBodyParts(
                     block,
@@ -45,40 +47,33 @@ internal object TranscriptBlockConverter {
             is RenderedBlock.CustomHtml -> listOf(TranscriptBodyPart.Html(block.html))
         }
 
-    private fun inlineTextToBodyParts(
+    private fun inlineTextToBodyPart(
         block: RenderedBlock.InlineText,
         maxTextCharacters: Int,
-    ): List<TranscriptBodyPart> {
+    ): TranscriptBodyPart? {
         val displayText = TranscriptTextTruncation.truncate(block.text, maxTextCharacters)
-        if (displayText.isEmpty()) return emptyList()
-        val html = TranscriptHtmlBuilder.buildStyledSpan(displayText, block.runs, block.headingLevel > 0)
-        return listOf(TranscriptBodyPart.Html(html))
+        if (displayText.isEmpty()) return null
+        return when {
+            block.headingLevel > 0 -> TranscriptBodyPart.Heading(block.headingLevel, displayText, block.runs)
+            block.listMarker != null -> TranscriptBodyPart.ListLine(block.listMarker, displayText, block.runs)
+            else -> TranscriptBodyPart.InlineText(displayText, block.runs)
+        }
     }
 
-    private fun codeBlockToBodyParts(
+    private fun codeBlockToBodyPart(
         block: RenderedBlock.CodeBlock,
         counter: HighlightedCounter,
         maxHighlightedCodeBlocks: Int,
         maxTextCharacters: Int,
-    ): List<TranscriptBodyPart> {
+    ): TranscriptBodyPart? {
         val displayCode = TranscriptTextTruncation.truncate(block.code, maxTextCharacters)
-        if (displayCode.isEmpty()) return emptyList()
+        if (displayCode.isEmpty()) return null
         return if (counter.value < maxHighlightedCodeBlocks) {
             counter.value++
-            listOf(TranscriptBodyPart.Code(block.languageId, displayCode))
+            TranscriptBodyPart.Code(block.languageId, displayCode)
         } else {
-            listOf(TranscriptBodyPart.Html(TranscriptHtmlBuilder.buildPlainPre(displayCode, maxTextCharacters)))
+            TranscriptBodyPart.Html(TranscriptHtmlBuilder.buildPlainPre(displayCode, maxTextCharacters))
         }
-    }
-
-    private fun imageToBodyParts(block: RenderedBlock.Image): List<TranscriptBodyPart> {
-        val alt = block.altText
-        val url = block.url
-        val placeholder = if (url.isNotEmpty()) "[image: $alt] ($url)" else "[image: $alt]"
-        val escaped = TranscriptRenderHelpers.escapeHtml(placeholder)
-        val html =
-            "<span style=\"margin-left:20px;color:#999999;font-family:monospace;font-size:12px\">$escaped</span>"
-        return listOf(TranscriptBodyPart.Html(html))
     }
 
     private fun blockQuoteToBodyParts(
@@ -86,8 +81,11 @@ internal object TranscriptBlockConverter {
         counter: HighlightedCounter,
         maxHighlightedCodeBlocks: Int,
         maxTextCharacters: Int,
-    ): List<TranscriptBodyPart> =
-        block.blocks.flatMap { inner ->
-            blockToBodyParts(inner, counter, maxHighlightedCodeBlocks, maxTextCharacters)
-        }
+    ): List<TranscriptBodyPart> {
+        val inner =
+            block.blocks.flatMap { inner ->
+                blockToBodyParts(inner, counter, maxHighlightedCodeBlocks, maxTextCharacters)
+            }
+        return listOf(TranscriptBodyPart.BlockQuote(inner))
+    }
 }

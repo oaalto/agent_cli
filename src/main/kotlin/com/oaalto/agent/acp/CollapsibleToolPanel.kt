@@ -182,19 +182,25 @@ internal class CollapsibleToolPanel(
     private fun rebuildBody(parts: List<TranscriptBodyPart>) {
         clearBody()
         parts.forEach { part ->
-            when (part) {
-                is TranscriptBodyPart.Html -> bodyContainer.add(createHtmlPart(part.fragment))
-                is TranscriptBodyPart.Code -> {
-                    val codeComponent =
-                        codeBlockViewFactory.createReadOnlyCodeBlock(part.languageId, part.code).also {
-                            it.alignmentX = LEFT_ALIGNMENT
-                            it.maximumSize = Dimension(Int.MAX_VALUE, it.preferredSize.height)
-                        }
-                    disposableCodeComponents += codeComponent
-                    bodyContainer.add(codeComponent)
-                }
-            }
+            addBodyPart(part)
             bodyContainer.add(Box.createVerticalStrut(JBUI.scale(BODY_PART_GAP)))
+        }
+    }
+
+    private fun addBodyPart(part: TranscriptBodyPart) {
+        when (part) {
+            is TranscriptBodyPart.Html -> bodyContainer.add(createHtmlPart(part.fragment))
+            is TranscriptBodyPart.Code -> {
+                val codeComponent =
+                    codeBlockViewFactory.createReadOnlyCodeBlock(part.languageId, part.code).also {
+                        it.alignmentX = LEFT_ALIGNMENT
+                        it.maximumSize = Dimension(Int.MAX_VALUE, it.preferredSize.height)
+                    }
+                disposableCodeComponents += codeComponent
+                bodyContainer.add(codeComponent)
+            }
+            is TranscriptBodyPart.BlockQuote -> part.parts.forEach(::addBodyPart)
+            else -> bodyContainer.add(createHtmlPart(TranscriptHtmlBuilder.bodyPartToHtmlFragment(part)))
         }
     }
 

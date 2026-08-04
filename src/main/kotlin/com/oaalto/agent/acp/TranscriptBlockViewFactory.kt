@@ -37,7 +37,6 @@ private const val FONT_SIZE = 12
 private const val BODY_PART_GAP = 4
 private val ROW_BORDER = JBUI.Borders.empty(2, 0)
 private const val LIST_LEFT_INSET = 16
-private const val TABLE_LEFT_INSET = 20
 private const val BLOCKQUOTE_LEFT_THICKNESS = 3
 private const val BLOCKQUOTE_TEXT_INSET = 8
 private const val BLOCKQUOTE_VERTICAL_PAD = 2
@@ -121,6 +120,97 @@ private fun applyInlineCodeStyle(runStyle: javax.swing.text.Style) {
             ?: scheme.defaultBackground
     StyleConstants.setBackground(runStyle, editorBackground)
     StyleConstants.setForeground(runStyle, scheme.defaultForeground)
+}
+
+private data class MergedRun(
+    val start: Int,
+    val end: Int,
+    val style: TextStyle,
+    val url: String?,
+)
+
+private fun createAgentStyledTextPane(
+    text: String,
+    runs: List<StyledRun>,
+    font: Font? = null,
+    border: EmptyBorder? = null,
+): JTextPane {
+    val pane =
+        JTextPane().apply {
+            isEditable = false
+            isOpaque = false
+            this.border = border ?: EmptyBorder(0, 0, 0, 0)
+            this.font =
+                font ?: Font(MONO_FAMILY, Font.PLAIN, FONT_SIZE)
+            foreground = colorProvider.getTextForeground()
+            alignmentX = Component.LEFT_ALIGNMENT
+        }
+    pane.text = text
+    val validRuns = runs.filter { it.start < text.length && it.end <= text.length }
+    applyStyledRuns(pane, validRuns)
+    return pane
+}
+
+private fun applyStyledRuns(
+    pane: JTextPane,
+    runs: List<StyledRun>,
+) {
+    val doc: StyledDocument = pane.styledDocument
+    val sc =
+        javax.swing.text.StyleContext
+            .getDefaultStyleContext()
+
+    val merged = mergeRuns(runs)
+
+    for (run in merged) {
+        val runStyle = sc.addStyle("run_${run.start}_${run.end}", null)
+        applyStyleToRun(run.style, runStyle)
+        doc.setCharacterAttributes(run.start, run.end - run.start, runStyle, false)
+    }
+
+    val linkRuns = merged.filter { it.style == TextStyle.LINK && it.url != null }
+    if (linkRuns.isNotEmpty()) {
+        pane.addMouseListener(
+            object : MouseAdapter() {
+                override fun mouseClicked(event: MouseEvent) {
+                    val pos = pane.viewToModel2D(event.point)
+                    for (run in linkRuns) {
+                        if (pos in run.start until run.end) {
+                            run.url?.let(TranscriptBlockViewFactory::tryOpenUrl)
+                            break
+                        }
+                    }
+                }
+            },
+        )
+    }
+}
+
+private fun mergeRuns(runs: List<StyledRun>): List<MergedRun> {
+    if (runs.isEmpty()) return emptyList()
+
+    val points = mutableSetOf(0, runs.maxOf { it.end })
+    runs.forEach {
+        points.add(it.start)
+        points.add(it.end)
+    }
+    val sortedPoints = points.sorted()
+
+    val segments = mutableListOf<MergedRun>()
+    for (i in 0 until sortedPoints.size - 1) {
+        val segStart = sortedPoints[i]
+        val segEnd = sortedPoints[i + 1]
+        if (segStart != segEnd) {
+            val covering = runs.filter { it.start <= segStart && it.end >= segEnd }
+            if (covering.isNotEmpty()) {
+                val finalStyle = pickStyle(covering.map { it.style })
+                val url = covering.firstOrNull { it.url != null }?.url
+                segments.add(MergedRun(segStart, segEnd, finalStyle, url))
+            }
+        }
+    }
+
+    return segments
 }
 
 /** Maps [TranscriptBlock] snapshots to Swing row components. */
@@ -220,20 +310,6 @@ internal class TranscriptBlockViewFactory(
     companion object {
         fun escapeHtml(text: String): String = TranscriptRenderHelpers.escapeHtml(text)
 
-        fun joinTableCells(
-            cells: List<String>,
-            alignStyles: List<String>,
-            cellStyle: String,
-            isHeader: Boolean,
-        ): String {
-            val tag = if (isHeader) "th" else "td"
-            return cells
-                .mapIndexed { idx, cell ->
-                    val align = alignStyles.getOrElse(idx) { "text-align:left" }
-                    "<$tag style='$cellStyle;$align'>$cell</$tag>"
-                }.joinToString("")
-        }
-
         fun tryOpenUrl(url: String) {
             try {
                 val uri = URI(url)
@@ -282,14 +358,18 @@ private class AgentTextRow(
     fun bind(block: TranscriptBlock) {
         when (block) {
             is TranscriptBlock.FinalAgentText -> {
-                val blocks = TranscriptMarkdownRenderer.parseToBlocks(block.text)
-                if (!blocks.isEmpty() && renderedFinalText == block.text) {
+                val parts =
+                    TranscriptContentRenderer.renderMarkdownText(
+                        block.text,
+                        ContentRenderOptions.AGENT_TEXT,
+                    )
+                if (parts.isNotEmpty() && renderedFinalText == block.text) {
                     widthAdjustment()
                     revalidate()
                     repaint()
                     return
                 }
-                rebuildMarkdownBlocks(blocks)
+                rebuildBodyParts(parts)
                 renderedFinalText = block.text
                 if (disposableCodeComponents.isNotEmpty()) {
                     SwingUtilities.invokeLater {
@@ -346,81 +426,69 @@ private class AgentTextRow(
         contentColumn.add(pane)
     }
 
-    private fun rebuildMarkdownBlocks(blocks: List<RenderedBlock>) {
+    private fun rebuildBodyParts(parts: List<TranscriptBodyPart>) {
         disposeCodeComponents()
         contentColumn.removeAll()
         val highlightedCount = IntArray(1)
         var needGap = false
 
-        for (block in blocks) {
+        for (part in parts) {
             if (needGap) {
                 contentColumn.add(Box.createVerticalStrut(JBUI.scale(BODY_PART_GAP)))
             }
             needGap = true
-            contentColumn.add(renderBlockToComponent(block, highlightedCount))
+            contentColumn.add(renderPartToComponent(part, highlightedCount))
         }
     }
 
-    private fun renderBlockToComponent(
-        block: RenderedBlock,
+    private fun renderPartToComponent(
+        part: TranscriptBodyPart,
         highlightedCount: IntArray,
     ): JComponent =
-        when (block) {
-            is RenderedBlock.InlineText -> renderInlineText(block)
-            is RenderedBlock.CodeBlock -> renderCodeBlock(block.code, block.languageId, highlightedCount)
-            is RenderedBlock.Table -> createTableHtmlPart(block)
-            is RenderedBlock.Image -> createImageLabel(block)
-            is RenderedBlock.ThematicBreak -> createThematicBreak()
-            is RenderedBlock.BlockQuote -> createBlockQuotePanel(block)
-            is RenderedBlock.CustomHtml ->
-                createHtmlPane(
-                    TranscriptRenderHelpers.htmlDocumentStart() +
-                        block.html +
-                        TranscriptRenderHelpers.HTML_DOCUMENT_END,
-                )
-        }
-
-    private fun renderInlineText(block: RenderedBlock.InlineText): JComponent {
-        val displayText = TranscriptTextTruncation.truncate(block.text)
-        return when {
-            block.headingLevel > 0 -> {
+        when (part) {
+            is TranscriptBodyPart.InlineText -> createAgentStyledTextPane(part.text, part.runs)
+            is TranscriptBodyPart.Heading -> {
                 val headingFont =
                     Font(
                         MONO_FAMILY,
                         Font.BOLD,
-                        HEADING_SIZES.getValue(
-                            block.headingLevel.coerceIn(MIN_HEADING_LEVEL, MAX_HEADING_LEVEL),
-                        ),
+                        HEADING_SIZES.getValue(part.level.coerceIn(MIN_HEADING_LEVEL, MAX_HEADING_LEVEL)),
                     )
-                createStyledTextPane(displayText, block.runs, font = headingFont)
+                createAgentStyledTextPane(part.text, part.runs, font = headingFont)
             }
-            block.listMarker != null -> {
-                val marker = block.listMarker
+            is TranscriptBodyPart.ListLine -> {
                 val offsetRuns =
-                    block.runs.map { run ->
-                        StyledRun(run.start + marker.length, run.end + marker.length, run.style, run.url)
+                    part.runs.map { run ->
+                        StyledRun(run.start + part.marker.length, run.end + part.marker.length, run.style, run.url)
                     }
-                createStyledTextPane(
-                    "$marker$displayText",
+                createAgentStyledTextPane(
+                    "${part.marker}${part.text}",
                     offsetRuns,
                     border = EmptyBorder(0, JBUI.scale(LIST_LEFT_INSET), 0, 0),
                 )
             }
-            else -> createStyledTextPane(displayText, block.runs)
+            is TranscriptBodyPart.Code -> renderCodeBlockBodyPart(part, highlightedCount)
+            is TranscriptBodyPart.Html -> {
+                val html =
+                    TranscriptRenderHelpers.htmlDocumentStart() +
+                        part.fragment +
+                        TranscriptRenderHelpers.HTML_DOCUMENT_END
+                createHtmlPane(html)
+            }
+            is TranscriptBodyPart.Image -> createImageLabelBodyPart(part)
+            is TranscriptBodyPart.ThematicBreak -> createThematicBreak()
+            is TranscriptBodyPart.BlockQuote -> createBlockQuoteBodyPart(part, highlightedCount)
         }
-    }
 
-    private fun renderCodeBlock(
-        code: String,
-        languageId: String?,
+    private fun renderCodeBlockBodyPart(
+        part: TranscriptBodyPart.Code,
         highlightedCount: IntArray,
     ): JComponent {
-        val displayCode = TranscriptTextTruncation.truncate(code)
         if (highlightedCount[0] < TranscriptToolCallContentRenderer.MAX_HIGHLIGHTED_CODE_BLOCKS) {
             highlightedCount[0] += 1
             val codeComponent =
                 codeBlockViewFactory
-                    .createReadOnlyCodeBlock(languageId, displayCode)
+                    .createReadOnlyCodeBlock(part.languageId, part.code)
                     .also {
                         it.alignmentX = Component.LEFT_ALIGNMENT
                         val height = it.preferredSize.height.coerceAtLeast(1)
@@ -430,46 +498,16 @@ private class AgentTextRow(
             disposableCodeComponents += codeComponent
             return codeComponent
         }
-        return JEditorPane(
-            "text/html",
+        return createHtmlPane(
             TranscriptRenderHelpers.htmlDocumentStart() +
-                TranscriptHtmlBuilder.buildPlainPre(displayCode) +
+                TranscriptHtmlBuilder.buildPlainPre(part.code) +
                 TranscriptRenderHelpers.HTML_DOCUMENT_END,
-        ).apply {
-            isEditable = false
-            isOpaque = false
-            border = EmptyBorder(0, 0, 0, 0)
-            alignmentX = Component.LEFT_ALIGNMENT
-            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-        }
+        )
     }
 
-    private fun createStyledTextPane(
-        text: String,
-        runs: List<StyledRun>,
-        font: Font? = null,
-        border: EmptyBorder? = null,
-    ): JTextPane {
-        val pane =
-            JTextPane().apply {
-                isEditable = false
-                isOpaque = false
-                this.border = border ?: EmptyBorder(0, 0, 0, 0)
-                this.font =
-                    font ?: Font(MONO_FAMILY, Font.PLAIN, FONT_SIZE)
-                foreground = colorProvider.getTextForeground()
-                alignmentX = Component.LEFT_ALIGNMENT
-            }
-        pane.text = text
-        // Filter runs to only those within truncated text bounds
-        val validRuns = runs.filter { it.start < text.length && it.end <= text.length }
-        applyStyledRuns(pane, validRuns)
-        return pane
-    }
-
-    private fun createImageLabel(block: RenderedBlock.Image): JComponent {
-        val displayText = "[image: ${block.altText}]"
-        val url = block.url
+    private fun createImageLabelBodyPart(part: TranscriptBodyPart.Image): JComponent {
+        val displayText = "[image: ${part.altText}]"
+        val url = part.url
         return JLabel(displayText).apply {
             isOpaque = false
             font = Font(MONO_FAMILY, Font.ITALIC, FONT_SIZE)
@@ -489,8 +527,10 @@ private class AgentTextRow(
         }
     }
 
-    private fun createBlockQuotePanel(blockQuote: RenderedBlock.BlockQuote): JPanel {
-        val highlightedCount = IntArray(1)
+    private fun createBlockQuoteBodyPart(
+        part: TranscriptBodyPart.BlockQuote,
+        highlightedCount: IntArray,
+    ): JPanel {
         val panel =
             JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -514,18 +554,12 @@ private class AgentTextRow(
                 isOpaque = false
                 border = JBUI.Borders.emptyLeft(BLOCKQUOTE_TEXT_INSET)
                 var needGap = false
-                for (inner in blockQuote.blocks) {
+                for (inner in part.parts) {
                     if (needGap) {
                         add(Box.createVerticalStrut(JBUI.scale(BODY_PART_GAP)))
                     }
                     needGap = true
-                    add(
-                        when (inner) {
-                            is RenderedBlock.InlineText ->
-                                createStyledTextPane(TranscriptTextTruncation.truncate(inner.text), inner.runs)
-                            else -> renderBlockToComponent(inner, highlightedCount)
-                        },
-                    )
+                    add(renderPartToComponent(inner, highlightedCount))
                 }
             }
         val leftBorderLine =
@@ -540,113 +574,5 @@ private class AgentTextRow(
         borderPanel.add(quoteContent, BorderLayout.CENTER)
         panel.add(borderPanel)
         return panel
-    }
-
-    private fun createTableHtmlPart(table: RenderedBlock.Table): JEditorPane {
-        val escapedHeaders = table.headers.map { TranscriptRenderHelpers.escapeHtml(it) }
-        val escapedRows = table.rows.map { row -> row.map { TranscriptRenderHelpers.escapeHtml(it) } }
-        val alignStyles =
-            table.alignments.map { align ->
-                when (align) {
-                    TableAlignment.LEFT -> "text-align:left"
-                    TableAlignment.CENTER -> "text-align:center"
-                    TableAlignment.RIGHT -> "text-align:right"
-                }
-            }
-        val cellStyle = "border:1px solid #555;padding:4px"
-        val headerCells =
-            TranscriptBlockViewFactory.joinTableCells(
-                escapedHeaders,
-                alignStyles,
-                cellStyle,
-                isHeader = true,
-            )
-        val bodyCells =
-            escapedRows.joinToString("\n") { row ->
-                "<tr>${TranscriptBlockViewFactory.joinTableCells(row, alignStyles, cellStyle, isHeader = false)}</tr>"
-            }
-        val marginLeft = JBUI.scale(TABLE_LEFT_INSET)
-        val html =
-            TranscriptRenderHelpers.htmlDocumentStart() +
-                "<table style='border-collapse:collapse;width:100%;margin-left:${marginLeft}px'>" +
-                "<thead><tr>$headerCells</tr></thead>" +
-                "<tbody>$bodyCells</tbody></table>" +
-                TranscriptRenderHelpers.HTML_DOCUMENT_END
-        return JEditorPane("text/html", html).apply {
-            isEditable = false
-            isOpaque = false
-            border = EmptyBorder(0, 0, 0, 0)
-            alignmentX = Component.LEFT_ALIGNMENT
-            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-        }
-    }
-
-    private data class MergedRun(
-        val start: Int,
-        val end: Int,
-        val style: TextStyle,
-        val url: String?,
-    )
-
-    private fun applyStyledRuns(
-        pane: JTextPane,
-        runs: List<StyledRun>,
-    ) {
-        val doc: StyledDocument = pane.styledDocument
-        val sc =
-            javax.swing.text.StyleContext
-                .getDefaultStyleContext()
-
-        val merged = mergeRuns(runs)
-
-        for (run in merged) {
-            val runStyle = sc.addStyle("run_${run.start}_${run.end}", null)
-            applyStyleToRun(run.style, runStyle)
-            doc.setCharacterAttributes(run.start, run.end - run.start, runStyle, false)
-        }
-
-        val linkRuns = merged.filter { it.style == TextStyle.LINK && it.url != null }
-        if (linkRuns.isNotEmpty()) {
-            pane.addMouseListener(
-                object : MouseAdapter() {
-                    override fun mouseClicked(event: MouseEvent) {
-                        val pos = pane.viewToModel2D(event.point)
-                        for (run in linkRuns) {
-                            if (pos in run.start until run.end) {
-                                run.url?.let(TranscriptBlockViewFactory::tryOpenUrl)
-                                break
-                            }
-                        }
-                    }
-                },
-            )
-        }
-    }
-
-    private fun mergeRuns(runs: List<StyledRun>): List<MergedRun> {
-        if (runs.isEmpty()) return emptyList()
-
-        val points = mutableSetOf(0, runs.maxOf { it.end })
-        runs.forEach {
-            points.add(it.start)
-            points.add(it.end)
-        }
-        val sortedPoints = points.sorted()
-
-        val segments = mutableListOf<MergedRun>()
-        for (i in 0 until sortedPoints.size - 1) {
-            val segStart = sortedPoints[i]
-            val segEnd = sortedPoints[i + 1]
-            if (segStart != segEnd) {
-                val covering = runs.filter { it.start <= segStart && it.end >= segEnd }
-                if (covering.isNotEmpty()) {
-                    val finalStyle = pickStyle(covering.map { it.style })
-                    val url = covering.firstOrNull { it.url != null }?.url
-                    segments.add(MergedRun(segStart, segEnd, finalStyle, url))
-                }
-            }
-        }
-
-        return segments
     }
 }

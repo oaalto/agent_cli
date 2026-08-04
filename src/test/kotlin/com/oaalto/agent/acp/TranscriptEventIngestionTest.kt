@@ -72,11 +72,7 @@ class TranscriptEventIngestionTest {
         val mapped = assertIs<StructuredUpdate.StartOrUpdateToolCall>(updates.single())
         assertEquals("1", mapped.toolCallId)
         assertEquals(ToolCallStatus.COMPLETED, mapped.status)
-        assertTrue(
-            mapped.bodyParts.any {
-                it is TranscriptBodyPart.Html && it.fragment.contains("README")
-            },
-        )
+        assertTrue(mapped.bodyParts.containsRenderedText("README"))
     }
 
     @Test
@@ -129,11 +125,7 @@ class TranscriptEventIngestionTest {
         val tool = assertIs<TranscriptBlock.ToolCallBlock>(blocks[1])
         assertEquals("1", tool.toolCallId)
         assertEquals(ToolCallStatus.COMPLETED, tool.status)
-        assertTrue(
-            tool.bodyParts.any {
-                it is TranscriptBodyPart.Html && it.fragment.contains("README")
-            },
-        )
+        assertTrue(tool.bodyParts.containsRenderedText("README"))
         assertIs<TranscriptBlock.FinalAgentText>(blocks[2])
     }
 
@@ -282,3 +274,17 @@ class TranscriptEventIngestionTest {
         assertTrue(updates.isEmpty(), "blank agent chunks are filtered: $updates")
     }
 }
+
+private fun List<TranscriptBodyPart>.containsRenderedText(substring: String): Boolean =
+    any { part ->
+        when (part) {
+            is TranscriptBodyPart.Html -> part.fragment.contains(substring)
+            is TranscriptBodyPart.Code -> part.code.contains(substring)
+            is TranscriptBodyPart.Heading -> part.text.contains(substring)
+            is TranscriptBodyPart.ListLine -> part.text.contains(substring)
+            is TranscriptBodyPart.InlineText -> part.text.contains(substring)
+            is TranscriptBodyPart.Image -> part.altText.contains(substring)
+            is TranscriptBodyPart.BlockQuote -> part.parts.containsRenderedText(substring)
+            TranscriptBodyPart.ThematicBreak -> false
+        }
+    }

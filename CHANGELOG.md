@@ -4,6 +4,8 @@
 
 ### Changed
 
+- **ACP transcript agent text routing** (`acp/TranscriptBodyPart.kt`, `TranscriptBlockConverter.kt`, `TranscriptBlockViewFactory.kt`, `TranscriptHtmlBuilder.kt`, `TranscriptContentRenderer.kt`, tests): Route `FinalAgentText` through `TranscriptContentRenderer` with `ContentRenderOptions.AGENT_TEXT`; expand body-part variants (heading, list, blockquote, image, inline text) and map them to Swing in `AgentTextRow`; share HTML fallback via `bodyPartToHtmlFragment`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript content renderer** (`acp/TranscriptContentRenderer.kt`, `TranscriptToolCallContentRenderer.kt`, `TranscriptBlockConverter.kt`): Introduce `renderMarkdownText` with `ContentRenderOptions`; route completed tool-card text and embedded text resources through the shared seam; remove `TranscriptToolCallTextBodyRenderer`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Session transcript filenames** (`acp/TranscriptFileStore.kt`, tests, docs): Timestamped human-readable names `{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` under `.idea/agent-cli/transcripts/`; logical key remains `acpSessionId`; legacy `<acpSessionId>.txt` files still restore. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

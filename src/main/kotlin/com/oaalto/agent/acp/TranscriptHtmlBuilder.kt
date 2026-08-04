@@ -128,4 +128,31 @@ internal object TranscriptHtmlBuilder {
             TextStyle.STRIKETHROUGH -> "<s>$escaped</s>"
             null -> escaped
         }
+
+    fun bodyPartToHtmlFragment(part: TranscriptBodyPart): String =
+        when (part) {
+            is TranscriptBodyPart.Html -> part.fragment
+            is TranscriptBodyPart.Code -> buildPlainPre(part.code)
+            is TranscriptBodyPart.Heading -> buildStyledSpan(part.text, part.runs, isHeading = true)
+            is TranscriptBodyPart.ListLine -> {
+                val offsetRuns =
+                    part.runs.map { run ->
+                        StyledRun(
+                            run.start + part.marker.length,
+                            run.end + part.marker.length,
+                            run.style,
+                            run.url,
+                        )
+                    }
+                buildStyledSpan("${part.marker}${part.text}", offsetRuns, isHeading = false)
+            }
+            is TranscriptBodyPart.InlineText -> buildStyledSpan(part.text, part.runs, isHeading = false)
+            is TranscriptBodyPart.BlockQuote -> {
+                val inner = part.parts.joinToString("") { bodyPartToHtmlFragment(it) }
+                "<div style='margin-left:20px;border-left:2px solid #444;padding-left:8px'>$inner</div>"
+            }
+            is TranscriptBodyPart.ThematicBreak ->
+                "<hr style='border:none;border-top:1px solid #444;margin:4px 8px'/>"
+            is TranscriptBodyPart.Image -> buildMutedSpan("[image: ${part.altText}]")
+        }
 }

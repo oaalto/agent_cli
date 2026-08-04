@@ -50,7 +50,7 @@ internal sealed class RenderedBlock {
 
 internal enum class TableAlignment { LEFT, CENTER, RIGHT }
 
-internal enum class TextStyle {
+enum class TextStyle {
     BOLD,
     ITALIC,
     BOLD_ITALIC,
@@ -59,7 +59,7 @@ internal enum class TextStyle {
     STRIKETHROUGH,
 }
 
-internal data class StyledRun(
+data class StyledRun(
     val start: Int,
     val end: Int,
     val style: TextStyle,
