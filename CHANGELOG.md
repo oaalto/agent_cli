@@ -28,6 +28,8 @@
 
 ### Documentation
 
+- **Architecture deepening PRDs** (`docs/features/worktree-orchestrator-production-wiring/`, `plan-panel-renderer-removal/`, `acp-agent-editor-thinning/`, `launch-argument-unification/`, `acp-session-loop-integration-tests/`, `session-transcript-coordinator-deepening/`, `docs/features/FEATURES.md`): Six ready-for-agent specs from architecture review — orchestrator production wiring, plan renderer deletion, editor thinning, launch argument unification, session loop integration harness, transcript coordinator round-trip tests. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript fence normalization (grill accept)** (`docs/features/acp-transcript-fence-normalization/`, `docs/wiki/subsystems/acp-client.md`, `CONTEXT.md`, `docs/features/acp-transcript-panel-integration-tests/prd.md`): Unified fence normalizer call graph, tool-text policy, removed stale binder references; panel harness fence scenario promoted to planned. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript package restructure (grill accept)** (`docs/features/acp-transcript-package-restructure/prd.md`, `docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`, `CONTEXT.md`): Accepted grill-with-docs-batch decisions — `transcript/{model,render,view,theme}` layout, package dependency matrix, `theme/` sibling package, ingestion→render exception, row adapters in `view/rows/`; obsolete label binder references removed. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

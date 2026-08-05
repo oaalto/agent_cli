@@ -12,7 +12,7 @@ Last updated: 2026-08-05
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 0 |
+| Ready-for-agent features | 6 |
 | Ready-for-agent tickets | 0 |
 | Completed features | 16 |
 
@@ -22,7 +22,12 @@ Last updated: 2026-08-05
 
 | Feature | Status | Rationale | PRD |
 | --- | --- | --- | --- |
-| — | — | — | — |
+| [worktree-orchestrator-production-wiring](worktree-orchestrator-production-wiring/) | ready-for-agent | Smallest diff; closes tested-vs-production gap for worktree `acpSessionId` binding via `AcpSessionResumeOrchestrator` | [prd](worktree-orchestrator-production-wiring/prd.md) |
+| [plan-panel-renderer-removal](plan-panel-renderer-removal/) | ready-for-agent | Quick deletion win; removes dead `PlanPanelRenderer` parallel to ADR 0005 row adapters | [prd](plan-panel-renderer-removal/prd.md) |
+| [acp-agent-editor-thinning](acp-agent-editor-thinning/) | ready-for-agent | Completes editor→controller separation; depends on orchestrator wiring | [prd](acp-agent-editor-thinning/prd.md) |
+| [launch-argument-unification](launch-argument-unification/) | ready-for-agent | Cross-slice leverage; shared executable validation and WSL env parity after `AgentLaunchResolver` | [prd](launch-argument-unification/prd.md) |
+| [acp-session-loop-integration-tests](acp-session-loop-integration-tests/) | ready-for-agent | `InMemoryAcpTransport` harness for full `AcpSessionController.start`/`prompt` chain | [prd](acp-session-loop-integration-tests/prd.md) |
+| [session-transcript-coordinator-deepening](session-transcript-coordinator-deepening/) | ready-for-agent | Coordinator round-trip integration tests; explicit lossy restore contract | [prd](session-transcript-coordinator-deepening/prd.md) |
 
 ---
 
@@ -30,7 +35,7 @@ Last updated: 2026-08-05
 
 | Features | Note |
 | --- | --- |
-| — | — |
+| `worktree-orchestrator-production-wiring` → `acp-agent-editor-thinning` | Editor thinning must not ship before orchestrator receives `worktreeRecordId` and real binder |
 
 ---
 
