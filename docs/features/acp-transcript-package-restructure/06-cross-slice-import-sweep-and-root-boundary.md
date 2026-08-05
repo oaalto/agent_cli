@@ -6,9 +6,9 @@
 
 **Blocked by:** 05 — Transcript view and row adapters package move
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `plan/` imports model, theme, and render where needed — not view
-- [ ] Session transcript file persistence types stay at orchestration root and still serialize `TranscriptBlock` snapshots correctly
-- [ ] Review diff shows no behavioural changes; only structural moves and import fixes
-- [ ] `./gradlew qualityGate` passes
+- [x] `plan/` imports model, theme, and render where needed — not view
+- [x] Session transcript file persistence types stay at orchestration root and still serialize `TranscriptBlock` snapshots correctly
+- [x] Review diff shows no behavioural changes; only structural moves and import fixes
+- [x] `./gradlew qualityGate` passes
