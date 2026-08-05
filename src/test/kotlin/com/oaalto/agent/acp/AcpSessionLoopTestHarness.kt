@@ -34,20 +34,30 @@ import java.nio.file.Path
  * 1. **connect** — in-memory stdio transport wires client and scripted agent
  * 2. **bootstrap** — `initialize` negotiates capabilities (no auth)
  * 3. **bind** — lifecycle binds the connected client
- * 4. **startSession** — resume orchestrator opens the session (`session/new` for new-session plan)
+ * 4. **startSession** — resume orchestrator opens the session (`session/new` for new-session plan, `session/load` for `AcpLoad`)
  */
 class AcpSessionLoopTestHarness(
     scriptedSessionId: String = "scripted-session-1",
+    loadSessionId: String = scriptedSessionId,
     private val sessionWorkingDirectory: String = ".",
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     val listener = RecordingAcpSessionListener()
     private val disposable = Disposable { }
 
+    lateinit var scriptedAgent: ScriptedAcpAgent
+        private set
+
     private val transport =
         InMemoryAcpTransport(
             scope = scope,
-            agentConfigurer = { protocol -> ScriptedAcpAgent(protocol, newSessionId = scriptedSessionId) },
+            agentConfigurer = { protocol ->
+                ScriptedAcpAgent(
+                    protocol,
+                    newSessionId = scriptedSessionId,
+                    loadSessionId = loadSessionId,
+                ).also { scriptedAgent = it }
+            },
         )
 
     val controller: AcpSessionController =
