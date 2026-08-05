@@ -1,5 +1,10 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | Worktree ACP session binding production wiring
+
+- Updated: [Worktree subsystem](subsystems/worktree.md), [CONTEXT.md](../../CONTEXT.md)
+- Notes: ACP `acpSessionId` persist path through orchestrator; `worktreeId` / `worktreeRecordId` glossary alignment.
+
 ## [2026-08-05] update | ACP transcript package restructure ship (slice 07)
 
 - Sources: `TranscriptPackageDependencyTest.kt`, `docs/wiki/subsystems/acp-client.md`

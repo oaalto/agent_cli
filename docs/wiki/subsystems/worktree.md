@@ -2,12 +2,15 @@
 title: Worktree subsystem
 type: subsystem
 status: draft
-updated: 2026-08-03
+updated: 2026-08-05
 sources:
   - src/main/kotlin/com/oaalto/agent/worktree/AgentWorktreePathMapper.kt
   - src/main/kotlin/com/oaalto/agent/worktree/WorktreePendingLaunchHandoff.kt
+  - src/main/kotlin/com/oaalto/agent/acp/AcpSessionLifecycle.kt
+  - src/main/kotlin/com/oaalto/agent/worktree/resume/AcpSessionResumeOrchestrator.kt
   - src/test/kotlin/com/oaalto/agent/worktree/AgentWorktreePathMapperTest.kt
   - src/test/kotlin/com/oaalto/agent/worktree/WorktreePendingLaunchHandoffTest.kt
+  - src/test/kotlin/com/oaalto/agent/acp/AcpSessionLifecycleTest.kt
 ---
 
 # Worktree subsystem
@@ -23,6 +26,14 @@ The Worktree subsystem isolates agent-run sessions into their own filesystem pat
 - Pending-launch persistence is in `AgentWorktreeStateService` (`enqueuePendingLaunch` / `consumePendingLaunch`).
 - Unit tests covering path mapping and handoff are in `src/test/kotlin/com/oaalto/agent/worktree/`.
 - Worktree behavior affects how the plugin constructs commands for WSL and wrapped-shell execution flows.
+
+## ACP session binding
+
+After a successful ACP session open for a bound worktree, `acpSessionId` is persisted only through:
+
+`AcpSessionController.start` → `AcpSessionLifecycle.startSession` → `AcpSessionResumeOrchestrator` → `WorktreeSessionBinder.persistSessionId`.
+
+`AgentLaunchContext.worktreeId` (managed record ID) is passed as `worktreeRecordId` on `AcpSessionStartRequest`. `AcpAgentEditor` does not call `WorktreeSessionBinder` directly.
 
 ## Pending launch handoff lifecycle
 

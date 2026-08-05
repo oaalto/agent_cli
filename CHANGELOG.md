@@ -2,11 +2,17 @@
 
 ## 2026-08-05
 
+### Documentation
+
+- **Worktree orchestrator production wiring PRD** (`docs/features/worktree-orchestrator-production-wiring/prd.md`, `FEATURES.md`): Status `implemented`; implementation record for commit `ae78169`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Added
 
 - **FinalizeAgentStream construction guard** (`acp/FinalizeAgentStreamConstructionTest.kt`, `acp/TranscriptFinalizePolicy.kt`, wiki): CI test fails when production code references `StructuredUpdate.FinalizeAgentStream` outside documented allowlist (policy, model apply, view-controller passthrough). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Changed
+
+- **Worktree ACP session binding production wiring** (`acp/AcpSessionLifecycle.kt`, `acp/AcpSessionController.kt`, `acp/AcpSessionControllerImpl.kt`, `acp/AcpAgentEditor.kt`, `AcpSessionLifecycleTest.kt`, `CONTEXT.md`, wiki): `worktreeRecordId` on `AcpSessionStartRequest` threads managed worktree record ID into `AcpSessionResumeOrchestrator`; real `WorktreeSessionBinder` injected at lifecycle; editor post-hoc persist removed. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript package restructure (ship)** (`acp/transcript/{model,render,view,theme}/`, `acp/plan/`, tests): Structural repackage complete — `transcript/{model,render,view,theme}` subpackages, row adapters under `view/rows/`, session file I/O at `acp/` root; CI package-dependency guard via `TranscriptPackageDependencyTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

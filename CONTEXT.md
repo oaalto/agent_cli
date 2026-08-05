@@ -49,6 +49,14 @@ Single facade for runtime selection: `getSelectedConfiguration(project)` / `setS
 
 Git worktree used to isolate an agent session filesystem. Stores `acpSessionId` for ACP resume; PTY mode uses CLI flag-based resume. Slice: `agent/worktree/`. See [worktree subsystem](docs/wiki/subsystems/worktree.md).
 
+### Agent launch context
+
+Runtime launch inputs carried on `AgentVirtualFile` and `AgentLaunchContext`: working-directory override, resume flag, resume plan, and optional worktree record binding. Distinct from **Agent configuration** (catalog entry).
+
+### Worktree record ID (`AgentLaunchContext.worktreeId`)
+
+Managed worktree record identifier from `AgentWorktreeStateService` (not a Git worktree path). Set by `WorktreeLaunchCoordinator` when launching inside a registered worktree. Used for `acpSessionId` binding on successful ACP session open. The ACP session seam names the same value `worktreeRecordId` on `AcpSessionStartRequest`.
+
 ### `agentSettings.xml` / `acp.json`
 
 `agentSettings.xml` is the configuration source of truth. `acp.json` is import/export only.

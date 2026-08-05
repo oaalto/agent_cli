@@ -2,6 +2,8 @@ package com.oaalto.agent.acp
 
 import com.oaalto.agent.acp.transport.AcpProcessTransport
 import com.oaalto.agent.acp.transport.ProcessStdioTransport
+import com.oaalto.agent.worktree.WorktreeSessionBinderImpl
+import com.oaalto.agent.worktree.resume.WorktreeSessionBinder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,9 +16,11 @@ class AcpSessionControllerImpl(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val sessionOperationsFactory: AcpClientSessionOperationsFactory,
     private val transport: AcpProcessTransport = ProcessStdioTransport(scope),
+    private val worktreeSessionBinder: WorktreeSessionBinder = WorktreeSessionBinderImpl(),
 ) : AcpSessionController {
     private val connectionBootstrap = AcpConnectionBootstrap(listener)
-    private val sessionLifecycle = AcpSessionLifecycle(sessionOperationsFactory)
+    private val sessionLifecycle =
+        AcpSessionLifecycle(sessionOperationsFactory, worktreeSessionBinder)
     private val promptExecutor =
         AcpPromptExecutor(scope, listener) { sessionLifecycle.sessionLogContext() }
     private var editorContext: AcpEditorContext? = null
@@ -44,7 +48,11 @@ class AcpSessionControllerImpl(
 
         // Resume orchestration
         val resumeResult =
-            sessionLifecycle.startSession(request.resumePlan, request.sessionPicker)
+            sessionLifecycle.startSession(
+                resumePlan = request.resumePlan,
+                picker = request.sessionPicker,
+                worktreeRecordId = request.worktreeRecordId,
+            )
 
         return when (resumeResult) {
             is com.oaalto.agent.worktree.resume.AcpSessionOpenResult.Success -> {

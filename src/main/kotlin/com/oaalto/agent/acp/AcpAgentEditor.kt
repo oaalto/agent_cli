@@ -34,7 +34,6 @@ import com.oaalto.agent.acp.ui.SessionPickerAdapter
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import com.oaalto.agent.settings.AgentSettingsState
 import com.oaalto.agent.settings.LaunchMode
-import com.oaalto.agent.worktree.WorktreeSessionBinderImpl
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -188,7 +187,6 @@ class AcpAgentEditor(
             }
         }
     private val sessionController: AcpSessionController = sessionControllerFactory(sessionListener)
-    private val worktreeBinder = WorktreeSessionBinderImpl()
     private var activeSessionId: String? = null
 
     init {
@@ -306,6 +304,7 @@ class AcpAgentEditor(
                         editorContext = buildEditorContext(launchPlan),
                         resumePlan = file.launchContext.resumePlan ?: LaunchResumePlan.AcpNewSession,
                         sessionPicker = SessionPickerAdapter(project),
+                        worktreeRecordId = file.launchContext.worktreeId,
                     ),
                 ),
                 typedConfig.name,
@@ -350,7 +349,6 @@ class AcpAgentEditor(
             }
             sessionTranscript.bindSession(sessionId)
         }
-        persistWorktreeSessionId(result.sessionId)
         if (result.statusMessage.isNotBlank()) {
             transcriptViewController.appendPlainLine(result.statusMessage)
         }
@@ -358,13 +356,6 @@ class AcpAgentEditor(
         runOnEdt {
             promptInputBar.setEnabled(true)
             promptInputBar.requestFocus()
-        }
-    }
-
-    private fun persistWorktreeSessionId(sessionId: String?) {
-        if (sessionId == null) return
-        file.launchContext.worktreeId?.let { recordId ->
-            worktreeBinder.persistSessionId(recordId, sessionId)
         }
     }
 

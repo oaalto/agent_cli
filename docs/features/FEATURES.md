@@ -12,9 +12,9 @@ Last updated: 2026-08-05
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 6 |
+| Ready-for-agent features | 5 |
 | Ready-for-agent tickets | 0 |
-| Completed features | 16 |
+| Completed features | 17 |
 
 ---
 
@@ -22,7 +22,6 @@ Last updated: 2026-08-05
 
 | Feature | Status | Rationale | PRD |
 | --- | --- | --- | --- |
-| [worktree-orchestrator-production-wiring](worktree-orchestrator-production-wiring/) | ready-for-agent | Smallest diff; closes tested-vs-production gap for worktree `acpSessionId` binding via `AcpSessionResumeOrchestrator` | [prd](worktree-orchestrator-production-wiring/prd.md) |
 | [plan-panel-renderer-removal](plan-panel-renderer-removal/) | ready-for-agent | Quick deletion win; removes dead `PlanPanelRenderer` parallel to ADR 0005 row adapters | [prd](plan-panel-renderer-removal/prd.md) |
 | [acp-agent-editor-thinning](acp-agent-editor-thinning/) | ready-for-agent | Completes editor→controller separation; depends on orchestrator wiring | [prd](acp-agent-editor-thinning/prd.md) |
 | [launch-argument-unification](launch-argument-unification/) | ready-for-agent | Cross-slice leverage; shared executable validation and WSL env parity after `AgentLaunchResolver` | [prd](launch-argument-unification/prd.md) |
@@ -35,7 +34,7 @@ Last updated: 2026-08-05
 
 | Features | Note |
 | --- | --- |
-| `worktree-orchestrator-production-wiring` → `acp-agent-editor-thinning` | Editor thinning must not ship before orchestrator receives `worktreeRecordId` and real binder |
+| `acp-agent-editor-thinning` | Orchestrator wiring shipped (`ae78169`); editor thinning can proceed |
 
 ---
 
@@ -43,6 +42,7 @@ Last updated: 2026-08-05
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [worktree-orchestrator-production-wiring](worktree-orchestrator-production-wiring/) | — | Shipped (2026-08-05, `ae78169`); `worktreeRecordId` through lifecycle → orchestrator; editor persist removed |
 | [acp-transcript-package-restructure](acp-transcript-package-restructure/) | 01–07 | All `done` (2026-08-05); `transcript/{model,render,view,theme}/` repackage + `TranscriptPackageDependencyTest` CI guard |
 | [acp-transcript-fence-normalization](acp-transcript-fence-normalization/) | 01–03 | All `done` (2026-08-05); single `normalizeAgentFences` seam, tool-text gating, CI construction guard |
 | [acp-transcript-finalize-policy](acp-transcript-finalize-policy/) | 01–02 | All `done` (2026-08-05); `TranscriptFinalizePolicy` + CI construction guard |

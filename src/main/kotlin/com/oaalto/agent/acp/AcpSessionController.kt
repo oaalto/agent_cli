@@ -29,6 +29,7 @@ data class AcpSessionStartRequest(
     val editorContext: AcpEditorContext,
     val resumePlan: LaunchResumePlan,
     val sessionPicker: SessionPicker,
+    val worktreeRecordId: String? = null,
 )
 
 data class AcpSessionStartResult(

@@ -9,6 +9,7 @@ import com.agentclientprotocol.model.SessionId
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.settings.LaunchMode
+import com.oaalto.agent.worktree.WorktreeSessionBinderImpl
 import com.oaalto.agent.worktree.resume.AcpSessionOpenResult
 import com.oaalto.agent.worktree.resume.AcpSessionOperations
 import com.oaalto.agent.worktree.resume.AcpSessionResumeOrchestrator
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.toList
 
 class AcpSessionLifecycle(
     private val sessionOperationsFactory: AcpClientSessionOperationsFactory,
+    private val worktreeSessionBinder: WorktreeSessionBinder = WorktreeSessionBinderImpl(),
 ) {
     private var client: Client? = null
     private var session: ClientSession? = null
@@ -92,15 +94,30 @@ class AcpSessionLifecycle(
     suspend fun startSession(
         resumePlan: LaunchResumePlan,
         picker: SessionPicker,
+        worktreeRecordId: String? = null,
+    ): AcpSessionOpenResult =
+        openSessionWithOps(
+            sessionOperations = LifecycleSessionOperations(this),
+            resumePlan = resumePlan,
+            picker = picker,
+            worktreeRecordId = worktreeRecordId,
+        )
+
+    internal suspend fun openSessionWithOps(
+        sessionOperations: AcpSessionOperations,
+        resumePlan: LaunchResumePlan,
+        picker: SessionPicker,
+        worktreeRecordId: String?,
+        cwd: String = sessionWorkingDirectory,
     ): AcpSessionOpenResult =
         AcpSessionResumeOrchestrator(
-            LifecycleSessionOperations(this),
-            NoOpWorktreeSessionBinder,
+            sessionOperations,
+            worktreeSessionBinder,
             picker,
         ).openSession(
             plan = resumePlan,
-            sessionWorkingDirectory = sessionWorkingDirectory,
-            worktreeRecordId = null,
+            sessionWorkingDirectory = cwd,
+            worktreeRecordId = worktreeRecordId,
         )
 
     suspend fun awaitOpenSession() {
@@ -183,11 +200,4 @@ private class LifecycleSessionOperations(
     override suspend fun listSessions(cwd: String?): List<SessionSummary> = lifecycle.listSessions(cwd)
 
     override fun currentSessionId(): String? = lifecycle.currentSessionId()
-}
-
-private object NoOpWorktreeSessionBinder : WorktreeSessionBinder {
-    override fun persistSessionId(
-        recordId: String,
-        sessionId: String,
-    ): Boolean = true
 }

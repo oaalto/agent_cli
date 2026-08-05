@@ -1,6 +1,8 @@
 ## Status
 
-ready-for-agent
+implemented
+
+**Triage:** `ready-for-agent`
 
 ## Problem Statement
 
@@ -52,7 +54,7 @@ The editor maps `AcpSessionStartResult` to **Transcript** status lines only — 
 
 ### Modules to modify
 
-- `AcpSessionStartRequest` — add `worktreeRecordId: String?` field sourced from `AgentLaunchContext.worktreeRecordId` (or equivalent on virtual file).
+- `AcpSessionStartRequest` — add `worktreeRecordId: String?` field sourced from `AgentLaunchContext.worktreeId` (managed worktree record ID; seam name aligns with orchestrator).
 - `AcpSessionLifecycle.startSession` — replace `NoOpWorktreeSessionBinder` with injected `WorktreeSessionBinder`; pass non-null `worktreeRecordId` from request.
 - `AcpSessionControllerImpl` — thread `worktreeRecordId` from request into lifecycle; wire default `WorktreeSessionBinderImpl` at composition root.
 - `AcpAgentEditor` — remove `persistWorktreeSessionId` and `WorktreeSessionBinderImpl` usage; pass `worktreeRecordId` into `AcpSessionStartRequest`.
@@ -98,6 +100,20 @@ The editor maps `AcpSessionStartResult` to **Transcript** status lines only — 
 ### Verification
 
 `./gradlew qualityGate` passes after implementation.
+
+### Implementation record (2026-08-05)
+
+- **Commit:** `ae78169` — `acp: wire worktree session binding through orchestrator lifecycle`
+- **Shipped:**
+  - `AcpSessionStartRequest.worktreeRecordId` threaded from `AgentLaunchContext.worktreeId`
+  - `AcpSessionLifecycle` injects `WorktreeSessionBinder`; `NoOpWorktreeSessionBinder` removed from production
+  - `AcpSessionControllerImpl` wires binder at composition root
+  - `AcpAgentEditor` post-hoc `persistWorktreeSessionId` removed
+  - `AcpSessionLifecycleTest` — wiring via internal `openSessionWithOps` with recording binder
+  - Docs: `CONTEXT.md`, `docs/wiki/subsystems/worktree.md`, `CHANGELOG.md`
+- **Verification:** `./gradlew qualityGate` passes
+- **Follow-up (optional):** extend wiring test to `AcpSessionController.start` when `acp-session-loop-integration-tests` harness lands; resume branches remain covered by `AcpSessionResumeOrchestratorTest`
+- **Unblocks:** `acp-agent-editor-thinning` — editor persist-removal dependency satisfied
 
 ## Out of Scope
 
