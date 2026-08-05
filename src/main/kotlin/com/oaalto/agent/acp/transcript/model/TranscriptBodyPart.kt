@@ -1,6 +1,6 @@
 package com.oaalto.agent.acp.transcript.model
 
-import com.oaalto.agent.acp.StyledRun
+import com.oaalto.agent.acp.transcript.render.StyledRun
 
 /**
  * One renderable unit in a tool card body or agent-text row.

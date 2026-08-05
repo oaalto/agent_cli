@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager

@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

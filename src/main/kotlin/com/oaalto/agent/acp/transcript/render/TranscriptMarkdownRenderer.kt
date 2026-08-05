@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes

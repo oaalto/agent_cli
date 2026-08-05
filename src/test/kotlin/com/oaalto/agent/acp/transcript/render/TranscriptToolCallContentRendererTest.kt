@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.EmbeddedResourceResource

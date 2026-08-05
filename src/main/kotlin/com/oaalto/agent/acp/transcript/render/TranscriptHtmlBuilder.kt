@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors

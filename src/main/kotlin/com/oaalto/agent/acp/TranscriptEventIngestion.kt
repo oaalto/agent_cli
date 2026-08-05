@@ -10,6 +10,8 @@ import com.oaalto.agent.acp.plan.PlanUpdateMapper
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
+import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
+import com.oaalto.agent.acp.transcript.render.TranscriptToolCallContentRenderer
 
 /**
  * Consolidated ACP transcript event ingestion.

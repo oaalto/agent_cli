@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 

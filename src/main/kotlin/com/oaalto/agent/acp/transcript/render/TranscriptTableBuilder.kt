@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 internal object TranscriptTableBuilder {
     fun buildTableHtml(table: RenderedBlock.Table): String {

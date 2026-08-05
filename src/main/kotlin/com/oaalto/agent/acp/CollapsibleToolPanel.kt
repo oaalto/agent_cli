@@ -5,6 +5,7 @@ import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
+import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptBadgeStyle
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider

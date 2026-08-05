@@ -6,10 +6,10 @@
 
 **Blocked by:** 01 — Transcript theme package move; 02 — Transcript model core package move
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] All content-render types and tests live under `transcript/render`
-- [ ] `TranscriptContentRenderer.renderMarkdownText` remains the canonical markdown→body-part entry; callers compile through new package paths
-- [ ] Fence normalizer construction guard test still passes (filename allowlist unchanged)
-- [ ] Render package sources contain no `javax.swing` imports
-- [ ] `./gradlew qualityGate` passes with moves-only diffs
+- [x] All content-render types and tests live under `transcript/render`
+- [x] `TranscriptContentRenderer.renderMarkdownText` remains the canonical markdown→body-part entry; callers compile through new package paths
+- [x] Fence normalizer construction guard test still passes (filename allowlist unchanged)
+- [x] Render package sources contain no `javax.swing` imports
+- [x] `./gradlew qualityGate` passes with moves-only diffs

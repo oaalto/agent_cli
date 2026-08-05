@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.render
 
 /** Shared transcript text length limits for prose and code blocks. */
 internal object TranscriptTextTruncation {

@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.JBUI
+import com.oaalto.agent.acp.transcript.render.TranscriptFenceLanguageResolver
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent

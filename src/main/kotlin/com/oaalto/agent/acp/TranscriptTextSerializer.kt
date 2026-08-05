@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
 
 /**
  * Maps [TranscriptBlock] snapshots to plain text for session transcript files.
