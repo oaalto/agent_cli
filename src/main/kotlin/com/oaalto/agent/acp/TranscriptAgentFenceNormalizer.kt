@@ -67,6 +67,8 @@ private val CITATION_EXTENSION_TO_LANG =
     )
 
 // Longest-first so `javascript` wins over `java`.
+private val VALID_FENCE_INFO = Regex("""[\w+#.-]+""")
+
 private val FENCE_LANGUAGE_PREFIXES: List<String> =
     listOf(
         "dockerfile",
@@ -105,9 +107,18 @@ private val FENCE_LANGUAGE_PREFIXES: List<String> =
     ).sortedByDescending { it.length }
 
 /**
- * Agents often emit closing fences mid-line (`code```Example`) or with trailing prose on the
- * same line (` ```Example`). Opening fences may omit the newline after the language tag
- * (` ```kotlinfun main()`). CommonMark requires fences on their own lines.
+ * Repairs malformed fenced-code markers in agent (and agent-like tool) markdown before parse or
+ * plain-text streaming display.
+ *
+ * **Invariants**
+ * 1. Idempotent on already-valid GFM fences — `normalize(normalize(x)) == normalize(x)`.
+ * 2. Preserves non-fence prose verbatim except required line splits around fence markers.
+ * 3. Safe on partial streaming input — never throws; auto-closes a trailing unclosed fence.
+ *
+ * **Streaming contract:** callers re-normalize the full accumulated buffer on each bind
+ * (`AgentTextRowAdapter`); cursor glyph is appended outside this function.
+ *
+ * Accepts `\r\n` input; output uses `\n` line endings.
  */
 internal fun normalizeAgentFences(input: String): String {
     if (!input.contains(FENCE_MARKER)) return input
@@ -152,7 +163,7 @@ private fun appendOpeningFenceLine(
     val indent = line.substring(0, line.length - trimmedStart.length)
     val afterFence = trimmedStart.removePrefix(FENCE_MARKER)
     return when {
-        afterFence.isEmpty() || afterFence.matches(Regex("""[\w+#.-]+""")) -> {
+        afterFence.isEmpty() || afterFence.matches(VALID_FENCE_INFO) -> {
             result.add("$indent$FENCE_MARKER$afterFence")
             true
         }

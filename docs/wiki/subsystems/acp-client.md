@@ -18,7 +18,8 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptModel.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptPanel.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockLabelBinder.kt
+  - src/main/kotlin/com/oaalto/agent/acp/AgentTextRowAdapter.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptAgentFenceNormalizer.kt
   - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptFinalizePolicy.kt
@@ -74,11 +75,10 @@ The transcript renders via a vertical `BoxLayout` column of block rows inside a 
 2. **`TranscriptModel`** — holds `List<TranscriptBlock>`; emits blocks on updates.
 3. **`TranscriptPanel`** — owns the `blockId` → row component reuse map; calls `TranscriptBlockViewFactory` to create/update/dispose rows inside a vertical `BoxLayout` column.
 4. **`TranscriptBlockViewFactory`** — thin coordinator/registry: fixed adapter order (Tool → Plan → Agent text → Simple text), dispatches `create` / `update` / `dispose`, logs type-mismatch diagnostics. Stateless — no `blockId` map.
-5. **Row adapters** (`TranscriptBlockRowAdapter`) — one implementation per block family: `ToolCallRowAdapter` (`CollapsibleToolPanel`), `PlanRowAdapter` (`PlanPanel`), `AgentTextRowAdapter` (body-part column + streaming), `SimpleTextRowAdapter` (`JTextPane` via label binder). Land in `acp/` during decomposition; move to `transcript/view/rows/` with package restructure.
+5. **Row adapters** (`TranscriptBlockRowAdapter`) — one implementation per block family: `ToolCallRowAdapter` (`CollapsibleToolPanel`), `PlanRowAdapter` (`PlanPanel`), `AgentTextRowAdapter` (body-part column + streaming fence normalize), `SimpleTextRowAdapter` (inline `JTextPane` presentation). Land in `acp/` during decomposition; move to `transcript/view/rows/` with package restructure.
 6. **`TranscriptBodyPartWidgetMapper`** (planned) — shared view seam mapping `TranscriptBodyPart` → Swing widgets for agent rows and tool-card bodies; `BodyPartRenderProfile` distinguishes agent vs tool fallbacks.
 7. **`TranscriptContentRenderer`** — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
-8. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks (streaming path; final markdown uses content renderer). Owned by simple-text and agent-text adapters.
-9. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
+8. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
 ### Prompt event routing
 
@@ -191,11 +191,12 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 
 - Canonical seam: `renderMarkdownText(text, options)` → ordered `List<TranscriptBodyPart>` for both `FinalAgentText` rows and completed tool-card text bodies.
 - One markdown parse pipeline (IntelliJ `org.intellij.markdown`, GFM flavour) behind the module; internal `RenderedBlock` AST is package-private. Agent and tool rows consume the same body-part stream; `TranscriptBodyPartWidgetMapper` (block-view decomposition) unifies part → widget mapping with profile-specific fallbacks.
-- `ContentRenderOptions` carries truncation ceiling, highlighted-code budget, fence-normalization flag (`applyFenceNormalization`), and optional markdown heuristic skip for plain tool dumps.
+- `ContentRenderOptions` carries truncation ceiling, highlighted-code budget, fence-normalization flag (`applyFenceNormalization`), and optional markdown heuristic skip for plain tool dumps. Agent rows use `AGENT_TEXT`; tool text uses `forToolMarkdownText` (normalizes when markdown-like).
+- Fence normalization runs **only** in `TranscriptContentRenderer` (final/tool markdown) and `AgentTextRowAdapter` (streaming plain text) — both call `normalizeAgentFences` in `TranscriptAgentFenceNormalizer`. `TranscriptMarkdownRenderer.parseToBlocks` does not normalize. CI allowlist: `AgentFenceNormalizationConstructionTest`.
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
 - Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `measureTranscriptEditorCodeBlockSize` sizes them at creation (font-metrics fallback when `lineHeight` is 0 before first paint) and `applyTranscriptCodeBlockWidth` reflows on transcript column resize; `AgentTextRow` remeasures on EDT after markdown rebuild.
 - Agent stream finalizes via `TranscriptFinalizePolicy` when the prompt flow completes (`AcpPromptExecutor`), not only on `PromptResponseEvent`.
-- `normalizeAgentFences` splits inline closing fences (`code```Example`), merged opening fences (` ```kotlinfun main()`), prose-before-fence on the same line (`Main.kt:```kotlinfun`), and auto-closes trailing unclosed fences before parsing so code blocks and trailing prose render correctly.
+- `normalizeAgentFences` splits inline closing fences (`code```Example`), merged opening fences (` ```kotlinfun main()`), prose-before-fence on the same line (`Main.kt:```kotlinfun`), citation-style `line:line:path` headers, and auto-closes trailing unclosed fences. Idempotent on valid GFM; accepts `\r\n` input; streaming callers re-normalize the full accumulated buffer each bind.
 - `joinCodeFenceParts` preserves line breaks when the markdown parser emits separate text nodes inside a fence.
 - Read-only code block Editors are focusable for text selection.
 
@@ -230,7 +231,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 ## Agent Synthesis
 
 - When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (finalize prelude from `TranscriptFinalizePolicy`) or `notify()` via `AcpClientSessionOperationsImpl`, map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
-- Live agent streaming uses `TranscriptBlock.StreamingAgentText` with the `CURSOR_CHAR` indicator applied by `TranscriptBlockLabelBinder`; finalized agent text becomes `FinalAgentText`.
+- Live agent streaming uses `TranscriptBlock.StreamingAgentText` with fence normalization and the `CURSOR_CHAR` indicator in `AgentTextRowAdapter`; finalized agent text becomes `FinalAgentText` and routes through `TranscriptContentRenderer`.
 - Layout split is hard-coded: 72% transcript / 28% bottom, 20% prompt / 80% shell.
 - The ACP client is in-process (not JetBrains AI Chat); the agent subprocess is a separate process communicating via stdio JSON-RPC.
 

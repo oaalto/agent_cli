@@ -117,6 +117,34 @@ class TranscriptContentRendererTest {
         assertEquals(2, plainPre.size)
     }
 
+    @Test
+    fun `tool text with malformed fences normalizes to code blocks`() {
+        val input = "```kotlinfun main()```"
+        val parts =
+            TranscriptContentRenderer.renderMarkdownText(
+                input,
+                ContentRenderOptions.forToolMarkdownText(input),
+            )
+
+        val code = parts.filterIsInstance<TranscriptBodyPart.Code>()
+        assertEquals(1, code.size)
+        assertTrue(code.single().code.contains("fun main()"))
+    }
+
+    @Test
+    fun `plain tool dump skips fence normalization`() {
+        val input = "exit code: 0\nno markdown here"
+        val parts =
+            TranscriptContentRenderer.renderMarkdownText(
+                input,
+                ContentRenderOptions.forToolMarkdownText(input),
+            )
+
+        assertEquals(1, parts.size)
+        val html = assertIs<TranscriptBodyPart.Html>(parts.single())
+        assertTrue(html.fragment.contains("exit code: 0"))
+    }
+
     private val agentOptions: ContentRenderOptions = ContentRenderOptions.AGENT_TEXT
 
     @Test

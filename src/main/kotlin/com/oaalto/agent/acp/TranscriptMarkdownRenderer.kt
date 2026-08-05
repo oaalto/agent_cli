@@ -79,11 +79,10 @@ internal object TranscriptMarkdownRenderer {
     fun parseToBlocks(input: String): List<RenderedBlock> {
         if (input.isBlank()) return emptyList()
         return try {
-            val normalized = normalizeAgentFences(input)
-            val ast = parser.buildMarkdownTreeFromString(normalized)
+            val ast = parser.buildMarkdownTreeFromString(input)
             val blocks = mutableListOf<RenderedBlock>()
-            walkChildren(ast, normalized, blocks)
-            if (blocks.isEmpty() && normalized.isNotBlank()) {
+            walkChildren(ast, input, blocks)
+            if (blocks.isEmpty() && input.isNotBlank()) {
                 listOf(RenderedBlock.InlineText(input, emptyList()))
             } else {
                 blocks

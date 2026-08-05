@@ -8,11 +8,17 @@
 
 ### Changed
 
+- **ACP transcript fence normalization** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptContentRenderer.kt`, `acp/TranscriptMarkdownRenderer.kt`, `acp/TranscriptToolCallContentRenderer.kt`, `acp/AgentTextRowAdapter.kt`, tests): Single `normalizeAgentFences` entry for streaming and final paths; removed duplicate `parseToBlocks` hook and dead `TranscriptBlockLabelBinder`; tool text uses `ContentRenderOptions.forToolMarkdownText`; CI allowlist via `AgentFenceNormalizationConstructionTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Transcript finalize policy extraction** (`acp/TranscriptFinalizePolicy.kt`, `acp/TranscriptEventIngestion.kt`, `acp/AcpPromptExecutor.kt`, `acp/AcpAgentEditor.kt`, tests): Centralized `FinalizeAgentStream` emission in `TranscriptFinalizePolicy`; ingestion, prompt executor, and editor delegate to policy hooks; removed `ingestPromptCompleted()`; added table-driven policy tests. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript panel harness review follow-ups** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`): Golden scenarios drive chunked streaming, stick-to-bottom, mixed tool+agent, and resize through ViewController `apply`; EDT-safe scroll/height helpers; hierarchy vertical-scroll ownership and horizontal-scrollbar tree checks; ingestion finalize-before-tool scenario; migrated scroll tests off `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Documentation
+
+- **ACP transcript fence normalization (grill accept)** (`docs/features/acp-transcript-fence-normalization/`, `docs/wiki/subsystems/acp-client.md`, `CONTEXT.md`, `docs/features/acp-transcript-panel-integration-tests/prd.md`): Unified fence normalizer call graph, tool-text policy, removed stale binder references; panel harness fence scenario promoted to planned. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript fence normalization tickets** (`docs/features/acp-transcript-fence-normalization/01-03`, `docs/features/FEATURES.md`): Three vertical slices — normalizer deep module, unified agent call graph, tool fence policy + CI drift guard. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript finalize policy (grill accept)** (`docs/adr/0007-transcript-finalize-policy-orchestration-layer.md`, `docs/features/acp-transcript-finalize-policy/`, `docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`, `CONTEXT.md`): ADR 0007 and implementation slices for centralized `TranscriptFinalizePolicy`; wiki policy gate, hook table, and sequence diagram; glossary term in CONTEXT.md. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
@@ -21,6 +27,8 @@
 - **ACP transcript block-view third review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/08-third-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-07 review gaps — agent colour test, resize height assertion, disposal test semantics, changelog accuracy, git/tracker hygiene. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Fixed
+
+- **Fence normalizer review follow-ups** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptAgentFenceNormalizerTest.kt`): Streaming chunk test now re-normalizes each accumulated prefix; idempotency covers full fixture set; hoisted `VALID_FENCE_INFO` regex. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **Simple-text color provider contract** (`acp/SimpleTextRowAdapter.kt`, `acp/SimpleTextRowAdapterTest.kt`): `SimpleTextRow` now uses `RowContext.colorProvider` instead of IDE service lookup; headless test with custom provider verifies `UserEcho` theme colors. Agent streaming color-provider test added in ticket 08. made by: Olli Aalto. made with: pi. model: qwen-qwq
 

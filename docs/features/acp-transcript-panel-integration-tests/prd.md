@@ -152,4 +152,5 @@ Support both via harness methods.
 - `TranscriptViewController.panelForTest()` added alongside `blocksForTest()`.
 - `setColumnWidth` resizes the scroll pane (triggers real column reflow listeners), not `RowContext.columnWidth`.
 - `TranscriptPanelScrollTest` migrated into `TranscriptPanelHarnessTest`; shared EDT helpers in `TranscriptEdtTestSupport`.
-- Deferred: JSON golden sequences; fence-normalization panel scenario after fence PRD.
+- Deferred: JSON golden sequences.
+- Planned: fence-normalization panel scenario (streaming malformed fences → finalize) — see [fence-normalization PRD](../acp-transcript-fence-normalization/prd.md).

@@ -59,7 +59,7 @@ internal object TranscriptToolCallContentRenderer {
             is ContentBlock.Text ->
                 TranscriptContentRenderer.renderMarkdownText(
                     block.text,
-                    ContentRenderOptions.DEFAULT,
+                    ContentRenderOptions.forToolMarkdownText(block.text),
                 )
             is ContentBlock.Image ->
                 listOf(TranscriptBodyPart.Html(renderPrePlaceholder("[image: ${block.mimeType}]")))
@@ -75,7 +75,7 @@ internal object TranscriptToolCallContentRenderer {
             is EmbeddedResourceResource.TextResourceContents ->
                 TranscriptContentRenderer.renderMarkdownText(
                     resource.text,
-                    ContentRenderOptions.DEFAULT,
+                    ContentRenderOptions.forToolMarkdownText(resource.text),
                 )
             is EmbeddedResourceResource.BlobResourceContents ->
                 listOf(TranscriptBodyPart.Html(renderPrePlaceholder("[binary resource: ${resource.uri}]")))

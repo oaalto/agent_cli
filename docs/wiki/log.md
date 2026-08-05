@@ -1,5 +1,11 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | Agent fence normalization unification (grill accept)
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md), [CONTEXT.md](../../CONTEXT.md), [fence-normalization PRD](../../docs/features/acp-transcript-fence-normalization/prd.md)
+- Sources: `TranscriptAgentFenceNormalizer.kt`, `TranscriptContentRenderer.kt`, `AgentTextRowAdapter.kt`, `AgentFenceNormalizationConstructionTest.kt`
+- Notes: Single `normalizeAgentFences` entry; removed duplicate parseToBlocks hook and dead `TranscriptBlockLabelBinder`; tool text uses `forToolMarkdownText`; CI allowlist guard.
+
 ## [2026-08-05] update | FinalizeAgentStream construction grep enforcement (slice 02)
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md), [Domain context & ACP transcript model](concepts/context.md)

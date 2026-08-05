@@ -16,6 +16,14 @@ internal data class ContentRenderOptions(
                 useMarkdownHeuristic = false,
                 applyFenceNormalization = true,
             )
+
+        /** Tool text bodies: heuristic skip for plain dumps; normalize fences when markdown-like. */
+        fun forToolMarkdownText(text: String): ContentRenderOptions =
+            if (text.contains("```") || TranscriptMarkdownRenderer.likelyContainsMarkdown(text)) {
+                ContentRenderOptions(applyFenceNormalization = true)
+            } else {
+                DEFAULT
+            }
     }
 }
 

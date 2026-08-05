@@ -70,7 +70,7 @@ ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry poin
 
 ### Transcript content renderer
 
-Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Distinct from **Transcript** (whole pane), **Row adapter**, and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
+Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Malformed agent fence repair is `normalizeAgentFences` in `TranscriptAgentFenceNormalizer` (called from content renderer and streaming adapter only). Distinct from **Transcript** (whole pane), **Row adapter**, and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
 
 ### Transcript finalize policy
 
