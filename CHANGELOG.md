@@ -2,7 +2,13 @@
 
 ## 2026-08-05
 
+### Changed
+
+- **ACP transcript panel harness review follow-ups** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`): Golden scenarios drive chunked streaming, stick-to-bottom, mixed tool+agent, and resize through ViewController `apply`; EDT-safe scroll/height helpers; hierarchy vertical-scroll ownership and horizontal-scrollbar tree checks; ingestion finalize-before-tool scenario; migrated scroll tests off `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Documentation
+
+- **ACP transcript panel harness review follow-up ticket** (`docs/features/acp-transcript-panel-integration-tests/01-harness-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post-implementation review gaps — EDT-safe assertions, apply-path golden scenarios, hierarchy scroll checks, fixture defaults, and harness scope alignment. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript block-view third review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/08-third-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-07 review gaps — agent colour test, resize height assertion, disposal test semantics, changelog accuracy, git/tracker hygiene. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
@@ -22,19 +28,9 @@
 
 ## 2026-08-04
 
-### Documentation
-
-- **ACP transcript block-view second review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/07-second-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-06 review gaps — simple-text color-provider contract, finalize disposal assertion, column-resize and mismatch adapter tests, feature close-out. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
-
-- **ACP transcript block-view review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/06-review-follow-ups.md`, `docs/features/FEATURES.md`): Single tracer bullet for post-implementation code-review gaps — simple-text mismatch/resize/bind seam, mapper and agent finalize tests, migrated tool-card tests, link-open logging, coordinator fallback. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
-
-### Changed
-
-- **ACP transcript coordinator cleanup and verification** (`acp/TranscriptBlockViewFactory.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBlockViewFactoryTest.kt`, `acp/TranscriptTextTruncationTest.kt`): Reduced factory test to coordinator dispatch smoke (adapter order, create/update/dispose routing, mismatch logging, companion delegates); migrated agent-text behaviour tests (code block creation, width adjustment, streaming) to `AgentTextRowAdapterTest`; migrated tool-card body tests to `ToolCallRowAdapterTest`; extracted `TranscriptTextTruncationTest` from factory test. Factory `update()` stays under cyclomatic threshold without suppressions. made by: Olli Aalto. made with: pi. model: qwen-qwq
-
-- **ACP transcript block-view review follow-ups** (`acp/SimpleTextRowAdapter.kt`, `acp/TranscriptBlockRowAdapter.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/TranscriptBodyPartWidgetMapper.kt`, `acp/TranscriptPanel.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBodyPartWidgetMapperTest.kt`): Fixed `SimpleTextRowAdapter.update()` to check block type before row type (mismatch logging); replaced `SimpleTextRow.bind()` with `bindTranscriptBlock` delegation; simple-text resize now uses `applyTranscriptColumnWidth` for proper wrapped height remeasurement; added optional `project` field to `RowContext` and wired through `TranscriptBlockViewFactory` and `TranscriptPanel.create()`; removed broken undocumented `AgentTextRowAdapter` fallback in coordinator; `tryOpenUrl` logs warning on failure with specific exception types; added headless tests for streaming-to-finalize agent text at same `blockId`; added dedicated `TranscriptBodyPartWidgetMapperTest` covering code blocks, HTML fallback, blockquotes, highlight-budget, agent/tool profile parity; added tool-card resize and collapsed-body tests. made by: Olli Aalto. made with: pi. model: qwen-qwq
-
 ### Added
+
+- **ACP transcript panel integration harness** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`, `acp/TranscriptViewController.kt`): Mounted-panel test seam with golden scenarios (streaming+finalize code height, stick-to-bottom, single scroll pane, column resize, mixed tool+agent); `panelForTest()` accessor; migrated `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript body-part widget mapper** (`acp/TranscriptBodyPartWidgetMapper.kt`, `acp/AgentTextRowAdapter.kt`, tests): Introduced `TranscriptBodyPartWidgetMapper` with `BodyPartRenderProfile` enum (AGENT/TOOL) to unify body-part → widget rendering across agent rows and tool panels; created `AgentTextRowAdapter` matching `StreamingAgentText` and `FinalAgentText` with multi-part widget layout, streaming cursor support, and finalize rebuilds; `AgentTextRow` and helper functions removed from `TranscriptBlockViewFactory` which now uses pure adapter dispatch; `CollapsibleToolPanel` refactored to use mapper with TOOL profile. made by: Olli Aalto. made with: pi. model: qwen-qwq
 
@@ -46,6 +42,10 @@
 
 ### Changed
 
+- **ACP transcript coordinator cleanup and verification** (`acp/TranscriptBlockViewFactory.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBlockViewFactoryTest.kt`, `acp/TranscriptTextTruncationTest.kt`): Reduced factory test to coordinator dispatch smoke (adapter order, create/update/dispose routing, mismatch logging, companion delegates); migrated agent-text behaviour tests (code block creation, width adjustment, streaming) to `AgentTextRowAdapterTest`; migrated tool-card body tests to `ToolCallRowAdapterTest`; extracted `TranscriptTextTruncationTest` from factory test. Factory `update()` stays under cyclomatic threshold without suppressions. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
+- **ACP transcript block-view review follow-ups** (`acp/SimpleTextRowAdapter.kt`, `acp/TranscriptBlockRowAdapter.kt`, `acp/TranscriptBlockViewFactory.kt`, `acp/TranscriptBodyPartWidgetMapper.kt`, `acp/TranscriptPanel.kt`, `acp/AgentTextRowAdapterTest.kt`, `acp/ToolCallRowAdapterTest.kt`, `acp/TranscriptBodyPartWidgetMapperTest.kt`): Fixed `SimpleTextRowAdapter.update()` to check block type before row type (mismatch logging); replaced `SimpleTextRow.bind()` with `bindTranscriptBlock` delegation; simple-text resize now uses `applyTranscriptColumnWidth` for proper wrapped height remeasurement; added optional `project` field to `RowContext` and wired through `TranscriptBlockViewFactory` and `TranscriptPanel.create()`; removed broken undocumented `AgentTextRowAdapter` fallback in coordinator; `tryOpenUrl` logs warning on failure with specific exception types; added headless tests for streaming-to-finalize agent text at same `blockId`; added dedicated `TranscriptBodyPartWidgetMapperTest` covering code blocks, HTML fallback, blockquotes, highlight-budget, agent/tool profile parity; added tool-card resize and collapsed-body tests. made by: Olli Aalto. made with: pi. model: qwen-qwq
+
 - **ACP transcript markdown renderer test consolidation** (`acp/TranscriptMarkdownRendererTest.kt`): Removed 35 tests duplicated by `TranscriptContentRendererTest`; retained 5 parser-level tests (likelyContainsMarkdown positive, ordered list items, strikethrough, blockquote with multiple paragraphs, untagged fence null language). made by: Olli Aalto. made with: pi. model: qwen-qwq
 
 - **ACP transcript agent text routing** (`acp/TranscriptBodyPart.kt`, `TranscriptBlockConverter.kt`, `TranscriptBlockViewFactory.kt`, `TranscriptHtmlBuilder.kt`, `TranscriptContentRenderer.kt`, tests): Route `FinalAgentText` through `TranscriptContentRenderer` with `ContentRenderOptions.AGENT_TEXT`; expand body-part variants (heading, list, blockquote, image, inline text) and map them to Swing in `AgentTextRow`; share HTML fallback via `bodyPartToHtmlFragment`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
@@ -55,6 +55,12 @@
 - **Session transcript filenames** (`acp/TranscriptFileStore.kt`, tests, docs): Timestamped human-readable names `{yyyy-MM-dd_HH-mm-ss}_{acpSessionId}.txt` under `.idea/agent-cli/transcripts/`; logical key remains `acpSessionId`; legacy `<acpSessionId>.txt` files still restore. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Documentation
+
+- **ACP transcript panel harness grill acceptance** (`CONTEXT.md`, `docs/wiki/subsystems/acp-client.md`, `docs/features/acp-transcript-panel-integration-tests/prd.md`): Documented harness wiring, golden scenarios, and deferred fence/JSON follow-ups. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript block-view second review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/07-second-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post–ticket-06 review gaps — simple-text color-provider contract, finalize disposal assertion, column-resize and mismatch adapter tests, feature close-out. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript block-view review follow-up ticket** (`docs/features/acp-transcript-block-view-decomposition/06-review-follow-ups.md`, `docs/features/FEATURES.md`): Single tracer bullet for post-implementation code-review gaps — simple-text mismatch/resize/bind seam, mapper and agent finalize tests, migrated tool-card tests, link-open logging, coordinator fallback. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript block-view decomposition tickets** (`docs/features/acp-transcript-block-view-decomposition/01-05`, `docs/features/FEATURES.md`): Five vertical slices — row adapter scaffold + simple text, tool call adapter, plan adapter, body-part mapper + agent text adapter, coordinator cleanup. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

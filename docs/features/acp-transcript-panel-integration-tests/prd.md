@@ -1,8 +1,8 @@
 ## Status
 
-ready-for-agent
+implemented
 
-**Triage:** `ready-for-agent`
+**Triage:** `implemented`
 
 ## Problem Statement
 
@@ -145,3 +145,11 @@ Support both via harness methods.
 
 - Architecture review strength: **Worth exploring** — enables safe refactors in sibling PRDs; ship early for maximum leverage.
 - Top recommendation from architecture review: land in parallel with content-renderer + block-view decomposition as regression safety net.
+
+### Grill acceptance (2026-08-04)
+
+- Harness defaults to ViewController `apply()` path with synchronous EDT injection; `syncBlocks()` for pure view regressions.
+- `TranscriptViewController.panelForTest()` added alongside `blocksForTest()`.
+- `setColumnWidth` resizes the scroll pane (triggers real column reflow listeners), not `RowContext.columnWidth`.
+- `TranscriptPanelScrollTest` migrated into `TranscriptPanelHarnessTest`; shared EDT helpers in `TranscriptEdtTestSupport`.
+- Deferred: JSON golden sequences; fence-normalization panel scenario after fence PRD.

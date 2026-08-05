@@ -73,6 +73,8 @@ internal class TranscriptViewController(
 
     internal fun blocksForTest(): List<TranscriptBlock> = model.blocks()
 
+    internal fun panelForTest(): TranscriptPanel = transcriptPanel
+
     private val onEdt: (() -> Unit) -> Unit =
         runOnEdt ?: { action ->
             if (SwingUtilities.isEventDispatchThread()) {

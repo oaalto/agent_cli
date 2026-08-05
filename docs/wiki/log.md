@@ -1,5 +1,17 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | Harness review follow-ups
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: `01-harness-review-follow-ups.md`, `TranscriptPanelTestHarness.kt`, `TranscriptPanelHarnessTest.kt`, `TranscriptEdtTestSupport.kt`
+- Notes: EDT-safe harness helpers; golden scenarios on ViewController `apply`; hierarchy scroll ownership and horizontal scrollbar tree checks; `applyIngest` finalize-ordering scenario; shared `collectTranscriptDescendants`.
+
+## [2026-08-04] update | Transcript panel integration test harness
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md)
+- Sources: grill-with-docs-batch acceptance for `acp-transcript-panel-integration-tests` PRD, `TranscriptPanelTestHarness.kt`, `TranscriptPanelHarnessTest.kt`, `TranscriptViewController.kt`
+- Notes: `TranscriptPanelTestHarness` is the canonical mounted-panel seam; default `apply()` path through ViewController; `syncBlocks()` for view-only regressions; headless `PlainMonospace` default; five golden scenarios; row-adapter tests complement harness.
+
 ## [2026-08-05] skip | Third review follow-ups (ticket 08)
 
 - No wiki update: test fixes and changelog corrections only; no durable knowledge changes.

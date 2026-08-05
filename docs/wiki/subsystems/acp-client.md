@@ -2,7 +2,7 @@
 title: ACP client subsystem
 type: subsystem
 status: current
-updated: 2026-08-04
+updated: 2026-08-05
 sources:
   - docs/adr/0005-transcript-row-adapter-registry.md
   - docs/adr/0006-transcript-simple-vs-agent-row-shells.md
@@ -21,7 +21,8 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptFooter.kt
+  - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelTestHarness.kt
+  - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelHarnessTest.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptContentRenderer.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt
@@ -103,6 +104,16 @@ Filesystem policy is owned by `SessionFilesystemOperations` — a single deep mo
 #### Test surface
 
 The deep module interface is the primary test seam — `SessionFilesystemOperationsTest` covers in-scope reads, out-of-scope rejections, permission denials, VFS read-only/ignored blocks, and line/limit slicing with the in-memory adapter.
+
+**Transcript panel integration harness** (`TranscriptPanelTestHarness`, entry point `TranscriptPanelHarnessTest`):
+
+- Mounted-panel seam below `AcpAgentEditor`: `StructuredUpdate` → `TranscriptModel` → `TranscriptPanel.sync` (default via `apply()`), or `syncBlocks()` for pure view regressions.
+- `applyIngest(SessionUpdate)` exercises ingestion finalize-before-non-chunk policy through the same ViewController path.
+- Headless-safe on EDT with `PlainMonospaceTranscriptCodeBlockViewFactory` and minimal `fakeTranscriptProject()`; `TranscriptViewController` accepts synchronous `runOnEdt` injection and exposes `panelForTest()` / `blocksForTest()`.
+- Helpers: `scrollViewportToBottom`/`ToTop`, `verticalScrollBarValue`, `assertSingleTranscriptScrollPane` (vertical scroll ownership), `assertNoHorizontalScrollbar` (tree walk + policy), `codeBlockPreferredHeights`, `rowPreferredHeights`, `blocks()`, `dispose()`.
+- Golden scenarios (ViewController `apply` path): chunked streaming + finalize + code-block height, stick-to-bottom on append, single vertical scroll owner, column resize reflow, mixed tool + agent rows; plus ingestion finalize-before-tool ordering via `applyIngest`.
+- Row-adapter unit tests (`TranscriptBlockViewFactoryTest`, `*RowAdapterTest`) complement the harness; update harness scenarios when panel-level behaviour changes.
+- Deferred: JSON golden sequences in test resources; fence-normalization panel scenario after `acp-transcript-fence-normalization` lands.
 
 ### Event ingestion (`TranscriptEventIngestion`)
 
