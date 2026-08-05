@@ -4,6 +4,16 @@
 
 ### Documentation
 
+- **ACP session loop integration test tickets** (`docs/features/acp-session-loop-integration-tests/01-harness-new-session-start.md`–`05-auth-bootstrap-stretch.md`, `FEATURES.md`): Five tracer-bullet slices — harness + new-session start, resume load, prompt/ingestion, dispose/cancel, auth stretch — for headless `AcpSessionController` integration coverage via `InMemoryAcpTransport`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Launch argument unification tickets** (`docs/features/launch-argument-unification/01-kernel-launch-argument-resolver.md`–`04-worktree-resume-probe-kernel-alignment.md`, `FEATURES.md`): Four vertical slices — kernel `LaunchArgumentResolver`, ACP/PTY adapter thinning with WSL env parity, worktree resume probe alignment. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP agent editor thinning tickets** (`docs/features/acp-agent-editor-thinning/01-executor-only-finalize-on-prompt.md`, `02-thin-session-start-delegate.md`, `03-editor-thinning-verification-and-ship.md`, `FEATURES.md`): Three tracer-bullet slices — executor-only finalize, thin session start delegate, verification and ship — completing editor→controller separation after orchestrator wiring. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Session transcript coordinator deepening tickets** (`docs/features/session-transcript-coordinator-deepening/01-coordinator-test-seam-injection.md`–`07-edt-snapshot-delegation-optional.md`, `FEATURES.md`): Seven tracer-bullet slices — test seam, bind/write/restore round-trip, pre-id buffer, legacy restore, error/diagnostics coverage, KDoc contract, optional EDT delegation. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **Plan panel renderer removal tickets** (`docs/features/plan-panel-renderer-removal/01-delete-legacy-plan-panel-renderer.md`, `FEATURES.md`): Single tracer-bullet slice to delete orphaned `PlanPanelRenderer` HTML path; `PlanRowAdapter` + `PlanPanel` remain sole live implementation. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **Worktree orchestrator production wiring PRD** (`docs/features/worktree-orchestrator-production-wiring/prd.md`, `FEATURES.md`): Status `implemented`; implementation record for commit `ae78169`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Added
