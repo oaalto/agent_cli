@@ -4,13 +4,13 @@ import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
-import com.oaalto.agent.acp.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.PlanEntry
 import com.oaalto.agent.acp.PlanEntryPriority
 import com.oaalto.agent.acp.PlanEntryStatus
 import com.oaalto.agent.acp.TranscriptBlock
-import com.oaalto.agent.acp.TranscriptColorProvider
 import com.oaalto.agent.acp.TranscriptRenderHelpers
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component

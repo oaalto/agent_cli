@@ -3,6 +3,9 @@ package com.oaalto.agent.acp
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 import com.intellij.openapi.components.serviceOrNull
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptBadgeStyle
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 
 /**
  * HTML formatting helpers for transcript rendering.

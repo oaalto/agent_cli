@@ -2,6 +2,8 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.ui.JBColor
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextPane

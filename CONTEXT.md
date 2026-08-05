@@ -58,7 +58,7 @@ Git worktree used to isolate an agent session filesystem. Stores `acpSessionId` 
 Code under `com.oaalto.agent` is organized by concern:
 
 - `pty/` — PTY Passthrough editor and launch path
-- `acp/` — ACP client, session loop, transcript/shell UI
+- `acp/` — ACP client, session loop, transcript/shell UI (`acp/transcript/` subpackages for model/render/view/theme)
 - `worktree/` — Git worktree orchestration (mode-agnostic)
 - `settings/` — Shared configuration and launch mode
 
@@ -66,19 +66,19 @@ See [ADR 0001](docs/adr/0001-custom-acp-client-in-plugin.md).
 
 ### Transcript
 
-ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md) and `agent/acp/`. Panel-level integration tests use `TranscriptPanelTestHarness` in test sources (`TranscriptPanelHarnessTest`). Distinct from **Session transcript file** and **Transcript content renderer**.
+ACP mode HTML rendering of `SessionUpdate` events in a `JEditorPane`. Entry point: `AcpAgentEditor`; implementation detail in [`docs/wiki/concepts/context.md`](docs/wiki/concepts/context.md). Transcript stack packages under `agent/acp/transcript/`: **model** (state + ingestion/finalize), **render** (markdown/HTML → body parts), **view** (Swing panel; row adapters in `view/rows/`), **theme** (shared `TranscriptColorProvider`). Orchestration and **Session transcript file** I/O stay at `acp/` root. Panel-level integration tests use `TranscriptPanelTestHarness` in test sources (`TranscriptPanelHarnessTest`). Distinct from **Session transcript file** and **Transcript content renderer**.
 
 ### Transcript content renderer
 
-Deep module that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Malformed agent fence repair is `normalizeAgentFences` in `TranscriptAgentFenceNormalizer` (called from content renderer and streaming adapter only). Distinct from **Transcript** (whole pane), **Row adapter**, and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
+Deep module in `transcript/render/` that converts agent or tool markdown/plain text into `List<TranscriptBodyPart>` for transcript row assembly. Entry point: `TranscriptContentRenderer.renderMarkdownText`. Malformed agent fence repair is `normalizeAgentFences` in `TranscriptAgentFenceNormalizer` (called from content renderer and streaming adapter only). Distinct from **Transcript** (whole pane), **Row adapter**, and **Session transcript file**. Markdown parsing shares one internal AST shape (**rendered block** — package-private, not a public domain term); the public seam is body parts only. See [acp-transcript-content-renderer PRD](docs/features/acp-transcript-content-renderer/prd.md).
 
 ### Transcript finalize policy
 
-Orchestration rules for when `FinalizeAgentStream` is emitted — separate from ingestion mapping and model mutation. Implemented by `TranscriptFinalizePolicy`; canonical detail in [ACP client subsystem wiki](docs/wiki/subsystems/acp-client.md) and [ADR 0007](docs/adr/0007-transcript-finalize-policy-orchestration-layer.md). Distinct from **Transcript** (whole pane) and **Transcript content renderer** (markdown → body parts).
+Orchestration rules for when `FinalizeAgentStream` is emitted — separate from ingestion mapping and model mutation. Implemented by `TranscriptFinalizePolicy` in `transcript/model/`; canonical detail in [ACP client subsystem wiki](docs/wiki/subsystems/acp-client.md) and [ADR 0007](docs/adr/0007-transcript-finalize-policy-orchestration-layer.md). Distinct from **Transcript** (whole pane) and **Transcript content renderer** (markdown → body parts).
 
 ### Row adapter
 
-View-layer object (`TranscriptBlockRowAdapter` implementation) that maps one `TranscriptBlock` family to a reusable Swing row (`JPanel`). The coordinator (`TranscriptBlockViewFactory`) dispatches `create` / `update` / `dispose` to the matching adapter; `TranscriptPanel` owns the `blockId` → component reuse map. Distinct from **Transcript content renderer** (markdown → body parts) and **Transcript** (whole pane). See [ADR 0005](docs/adr/0005-transcript-row-adapter-registry.md), [acp-transcript-block-view-decomposition PRD](docs/features/acp-transcript-block-view-decomposition/prd.md).
+View-layer object (`TranscriptBlockRowAdapter` implementation in `transcript/view/rows/`) that maps one `TranscriptBlock` family to a reusable Swing row (`JPanel`). The coordinator (`TranscriptBlockViewFactory` in `transcript/view/`) dispatches `create` / `update` / `dispose` to the matching adapter; `TranscriptPanel` owns the `blockId` → component reuse map. Streaming cursor uses `TranscriptStreamingCursor` in agent text rows — not a separate label binder. Distinct from **Transcript content renderer** (markdown → body parts) and **Transcript** (whole pane). See [ADR 0005](docs/adr/0005-transcript-row-adapter-registry.md), [acp-transcript-block-view-decomposition PRD](docs/features/acp-transcript-block-view-decomposition/prd.md).
 
 ### Session transcript file
 

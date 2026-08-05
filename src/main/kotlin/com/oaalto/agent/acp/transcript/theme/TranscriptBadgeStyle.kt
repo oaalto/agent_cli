@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.theme
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.openapi.components.serviceOrNull

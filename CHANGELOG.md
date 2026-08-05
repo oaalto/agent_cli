@@ -14,9 +14,15 @@
 
 - **ACP transcript panel harness review follow-ups** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`): Golden scenarios drive chunked streaming, stick-to-bottom, mixed tool+agent, and resize through ViewController `apply`; EDT-safe scroll/height helpers; hierarchy vertical-scroll ownership and horizontal-scrollbar tree checks; ingestion finalize-before-tool scenario; migrated scroll tests off `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **ACP transcript theme package move (slice 01)** (`acp/transcript/theme/`, `plugin.xml`, importers): Relocated `TranscriptColorProvider`, `TranscriptPalette`, and `TranscriptBadgeStyle` to `com.oaalto.agent.acp.transcript.theme` with mirrored tests; import and service registration updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Documentation
 
 - **ACP transcript fence normalization (grill accept)** (`docs/features/acp-transcript-fence-normalization/`, `docs/wiki/subsystems/acp-client.md`, `CONTEXT.md`, `docs/features/acp-transcript-panel-integration-tests/prd.md`): Unified fence normalizer call graph, tool-text policy, removed stale binder references; panel harness fence scenario promoted to planned. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript package restructure (grill accept)** (`docs/features/acp-transcript-package-restructure/prd.md`, `docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`, `CONTEXT.md`): Accepted grill-with-docs-batch decisions — `transcript/{model,render,view,theme}` layout, package dependency matrix, `theme/` sibling package, ingestion→render exception, row adapters in `view/rows/`; obsolete label binder references removed. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
+- **ACP transcript package restructure tickets** (`docs/features/acp-transcript-package-restructure/01-07`, `docs/features/FEATURES.md`): Seven batch moves — theme → model core → render → ingestion → view/rows → cross-slice sweep → dependency guard and ship; each lands green via import fixes. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript fence normalization tickets** (`docs/features/acp-transcript-fence-normalization/01-03`, `docs/features/FEATURES.md`): Three vertical slices — normalizer deep module, unified agent call graph, tool fence policy + CI drift guard. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

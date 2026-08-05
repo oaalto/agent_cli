@@ -31,8 +31,8 @@
         <editorTabTitleProvider implementation="com.oaalto.agent.AgentEditorTabTitleProvider" order="first"/>
         <postStartupActivity implementation="com.oaalto.agent.worktree.AgentPendingLaunchStartupActivity"/>
         <applicationService
-                serviceInterface="com.oaalto.agent.acp.TranscriptColorProvider"
-                serviceImplementation="com.oaalto.agent.acp.DefaultTranscriptColorProvider"/>
+                serviceInterface="com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider"
+                serviceImplementation="com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider"/>
         <applicationConfigurable
                 id="com.oaalto.agent.settings"
                 parentId="tools"

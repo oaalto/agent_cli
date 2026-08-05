@@ -1,13 +1,13 @@
 package com.oaalto.agent.acp.plan
 
 import com.intellij.openapi.components.serviceOrNull
-import com.oaalto.agent.acp.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.PlanEntry
 import com.oaalto.agent.acp.PlanEntryPriority
 import com.oaalto.agent.acp.PlanEntryStatus
 import com.oaalto.agent.acp.PlanVariant
-import com.oaalto.agent.acp.TranscriptColorProvider
 import com.oaalto.agent.acp.TranscriptRenderHelpers
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 
 /**
  * Renders plan entries and variants to HTML fragments.

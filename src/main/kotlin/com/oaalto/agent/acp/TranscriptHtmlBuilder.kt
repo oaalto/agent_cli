@@ -4,6 +4,8 @@ import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import java.util.Locale
 
 internal object TranscriptHtmlBuilder {

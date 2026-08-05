@@ -1,5 +1,15 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | Transcript theme package move (slice 01)
+
+- No wiki update: grill-accept already documents `transcript/theme/` layout; slice 01 is moves and import fixes only.
+
+## [2026-08-05] update | ACP transcript package restructure (grill accept)
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md), [Domain context & ACP transcript model](concepts/context.md), [CONTEXT.md](../../CONTEXT.md), [package-restructure PRD](../../docs/features/acp-transcript-package-restructure/prd.md)
+- Sources: grill-with-docs-batch acceptance for `acp-transcript-package-restructure` PRD
+- Notes: `transcript/{model,render,view,theme}` layout; dependency matrix; `view/rows/` for adapters; ingestion→render exception; session transcript file stays at `acp/` root; label binder obsolete.
+
 ## [2026-08-05] update | Agent fence normalization unification (grill accept)
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md), [CONTEXT.md](../../CONTEXT.md), [fence-normalization PRD](../../docs/features/acp-transcript-fence-normalization/prd.md)

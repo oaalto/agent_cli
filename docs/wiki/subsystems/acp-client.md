@@ -7,6 +7,7 @@ sources:
   - docs/adr/0005-transcript-row-adapter-registry.md
   - docs/adr/0006-transcript-simple-vs-agent-row-shells.md
   - docs/adr/0007-transcript-finalize-policy-orchestration-layer.md
+  - docs/features/acp-transcript-package-restructure/prd.md
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsFactory.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
@@ -14,20 +15,20 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/filesystem/ScopedFileSystemAccess.kt
   - src/main/kotlin/com/oaalto/agent/acp/filesystem/SessionFilesystemOperations.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpEditorLayout.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptViewController.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptModel.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptPanel.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockViewFactory.kt
-  - src/main/kotlin/com/oaalto/agent/acp/AgentTextRowAdapter.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptAgentFenceNormalizer.kt
-  - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptFinalizePolicy.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
-  - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelTestHarness.kt
-  - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelHarnessTest.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptContentRenderer.kt
-  - src/main/kotlin/com/oaalto/agent/acp/TranscriptMarkdownRenderer.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/view/TranscriptViewController.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/model/TranscriptModel.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/view/TranscriptPanel.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/view/TranscriptBlockViewFactory.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/view/rows/AgentTextRowAdapter.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/render/TranscriptAgentFenceNormalizer.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/model/StructuredUpdate.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/model/TranscriptEventIngestion.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/model/TranscriptFinalizePolicy.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/theme/TranscriptColorProvider.kt
+  - src/test/kotlin/com/oaalto/agent/acp/transcript/view/TranscriptPanelTestHarness.kt
+  - src/test/kotlin/com/oaalto/agent/acp/transcript/view/TranscriptPanelHarnessTest.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/render/TranscriptContentRenderer.kt
+  - src/main/kotlin/com/oaalto/agent/acp/transcript/render/TranscriptMarkdownRenderer.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/SlashCommandMatcher.kt
   - src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanel.kt
@@ -67,18 +68,44 @@ transcriptFooter (SOUTH of mainSplitter)
 
 - Layout split: ~72% transcript column / ~28% bottom (20% prompt input / 80% shell) per `AcpEditorLayout.buildRootPanel`.
 
+### Package layout (`acp/transcript/`)
+
+Canonical transcript stack packages (see [acp-transcript-package-restructure PRD](../../features/acp-transcript-package-restructure/prd.md)):
+
+| Package | Role | Representative types |
+| --- | --- | --- |
+| `transcript/model/` | State + ingestion pipeline | `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, `TranscriptEventIngestion`, `TranscriptFinalizePolicy` |
+| `transcript/render/` | Markdown/HTML → body parts | `TranscriptContentRenderer`, `TranscriptMarkdownRenderer`, `TranscriptToolCallContentRenderer`, `TranscriptAgentFenceNormalizer`, `TranscriptRenderer` |
+| `transcript/view/` | Swing EDT bridge + panel | `TranscriptViewController`, `TranscriptPanel`, `TranscriptBlockViewFactory`, `TranscriptFooter`, `CollapsibleToolPanel` |
+| `transcript/view/rows/` | Row adapters + widget mapper | `*RowAdapter`, `TranscriptBodyPartWidgetMapper`, `TranscriptStreamingCursor` |
+| `transcript/theme/` | Shared theme seam | `TranscriptColorProvider`, `TranscriptPalette`, `TranscriptBadgeStyle` |
+
+**Stays at `acp/` root:** orchestration (`AcpAgentEditor`, session controller/operations, layout, transport); **Session transcript file** persistence (`SessionTranscriptCoordinator`, `TranscriptFileStore`, `TranscriptTextSerializer`, `SessionDiagnosticsCollector`). **`acp/plan/`** stays separate — `PlanRowAdapter` imports plan types at the view seam.
+
+**Package dependency rules** (CI grep test in restructure PR):
+
+```
+model (except TranscriptEventIngestion)  →  no view, no javax.swing
+TranscriptEventIngestion                 →  render only (tool bodyParts mapping)
+render                                   →  model + theme; no view; no javax.swing
+view                                     →  model + render + theme; Swing allowed
+plan                                     →  model + theme/render; not view
+```
+
+Test sources mirror main under `src/test/kotlin/.../acp/transcript/{model,render,view}`.
+
 ### Transcript rendering stack
 
 The transcript renders via a vertical `BoxLayout` column of block rows inside a `JBScrollPane`. Each `StructuredUpdate` flows through a fixed chain:
 
-1. **`TranscriptViewController`** — EDT-safe bridge between `TranscriptModel` and `TranscriptPanel`. Public API: `apply(StructuredUpdate)`, `appendPlainLine()`, `appendError()`, `finalizeAgentStream()`.
-2. **`TranscriptModel`** — holds `List<TranscriptBlock>`; emits blocks on updates.
-3. **`TranscriptPanel`** — owns the `blockId` → row component reuse map; calls `TranscriptBlockViewFactory` to create/update/dispose rows inside a vertical `BoxLayout` column.
-4. **`TranscriptBlockViewFactory`** — thin coordinator/registry: fixed adapter order (Tool → Plan → Agent text → Simple text), dispatches `create` / `update` / `dispose`, logs type-mismatch diagnostics. Stateless — no `blockId` map.
-5. **Row adapters** (`TranscriptBlockRowAdapter`) — one implementation per block family: `ToolCallRowAdapter` (`CollapsibleToolPanel`), `PlanRowAdapter` (`PlanPanel`), `AgentTextRowAdapter` (body-part column + streaming fence normalize), `SimpleTextRowAdapter` (inline `JTextPane` presentation). Land in `acp/` during decomposition; move to `transcript/view/rows/` with package restructure.
-6. **`TranscriptBodyPartWidgetMapper`** (planned) — shared view seam mapping `TranscriptBodyPart` → Swing widgets for agent rows and tool-card bodies; `BodyPartRenderProfile` distinguishes agent vs tool fallbacks.
-7. **`TranscriptContentRenderer`** — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
-8. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
+1. **`TranscriptViewController`** (`transcript/view/`) — EDT-safe bridge between `TranscriptModel` and `TranscriptPanel`. Public API: `apply(StructuredUpdate)`, `appendPlainLine()`, `appendError()`, `finalizeAgentStream()`.
+2. **`TranscriptModel`** (`transcript/model/`) — holds `List<TranscriptBlock>`; emits blocks on updates.
+3. **`TranscriptPanel`** (`transcript/view/`) — owns the `blockId` → row component reuse map; calls `TranscriptBlockViewFactory` to create/update/dispose rows inside a vertical `BoxLayout` column.
+4. **`TranscriptBlockViewFactory`** (`transcript/view/`) — thin coordinator/registry: fixed adapter order (Tool → Plan → Agent text → Simple text), dispatches `create` / `update` / `dispose`, logs type-mismatch diagnostics. Stateless — no `blockId` map.
+5. **Row adapters** (`transcript/view/rows/`, `TranscriptBlockRowAdapter`) — one implementation per block family: `ToolCallRowAdapter` (`CollapsibleToolPanel`), `PlanRowAdapter` (`PlanPanel`), `AgentTextRowAdapter` (body-part column + streaming fence normalize + `TranscriptStreamingCursor`), `SimpleTextRowAdapter` (inline `JTextPane` presentation).
+6. **`TranscriptBodyPartWidgetMapper`** (`transcript/view/rows/`) — shared view seam mapping `TranscriptBodyPart` → Swing widgets for agent rows and tool-card bodies; `BodyPartRenderProfile` distinguishes agent vs tool fallbacks.
+7. **`TranscriptContentRenderer`** (`transcript/render/`) — deep module: markdown/plain text → `List<TranscriptBodyPart>` for agent rows and tool-card bodies (diff/terminal/image paths stay on `TranscriptToolCallContentRenderer`).
+8. **`TranscriptRenderer`** (`transcript/render/`) — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
 ### Prompt event routing
 
@@ -181,7 +208,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - Tool call variants (tool call start, delta, end).
 - Plan variants (plan start, step updates, removal).
 
-### Theme-aware colors (`TranscriptColorProvider`)
+### Theme-aware colors (`TranscriptColorProvider`, `transcript/theme/`)
 
 - Central color authority for transcript HTML and Swing components; adapts to IDE light/dark theme via `JBColor`.
 - Registered as an IntelliJ service; `DefaultTranscriptColorProvider` is the fallback.
@@ -209,7 +236,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - `PlanRemoved` removes the panel; `PlanVariant.File` and `Markdown` have fallback rendering.
 - In-place updates by plan ID via `TranscriptModel` plan tracking.
 
-### Transcript footer (`TranscriptFooter`)
+### Transcript footer (`TranscriptFooter`, `transcript/view/`)
 
 - Sticky status bar at the bottom of the transcript column (SOUTH of `mainSplitter`).
 - Displays cumulative token usage (`used / size`) and optional cost from `UsageUpdate` events.
@@ -230,8 +257,8 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 
 ## Agent Synthesis
 
-- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (finalize prelude from `TranscriptFinalizePolicy`) or `notify()` via `AcpClientSessionOperationsImpl`, map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
-- Live agent streaming uses `TranscriptBlock.StreamingAgentText` with fence normalization and the `CURSOR_CHAR` indicator in `AgentTextRowAdapter`; finalized agent text becomes `FinalAgentText` and routes through `TranscriptContentRenderer`.
+- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (`transcript/model/`, finalize prelude from `TranscriptFinalizePolicy`) or `notify()` via `AcpClientSessionOperationsImpl`, map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel` (`transcript/view/`).
+- Live agent streaming uses `TranscriptBlock.StreamingAgentText` with fence normalization and the streaming cursor in `AgentTextRowAdapter` (`transcript/view/rows/`); finalized agent text becomes `FinalAgentText` and routes through `TranscriptContentRenderer` (`transcript/render/`).
 - Layout split is hard-coded: 72% transcript / 28% bottom, 20% prompt / 80% shell.
 - The ACP client is in-process (not JetBrains AI Chat); the agent subprocess is a separate process communicating via stdio JSON-RPC.
 

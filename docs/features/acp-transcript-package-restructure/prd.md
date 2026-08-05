@@ -17,10 +17,12 @@ Repackage transcript modules into three subpackages under `acp/transcript/`:
 | Package | Contents |
 | --- | --- |
 | `transcript/model/` | `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, `TranscriptEventIngestion`, `TranscriptFinalizePolicy` |
-| `transcript/render/` | Content renderer, markdown renderer, HTML/table builders, tool call renderers, fence normalizer, fence language resolver |
-| `transcript/view/` | `TranscriptViewController`, `TranscriptPanel`, block view factory (+ row adapters under `transcript/view/rows/`), label binder, code block view factory, column sizing, collapsible tool panel, `TranscriptBodyPartWidgetMapper` |
+| `transcript/render/` | Content renderer, markdown renderer, HTML/table builders, tool call renderers, fence normalizer, fence language resolver, `TranscriptRenderer` |
+| `transcript/view/` | `TranscriptViewController`, `TranscriptPanel`, block view factory, `TranscriptFooter`, code block view factory, column sizing, collapsible tool panel |
+| `transcript/view/rows/` | Row adapters (`*RowAdapter.kt`), `TranscriptBodyPartWidgetMapper`, `TranscriptStreamingCursor` |
+| `transcript/theme/` | `TranscriptColorProvider`, `TranscriptPalette`, `TranscriptBadgeStyle` (shared by plan + render + view) |
 
-`plan/` remains `acp/plan/` — plan blocks integrate at view adapter seam only.
+`plan/` remains `acp/plan/` — plan blocks integrate at view adapter seam only. Session transcript file I/O (`SessionTranscriptCoordinator`, `TranscriptFileStore`, `TranscriptTextSerializer`) stays at `acp/` root.
 
 **No behaviour changes** — imports and file moves only, plus wiki/path-map updates. Public API to other slices (`AcpAgentEditor`, session operations) unchanged: they import from `acp` or new package paths via IDE refactor.
 
@@ -58,44 +60,48 @@ Repackage transcript modules into three subpackages under `acp/transcript/`:
 ### Package dependency rules
 
 ```
-transcript/model  →  (no acp/transcript/view, no Swing)
-transcript/render →  model only; no Swing
-transcript/view   →  model + render; Swing allowed
-acp/plan          →  model; view adapters import plan
+transcript/model (except TranscriptEventIngestion)  →  no transcript/view, no javax.swing
+TranscriptEventIngestion                            →  transcript/render only (tool bodyParts)
+transcript/render                                 →  model + theme; no view; no javax.swing
+transcript/view                                   →  model + render + theme; Swing allowed
+acp/plan                                          →  model + theme/render; not view
 ```
 
-Optional detekt/architecture test in same PR or follow-up.
+Architecture grep test in same PR (mirror `FinalizeAgentStreamConstructionTest` / `AgentFenceNormalizationConstructionTest` style). Optional detekt rule out of scope.
 
 ### Files staying at `acp/` root
 
 - `AcpAgentEditor`, session controller, prompt executor, layout — orchestration, not transcript internals.
-- `TranscriptColorProvider`, `TranscriptPalette` — shared theme seam; may stay root or move to `transcript/view/theme/` (implementer choice; document in PR).
+- `SessionTranscriptCoordinator`, `TranscriptFileStore`, `DebouncedTranscriptSnapshotWriter`, `TranscriptTextSerializer`, `SessionDiagnosticsCollector` — session transcript file domain (distinct from live transcript UI stack).
 
 ### Seam for testing
 
-**No new test seam** — existing tests pass with updated imports. Add optional architecture test asserting package dependency matrix.
+**No new test seam** — existing tests pass with updated imports. Add package dependency grep test asserting dependency matrix (same PR).
+
+### Grill accept (2026-08-05)
+
+Grill-with-docs-batch decisions recorded in wiki and `CONTEXT.md`: `transcript/theme/` sibling package; `TranscriptEventIngestion` alone may import render; row adapters + `TranscriptStreamingCursor` in `view/rows/` (no `TranscriptBlockLabelBinder` — removed during fence normalization); no new ADR.
 
 ### Wiki / docs
 
-- Update `docs/wiki/subsystems/acp-client.md` rendering stack diagram.
-- Update `docs/wiki/concepts/context.md` pointers if package paths cited.
-- Run wiki lint when path-map references change.
+- Done (grill accept 2026-08-05): `docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`, `CONTEXT.md`.
+- Run wiki lint when path-map references change after code moves land.
 
 ### ADR alignment
 
-- Internal structure only — ADR 0001/0002 unchanged.
+- Internal structure only — ADR 0001/0002 unchanged. No new ADR (reversible navigational change).
 
 ### Migration
 
-- Single commit preferred: moves + import fix + wiki.
-- CHANGELOG under `### Changed` — structural repackage.
+- Single commit preferred: `git mv` sources + tests, import fix, architecture grep test, wiki refresh after moves.
+- CHANGELOG under `### Changed` — structural repackage (separate from grill-accept documentation bullet).
 
 ## Testing Decisions
 
 ### What makes a good test
 
 - Full `./gradlew qualityGate` — compile proves imports.
-- Optional: ArchUnit-style or custom grep test for forbidden imports (render → swing).
+- Package dependency grep test in same PR (mirror `FinalizeAgentStreamConstructionTest` style); `javax.swing` forbidden in model/render.
 
 ### Modules to test
 

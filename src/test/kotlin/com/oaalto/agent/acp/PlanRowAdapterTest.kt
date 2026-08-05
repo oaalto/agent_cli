@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.oaalto.agent.acp.plan.PlanPanel
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.SwingUtilities

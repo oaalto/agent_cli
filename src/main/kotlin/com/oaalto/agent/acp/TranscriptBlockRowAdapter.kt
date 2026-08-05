@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentCliSessionContext
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import javax.swing.JPanel
 
 /**

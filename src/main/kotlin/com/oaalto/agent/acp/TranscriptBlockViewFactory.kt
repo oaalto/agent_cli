@@ -4,6 +4,8 @@ import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
+import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import javax.swing.JPanel
 
 /** Lazily accessed color provider for theme-aware colors */
