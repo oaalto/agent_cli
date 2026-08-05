@@ -6,10 +6,10 @@
 
 **Blocked by:** 06 — Cross-slice import sweep and root boundary check
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Package dependency grep test fails on forbidden edges (mirror existing construction-guard test style)
-- [ ] Existing construction guards (`FinalizeAgentStream`, fence normalizer) still pass
-- [ ] Wiki path-map and subsystem page source references match on-disk layout; wiki lint clean
-- [ ] `CHANGELOG.md` `### Changed` entry records structural repackage (separate from grill-accept documentation bullet)
-- [ ] `./gradlew qualityGate` passes
+- [x] Package dependency grep test fails on forbidden edges (mirror existing construction-guard test style)
+- [x] Existing construction guards (`FinalizeAgentStream`, fence normalizer) still pass
+- [x] Wiki path-map and subsystem page source references match on-disk layout; wiki lint clean
+- [x] `CHANGELOG.md` `### Changed` entry records structural repackage (separate from grill-accept documentation bullet)
+- [x] `./gradlew qualityGate` passes

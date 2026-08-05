@@ -1,5 +1,10 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | ACP transcript package restructure ship (slice 07)
+
+- Sources: `TranscriptPackageDependencyTest.kt`, `docs/wiki/subsystems/acp-client.md`
+- Notes: Package dependency rules now cite CI test name; path-map unchanged (`acp/**` glob).
+
 ## [2026-08-05] skip | Transcript view and rows package move (slice 05)
 
 - No wiki update: grill-accept already documents `transcript/view/` and `transcript/view/rows/` layout; slice 05 is moves and import fixes only.

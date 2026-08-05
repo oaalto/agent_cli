@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **ACP transcript package restructure (ship)** (`acp/transcript/{model,render,view,theme}/`, `acp/plan/`, tests): Structural repackage complete — `transcript/{model,render,view,theme}` subpackages, row adapters under `view/rows/`, session file I/O at `acp/` root; CI package-dependency guard via `TranscriptPackageDependencyTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript model core package move (slice 02)** (`acp/transcript/model/`, importers): Relocated `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, and `TranscriptFinalizePolicy` to `com.oaalto.agent.acp.transcript.model` with mirrored tests; `TranscriptEventIngestion` stays at `acp/` until render package move; import updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript fence normalization** (`acp/TranscriptAgentFenceNormalizer.kt`, `acp/TranscriptContentRenderer.kt`, `acp/TranscriptMarkdownRenderer.kt`, `acp/TranscriptToolCallContentRenderer.kt`, `acp/AgentTextRowAdapter.kt`, tests): Single `normalizeAgentFences` entry for streaming and final paths; removed duplicate `parseToBlocks` hook and dead `TranscriptBlockLabelBinder`; tool text uses `ContentRenderOptions.forToolMarkdownText`; CI allowlist via `AgentFenceNormalizationConstructionTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

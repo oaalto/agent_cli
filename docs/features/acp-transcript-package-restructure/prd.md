@@ -1,6 +1,6 @@
 ## Status
 
-ready-for-agent
+implemented
 
 **Triage:** `ready-for-agent`
 

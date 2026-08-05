@@ -12,9 +12,9 @@ Last updated: 2026-08-05
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 1 |
-| Ready-for-agent tickets | 6 |
-| Completed features | 15 |
+| Ready-for-agent features | 0 |
+| Ready-for-agent tickets | 0 |
+| Completed features | 16 |
 
 ---
 
@@ -22,19 +22,7 @@ Last updated: 2026-08-05
 
 | Feature | Status | Rationale | PRD |
 | --- | --- | --- | --- |
-| [acp-transcript-package-restructure](acp-transcript-package-restructure/) | `ready-for-agent` | `transcript/{model,render,view,theme}/` repackage after functional refactors stabilize | [prd.md](acp-transcript-package-restructure/prd.md) |
-
-**Tickets** ([acp-transcript-package-restructure](acp-transcript-package-restructure/)):
-
-| # | Ticket | Blocked by |
-| --- | --- | --- |
-| 01 | [Transcript theme package move](acp-transcript-package-restructure/01-transcript-theme-package-move.md) | — |
-| 02 | [Transcript model core package move](acp-transcript-package-restructure/02-transcript-model-core-package-move.md) | 01 |
-| 03 | [Transcript render package move](acp-transcript-package-restructure/03-transcript-render-package-move.md) | 01, 02 |
-| 04 | [Transcript event ingestion model move](acp-transcript-package-restructure/04-transcript-event-ingestion-model-move.md) | 03 |
-| 05 | [Transcript view and row adapters package move](acp-transcript-package-restructure/05-transcript-view-and-rows-package-move.md) | 04 |
-| 06 | [Cross-slice import sweep and root boundary check](acp-transcript-package-restructure/06-cross-slice-import-sweep-and-root-boundary.md) | 05 |
-| 07 | [Package dependency guard and ship](acp-transcript-package-restructure/07-package-dependency-guard-and-ship.md) | 06 |
+| — | — | — | — |
 
 ---
 
@@ -50,6 +38,7 @@ Last updated: 2026-08-05
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [acp-transcript-package-restructure](acp-transcript-package-restructure/) | 01–07 | All `done` (2026-08-05); `transcript/{model,render,view,theme}/` repackage + `TranscriptPackageDependencyTest` CI guard |
 | [acp-transcript-fence-normalization](acp-transcript-fence-normalization/) | 01–03 | All `done` (2026-08-05); single `normalizeAgentFences` seam, tool-text gating, CI construction guard |
 | [acp-transcript-finalize-policy](acp-transcript-finalize-policy/) | 01–02 | All `done` (2026-08-05); `TranscriptFinalizePolicy` + CI construction guard |
 | [acp-transcript-panel-integration-tests](acp-transcript-panel-integration-tests/) | 01 | Harness + review follow-ups `done` (2026-08-05); mounted-panel golden scenarios on ViewController apply path |

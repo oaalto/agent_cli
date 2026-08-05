@@ -82,7 +82,7 @@ Canonical transcript stack packages (see [acp-transcript-package-restructure PRD
 
 **Stays at `acp/` root:** orchestration (`AcpAgentEditor`, session controller/operations, layout, transport); **Session transcript file** persistence (`SessionTranscriptCoordinator`, `TranscriptFileStore`, `TranscriptTextSerializer`, `SessionDiagnosticsCollector`). **`acp/plan/`** stays separate — `PlanRowAdapter` imports plan types at the view seam.
 
-**Package dependency rules** (CI grep test in restructure PR):
+**Package dependency rules** (enforced in CI by `TranscriptPackageDependencyTest`):
 
 ```
 model (except TranscriptEventIngestion)  →  no view, no javax.swing
