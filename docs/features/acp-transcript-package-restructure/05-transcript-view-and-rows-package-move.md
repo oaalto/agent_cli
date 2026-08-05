@@ -6,9 +6,9 @@
 
 **Blocked by:** 04 — Transcript event ingestion model move
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] View and row-adapter types plus harness tests live under `transcript/view` and `transcript/view/rows`
-- [ ] Adapter registry dispatch order unchanged; mounted-panel harness scenarios pass
-- [ ] `TranscriptFooter` usage updates still flow from `StructuredUpdate.Usage`
-- [ ] `./gradlew qualityGate` passes with zero visible transcript UX change
+- [x] View and row-adapter types plus harness tests live under `transcript/view` and `transcript/view/rows`
+- [x] Adapter registry dispatch order unchanged; mounted-panel harness scenarios pass
+- [x] `TranscriptFooter` usage updates still flow from `StructuredUpdate.Usage`
+- [x] `./gradlew qualityGate` passes with zero visible transcript UX change

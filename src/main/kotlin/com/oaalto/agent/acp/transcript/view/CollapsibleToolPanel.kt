@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.ui.JBColor
@@ -9,6 +9,8 @@ import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptBadgeStyle
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.rows.BodyPartRenderProfile
+import com.oaalto.agent.acp.transcript.view.rows.TranscriptBodyPartWidgetMapper
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import java.awt.BorderLayout
 import java.awt.Component

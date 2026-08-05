@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.colors.EditorColors
@@ -11,6 +11,7 @@ import com.oaalto.agent.acp.transcript.render.TextStyle
 import com.oaalto.agent.acp.transcript.render.TranscriptHtmlBuilder
 import com.oaalto.agent.acp.transcript.render.TranscriptToolCallContentRenderer
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.TranscriptCodeBlockViewFactory
 import java.awt.Component
 import java.awt.Desktop
 import java.awt.Dimension

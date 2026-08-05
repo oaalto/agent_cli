@@ -18,6 +18,8 @@
 
 - **ACP transcript event ingestion model move (slice 04)** (`acp/transcript/model/TranscriptEventIngestion.kt`, importers, tests): Relocated `TranscriptEventIngestion` to `com.oaalto.agent.acp.transcript.model` with mirrored tests; ingestion retains render imports for tool `bodyParts` mapping and display-title helpers only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **ACP transcript view and rows package move (slice 05)** (`acp/transcript/view/`, `acp/transcript/view/rows/`, importers, tests): Relocated `TranscriptViewController`, `TranscriptPanel`, block view factory, footer, code-block view factory, column sizing, collapsible tool panel, row adapters, `TranscriptBodyPartWidgetMapper`, and `TranscriptStreamingCursor` with mirrored harness tests; row-adapter interface stays in `view/`; import updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript render package move (slice 03)** (`acp/transcript/render/`, importers): Relocated content renderer, markdown renderer, block converter, HTML/table builders, tool-call renderers, fence normalizer, fence language resolver, text truncation, and plain-text renderer helpers to `com.oaalto.agent.acp.transcript.render` with mirrored tests; import updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript theme package move (slice 01)** (`acp/transcript/theme/`, `plugin.xml`, importers): Relocated `TranscriptColorProvider`, `TranscriptPalette`, and `TranscriptBadgeStyle` to `com.oaalto.agent.acp.transcript.theme` with mirrored tests; import and service registration updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

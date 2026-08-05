@@ -1,10 +1,13 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.ui.JBColor
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.PlainMonospaceTranscriptCodeBlockViewFactory
+import com.oaalto.agent.acp.transcript.view.RowContext
+import com.oaalto.agent.acp.transcript.view.TranscriptBlockViewFactory
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextPane

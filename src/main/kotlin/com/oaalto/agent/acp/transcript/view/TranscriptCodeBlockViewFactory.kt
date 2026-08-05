@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory

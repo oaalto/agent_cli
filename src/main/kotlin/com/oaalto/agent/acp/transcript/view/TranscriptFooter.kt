@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.agentclientprotocol.model.Cost
 import com.intellij.ui.JBColor

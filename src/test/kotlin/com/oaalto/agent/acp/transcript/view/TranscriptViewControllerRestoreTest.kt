@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock

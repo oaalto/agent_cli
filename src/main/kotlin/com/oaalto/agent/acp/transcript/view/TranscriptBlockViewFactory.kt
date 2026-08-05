@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.project.Project
@@ -8,6 +8,15 @@ import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.render.TranscriptRenderHelpers
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.rows.AgentTextRowAdapter
+import com.oaalto.agent.acp.transcript.view.rows.PlanRowAdapter
+import com.oaalto.agent.acp.transcript.view.rows.SimpleTextRowAdapter
+import com.oaalto.agent.acp.transcript.view.rows.ToolCallRowAdapter
+import com.oaalto.agent.acp.transcript.view.rows.TranscriptBodyPartWidgetMapper
+import com.oaalto.agent.acp.transcript.view.rows.isAgentTextRow
+import com.oaalto.agent.acp.transcript.view.rows.isPlanRow
+import com.oaalto.agent.acp.transcript.view.rows.isSimpleTextRow
+import com.oaalto.agent.acp.transcript.view.rows.isToolCallRow
 import javax.swing.JPanel
 
 /** Lazily accessed color provider for theme-aware colors */

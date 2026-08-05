@@ -24,6 +24,8 @@ import com.oaalto.agent.acp.permission.PermissionPromptUi
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
+import com.oaalto.agent.acp.transcript.view.TranscriptFooter
+import com.oaalto.agent.acp.transcript.view.TranscriptViewController
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.acp.ui.AuthPromptPanel
 import com.oaalto.agent.acp.ui.PermissionPromptPanel

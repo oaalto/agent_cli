@@ -1,9 +1,12 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
+import com.oaalto.agent.acp.transcript.view.RowContext
+import com.oaalto.agent.acp.transcript.view.TranscriptBlockRowAdapter
+import com.oaalto.agent.acp.transcript.view.applyTranscriptColumnWidth
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension

@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view
 
 import com.agentclientprotocol.model.SessionUpdate
 import com.intellij.openapi.project.Project

@@ -1,10 +1,14 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.CollapsibleToolPanel
+import com.oaalto.agent.acp.transcript.view.PlainMonospaceTranscriptCodeBlockViewFactory
+import com.oaalto.agent.acp.transcript.view.RowContext
+import com.oaalto.agent.acp.transcript.view.TranscriptBlockViewFactory
 import javax.swing.SwingUtilities
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.oaalto.agent.acp.plan.PlanPanel
 import com.oaalto.agent.acp.transcript.model.PlanEntry
@@ -6,6 +6,9 @@ import com.oaalto.agent.acp.transcript.model.PlanEntryPriority
 import com.oaalto.agent.acp.transcript.model.PlanEntryStatus
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
+import com.oaalto.agent.acp.transcript.view.PlainMonospaceTranscriptCodeBlockViewFactory
+import com.oaalto.agent.acp.transcript.view.RowContext
+import com.oaalto.agent.acp.transcript.view.TranscriptBlockViewFactory
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.SwingUtilities

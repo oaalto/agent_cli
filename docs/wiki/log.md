@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | Transcript view and rows package move (slice 05)
+
+- No wiki update: grill-accept already documents `transcript/view/` and `transcript/view/rows/` layout; slice 05 is moves and import fixes only.
+
 ## [2026-08-05] skip | Transcript event ingestion model move (slice 04)
 
 - No wiki update: grill-accept already documents `TranscriptEventIngestion` in `transcript/model/`; slice 04 is moves and import fixes only.

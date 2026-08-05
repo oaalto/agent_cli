@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 /** Live-path streaming cursor indicator for Swing text labels. */
 internal object TranscriptStreamingCursor {

@@ -1,7 +1,10 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.view.rows
 
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.view.CollapsibleToolPanel
+import com.oaalto.agent.acp.transcript.view.RowContext
+import com.oaalto.agent.acp.transcript.view.TranscriptBlockRowAdapter
 import javax.swing.JPanel
 
 /** Client property marker for panels created by ToolCallRowAdapter. */
