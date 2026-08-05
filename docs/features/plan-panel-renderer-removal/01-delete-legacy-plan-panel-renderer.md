@@ -6,9 +6,9 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `PlanPanelRenderer` and `PlanPanelRendererTest` are deleted; no production or test code imports the removed types
-- [ ] `rg PlanPanelRenderer` finds only `CHANGELOG.md` and other historical references — live wiki and concept docs no longer describe the deleted renderer as current
-- [ ] `PlanPanelTest`, `PlanRowAdapterTest`, and transcript factory integration tests remain the behavioural guard; `./gradlew qualityGate` passes
-- [ ] `CHANGELOG.md` records the deletion under today's date
+- [x] `PlanPanelRenderer` and `PlanPanelRendererTest` are deleted; no production or test code imports the removed types
+- [x] `rg PlanPanelRenderer` finds only `CHANGELOG.md` and other historical references — live wiki and concept docs no longer describe the deleted renderer as current
+- [x] `PlanPanelTest`, `PlanRowAdapterTest`, and transcript factory integration tests remain the behavioural guard; `./gradlew qualityGate` passes
+- [x] `CHANGELOG.md` records the deletion under today's date

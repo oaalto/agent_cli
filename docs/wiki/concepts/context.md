@@ -25,7 +25,7 @@ sources:
 - `TranscriptFinalizePolicy` is the canonical source for when `FinalizeAgentStream` is emitted (non-chunk session updates, prompt start/complete/fail/interrupt). See [ADR 0007](../../../docs/adr/0007-transcript-finalize-policy-orchestration-layer.md).
 - `TranscriptColorProvider` (`transcript/theme/`) supplies theme-aware colors for HTML and Swing transcript components.
 - `TranscriptFooter` shows cumulative token usage and optional cost; turns orange above 80% context usage.
-- `PlanPanel` / `PlanPanelRenderer` render plan checklists in the transcript with status icons and priority styling.
+- `PlanPanel` (via `PlanRowAdapter`) renders plan checklists in the transcript with status icons and priority styling.
 - `PromptInputBar` provides slash-command autocomplete from `AvailableCommandsUpdate` events.
 - `TranscriptContentRenderer.renderMarkdownText` (`transcript/render/`) is the canonical seam: markdown/plain agent or tool text → `List<TranscriptBodyPart>`. `TranscriptMarkdownRenderer` (GFM AST walk → internal `RenderedBlock` shapes) is an implementation detail behind that module.
 

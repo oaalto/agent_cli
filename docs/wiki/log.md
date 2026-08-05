@@ -1,5 +1,10 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | Plan panel renderer removal
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md), [context concepts](concepts/context.md)
+- Notes: Removed `PlanPanelRenderer` references; plan visualization is `PlanRowAdapter` → `PlanPanel` only.
+
 ## [2026-08-05] update | Worktree ACP session binding production wiring
 
 - Updated: [Worktree subsystem](subsystems/worktree.md), [CONTEXT.md](../../CONTEXT.md)

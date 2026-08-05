@@ -20,6 +20,10 @@
 
 - **FinalizeAgentStream construction guard** (`acp/FinalizeAgentStreamConstructionTest.kt`, `acp/TranscriptFinalizePolicy.kt`, wiki): CI test fails when production code references `StructuredUpdate.FinalizeAgentStream` outside documented allowlist (policy, model apply, view-controller passthrough). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+### Removed
+
+- **Legacy plan panel HTML renderer** (`acp/plan/PlanPanelRenderer.kt`, `PlanPanelRendererTest.kt`, wiki): Deleted orphaned HTML `PlanPanelRenderer` and its test suite; plan blocks render solely through `PlanRowAdapter` → `PlanPanel` (Swing) per ADR 0005. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Changed
 
 - **Worktree ACP session binding production wiring** (`acp/AcpSessionLifecycle.kt`, `acp/AcpSessionController.kt`, `acp/AcpSessionControllerImpl.kt`, `acp/AcpAgentEditor.kt`, `AcpSessionLifecycleTest.kt`, `CONTEXT.md`, wiki): `worktreeRecordId` on `AcpSessionStartRequest` threads managed worktree record ID into `AcpSessionResumeOrchestrator`; real `WorktreeSessionBinder` injected at lifecycle; editor post-hoc persist removed. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

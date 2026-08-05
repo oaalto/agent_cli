@@ -32,7 +32,6 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/ui/PromptInputBar.kt
   - src/main/kotlin/com/oaalto/agent/acp/ui/SlashCommandMatcher.kt
   - src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanel.kt
-  - src/main/kotlin/com/oaalto/agent/acp/plan/PlanPanelRenderer.kt
   - docs/adr/0001-custom-acp-client-in-plugin.md
 ---
 
@@ -227,7 +226,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - `joinCodeFenceParts` preserves line breaks when the markdown parser emits separate text nodes inside a fence.
 - Read-only code block Editors are focusable for text selection.
 
-### Plan visualization (`PlanPanel`, `PlanPanelRenderer`)
+### Plan visualization (`PlanPanel`, `PlanRowAdapter`)
 
 - `PlanUpdate` / `PlanUpdateV2` render as in-transcript checklist panels keyed by plan ID.
 - Status icons: pending `[ ]`, in-progress `[→]`, completed `[✓]` with gray/orange/green styling.
