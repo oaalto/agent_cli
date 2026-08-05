@@ -16,11 +16,16 @@ import java.io.PipedOutputStream
 
 /**
  * Test adapter that wires [Protocol] over piped stdio streams without spawning a process.
+ *
+ * When [agentConfigurer] is provided, it is invoked on the agent-side [Protocol] before
+ * `start()` so integration tests can install scripted handlers without a subprocess.
  */
 class InMemoryAcpTransport(
     private val scope: CoroutineScope,
+    private val agentConfigurer: ((Protocol) -> Unit)? = null,
 ) : AcpProcessTransport {
-    private var protocol: Protocol? = null
+    private var clientProtocol: Protocol? = null
+    private var agentProtocol: Protocol? = null
     private var agentSideOutput: PipedOutputStream? = null
 
     @Suppress("DEPRECATION")
@@ -32,9 +37,18 @@ class InMemoryAcpTransport(
         dispose()
 
         val agentInput = PipedInputStream()
-        agentSideOutput = PipedOutputStream(agentInput)
+        val agentOutput = PipedOutputStream(agentInput)
+        agentSideOutput = agentOutput
         val clientInput = PipedInputStream()
         val clientOutput = PipedOutputStream(clientInput)
+
+        agentConfigurer?.let { configure ->
+            startAgentSide(
+                clientInput = clientInput,
+                agentOutput = agentOutput,
+                configure = configure,
+            )
+        }
 
         val transport =
             StdioTransport(
@@ -46,15 +60,37 @@ class InMemoryAcpTransport(
             )
         val protocolInstance = Protocol(scope, transport)
         val clientInstance = Client(protocolInstance)
-        protocol = protocolInstance
+        clientProtocol = protocolInstance
 
         return AcpProcessTransport.Connected(protocolInstance, clientInstance)
     }
 
+    @Suppress("DEPRECATION")
+    private fun startAgentSide(
+        clientInput: PipedInputStream,
+        agentOutput: PipedOutputStream,
+        configure: (Protocol) -> Unit,
+    ) {
+        val transport =
+            StdioTransport(
+                parentScope = scope,
+                ioDispatcher = Dispatchers.IO,
+                input = clientInput.asSource().buffered(),
+                output = agentOutput.asSink().buffered(),
+                name = "in-memory-acp-agent-stdio",
+            )
+        val protocolInstance = Protocol(scope, transport)
+        configure(protocolInstance)
+        protocolInstance.start()
+        agentProtocol = protocolInstance
+    }
+
     override fun dispose() {
-        runCatching { protocol?.close() }
+        runCatching { clientProtocol?.close() }
+        runCatching { agentProtocol?.close() }
         runCatching { agentSideOutput?.close() }
-        protocol = null
+        clientProtocol = null
+        agentProtocol = null
         agentSideOutput = null
     }
 }

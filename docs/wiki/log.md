@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | ACP session loop integration harness (slice 01)
+
+- No wiki update: test-only harness and integration test; no durable subsystem behaviour change.
+
 ## [2026-08-05] update | Plan panel renderer removal
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md), [context concepts](concepts/context.md)

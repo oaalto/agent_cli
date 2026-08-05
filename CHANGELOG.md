@@ -18,6 +18,8 @@
 
 ### Added
 
+- **ACP session loop integration harness** (`acp/transport/InMemoryAcpTransport.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/ScriptedAcpAgent.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Headless harness drives `AcpSessionControllerImpl.start()` through in-memory transport with scripted `initialize` + `session/new` responses; first scenario asserts new-session plan returns scripted session id and status message. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **FinalizeAgentStream construction guard** (`acp/FinalizeAgentStreamConstructionTest.kt`, `acp/TranscriptFinalizePolicy.kt`, wiki): CI test fails when production code references `StructuredUpdate.FinalizeAgentStream` outside documented allowlist (policy, model apply, view-controller passthrough). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Removed

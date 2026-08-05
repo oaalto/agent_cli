@@ -6,10 +6,10 @@
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `InMemoryAcpTransport` (or adjacent test utility) supports a declarative agent script: respond to `initialize` with capabilities and to `session/new` with a deterministic session id
-- [ ] `AcpSessionLoopTestHarness` builds `AcpSessionControllerImpl` with in-memory transport, recording listener, fake session picker, and minimal editor context — reusing orchestrator fake patterns where they already exist
-- [ ] Integration test: `start(AcpSessionStartRequest)` with a new-session plan returns `AcpSessionStartResult` with session id and status message matching the scripted agent
-- [ ] Harness documents the session-loop phase order under test (`connect → bootstrap → bind → startSession`) as readable test structure
-- [ ] `./gradlew qualityGate` passes; no external agent binary required
+- [x] `InMemoryAcpTransport` (or adjacent test utility) supports a declarative agent script: respond to `initialize` with capabilities and to `session/new` with a deterministic session id
+- [x] `AcpSessionLoopTestHarness` builds `AcpSessionControllerImpl` with in-memory transport, recording listener, fake session picker, and minimal editor context — reusing orchestrator fake patterns where they already exist
+- [x] Integration test: `start(AcpSessionStartRequest)` with a new-session plan returns `AcpSessionStartResult` with session id and status message matching the scripted agent
+- [x] Harness documents the session-loop phase order under test (`connect → bootstrap → bind → startSession`) as readable test structure
+- [x] `./gradlew qualityGate` passes; no external agent binary required
