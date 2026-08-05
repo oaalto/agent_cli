@@ -6,9 +6,9 @@
 
 **Blocked by:** 03 — Prompt loop and ingestion integration
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Integration test: `dispose()` after successful `start()` does not throw; transport is disposed and prompt work is cancelled
-- [ ] Integration test: `dispose()` or `cancelPrompt()` during a slow scripted prompt stream completes without leak or hang
-- [ ] Integration test: second `start()` after `dispose()` follows current contract (documented assertion on blocked vs allowed restart)
-- [ ] `./gradlew qualityGate` passes
+- [x] Integration test: `dispose()` after successful `start()` does not throw; transport is disposed and prompt work is cancelled
+- [x] Integration test: `dispose()` or `cancelPrompt()` during a slow scripted prompt stream completes without leak or hang
+- [x] Integration test: second `start()` after `dispose()` follows current contract (documented assertion on blocked vs allowed restart)
+- [x] `./gradlew qualityGate` passes

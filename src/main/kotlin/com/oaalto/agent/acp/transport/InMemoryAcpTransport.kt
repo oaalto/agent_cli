@@ -28,6 +28,10 @@ class InMemoryAcpTransport(
     private var agentProtocol: Protocol? = null
     private var agentSideOutput: PipedOutputStream? = null
 
+    /** True when both protocol handles are cleared; also true before the first [connect]. */
+    val isDisposed: Boolean
+        get() = clientProtocol == null && agentProtocol == null
+
     @Suppress("DEPRECATION")
     override suspend fun connect(
         launchPlan: AcpLaunchPlan,

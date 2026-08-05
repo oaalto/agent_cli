@@ -18,6 +18,8 @@
 
 ### Added
 
+- **ACP session loop dispose/cancel lifecycle integration** (`acp/ScriptedAcpAgent.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/AcpSessionControllerIntegrationTest.kt`, `acp/transport/InMemoryAcpTransport.kt`): Slow-prompt scripting and `isDisposed` transport probe; integration tests assert safe `dispose()` after `start()`, mid-prompt `dispose()`/`cancelPrompt()` without hang, and second `start()` blocked after dispose. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP session loop prompt ingestion integration** (`acp/ScriptedAcpAgent.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Scripted agent handles `session/prompt` with deterministic chunk + tool updates; integration test asserts executor → ingestion → listener ordering and `FinalizeAgentStream` before non-chunk ingestion. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP session loop resume load integration** (`acp/ScriptedAcpAgent.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Scripted agent handles `session/load`; integration test asserts `AcpLoad` plan exercises load path and returns `restoreTranscript = true`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

@@ -24,6 +24,8 @@ import com.agentclientprotocol.model.ToolKind
 import com.agentclientprotocol.protocol.Protocol
 import com.agentclientprotocol.protocol.sendNotification
 import com.agentclientprotocol.protocol.setRequestHandler
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
 
 /**
  * Declarative in-memory agent for session-loop integration tests.
@@ -37,6 +39,7 @@ class ScriptedAcpAgent(
     private val newSessionId: String = "scripted-session-1",
     private val loadSessionId: String = newSessionId,
     private val promptUpdates: List<SessionUpdate> = defaultPromptUpdates(),
+    private val promptDelayBetweenUpdates: Duration = Duration.ZERO,
 ) {
     val loadSessionIds = mutableListOf<String>()
     val receivedPrompts = mutableListOf<String>()
@@ -81,6 +84,9 @@ class ScriptedAcpAgent(
         protocol.setRequestHandler(AcpMethod.AgentMethods.SessionPrompt) { params: PromptRequest ->
             receivedPrompts.add(extractPromptText(params.prompt))
             for (update in promptUpdates) {
+                if (promptDelayBetweenUpdates > Duration.ZERO) {
+                    delay(promptDelayBetweenUpdates)
+                }
                 protocol.sendNotification(
                     AcpMethod.ClientMethods.SessionUpdate,
                     SessionNotification(params.sessionId, update, params._meta),

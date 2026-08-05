@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.JsonElement
 import java.nio.file.Path
+import kotlin.time.Duration
 
 /**
  * Headless harness for [AcpSessionControllerImpl] session-loop integration tests.
@@ -43,6 +44,7 @@ class AcpSessionLoopTestHarness(
     scriptedSessionId: String = "scripted-session-1",
     loadSessionId: String = scriptedSessionId,
     private val promptUpdates: List<SessionUpdate> = ScriptedAcpAgent.defaultPromptUpdates(),
+    private val promptDelayBetweenUpdates: Duration = Duration.ZERO,
     private val sessionWorkingDirectory: String = ".",
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
@@ -52,7 +54,7 @@ class AcpSessionLoopTestHarness(
     lateinit var scriptedAgent: ScriptedAcpAgent
         private set
 
-    private val transport =
+    val transport =
         InMemoryAcpTransport(
             scope = scope,
             agentConfigurer = { protocol ->
@@ -61,6 +63,7 @@ class AcpSessionLoopTestHarness(
                     newSessionId = scriptedSessionId,
                     loadSessionId = loadSessionId,
                     promptUpdates = promptUpdates,
+                    promptDelayBetweenUpdates = promptDelayBetweenUpdates,
                 ).also { scriptedAgent = it }
             },
         )

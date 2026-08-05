@@ -2,10 +2,17 @@ package com.oaalto.agent.acp
 
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class AcpSessionControllerIntegrationTest {
     @Test
@@ -85,4 +92,108 @@ class AcpSessionControllerIntegrationTest {
                 harness.dispose()
             }
         }
+
+    @Test
+    fun `dispose after successful start does not throw and disposes transport`() =
+        runBlocking {
+            val harness = AcpSessionLoopTestHarness(scriptedSessionId = "dispose-after-start")
+            try {
+                harness.controller.start(harness.newSessionStartRequest())
+
+                harness.controller.dispose()
+
+                assertTrue(harness.transport.isDisposed)
+                assertTrue(harness.listener.errors.isEmpty())
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `dispose during slow prompt stream completes without hang`() =
+        runBlocking {
+            val harness =
+                AcpSessionLoopTestHarness(
+                    scriptedSessionId = "dispose-mid-prompt",
+                    promptDelayBetweenUpdates = 200.milliseconds,
+                )
+            try {
+                harness.controller.start(harness.newSessionStartRequest())
+
+                val promptDeferred = async { harness.controller.prompt("slow prompt") }
+                awaitFirstAgentTextChunk(harness)
+
+                harness.controller.dispose()
+
+                withTimeout(5.seconds) {
+                    promptDeferred.await()
+                }
+
+                assertTrue(harness.transport.isDisposed)
+                assertTrue(
+                    harness.listener.structuredUpdates.any { it is StructuredUpdate.FinalizeAgentStream },
+                )
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `cancelPrompt during slow prompt stream completes without hang`() =
+        runBlocking {
+            val harness =
+                AcpSessionLoopTestHarness(
+                    scriptedSessionId = "cancel-mid-prompt",
+                    promptDelayBetweenUpdates = 200.milliseconds,
+                )
+            try {
+                harness.controller.start(harness.newSessionStartRequest())
+
+                val promptDeferred = async { harness.controller.prompt("slow prompt") }
+                awaitFirstAgentTextChunk(harness)
+
+                harness.controller.cancelPrompt()
+
+                withTimeout(5.seconds) {
+                    promptDeferred.await()
+                }
+
+                assertTrue(!harness.transport.isDisposed)
+                assertTrue(
+                    harness.listener.structuredUpdates.any { it is StructuredUpdate.FinalizeAgentStream },
+                )
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `second start after dispose is blocked because controller scope is cancelled`() {
+        runBlocking {
+            val harness = AcpSessionLoopTestHarness(scriptedSessionId = "no-restart-after-dispose")
+            try {
+                harness.controller.start(harness.newSessionStartRequest())
+                harness.controller.dispose()
+
+                assertTrue(harness.transport.isDisposed)
+                assertFailsWith<TimeoutCancellationException> {
+                    withTimeout(2.seconds) {
+                        harness.controller.start(harness.newSessionStartRequest())
+                    }
+                }
+            } finally {
+                harness.dispose()
+            }
+        }
+    }
+
+    private suspend fun awaitFirstAgentTextChunk(harness: AcpSessionLoopTestHarness) {
+        withTimeout(5.seconds) {
+            while (
+                harness.listener.structuredUpdates.none { it is StructuredUpdate.AppendAgentText }
+            ) {
+                delay(25)
+            }
+        }
+    }
 }
