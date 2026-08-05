@@ -4,7 +4,7 @@ import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.acp.AccumulatedUsage
 import com.oaalto.agent.acp.AcpLaunchPlan
 import com.oaalto.agent.acp.AcpSessionListener
-import com.oaalto.agent.acp.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.settings.LaunchMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

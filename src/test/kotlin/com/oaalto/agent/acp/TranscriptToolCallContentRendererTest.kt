@@ -4,6 +4,7 @@ import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.EmbeddedResourceResource
 import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallStatus
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

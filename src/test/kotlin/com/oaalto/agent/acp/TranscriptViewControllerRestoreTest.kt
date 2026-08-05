@@ -1,5 +1,8 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.TranscriptModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

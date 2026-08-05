@@ -1,9 +1,9 @@
 package com.oaalto.agent.acp.plan
 
-import com.oaalto.agent.acp.PlanEntry
-import com.oaalto.agent.acp.PlanEntryPriority
-import com.oaalto.agent.acp.PlanEntryStatus
-import com.oaalto.agent.acp.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.PlanEntry
+import com.oaalto.agent.acp.transcript.model.PlanEntryPriority
+import com.oaalto.agent.acp.transcript.model.PlanEntryStatus
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import java.awt.Component
 import java.awt.Font
 import javax.swing.JLabel

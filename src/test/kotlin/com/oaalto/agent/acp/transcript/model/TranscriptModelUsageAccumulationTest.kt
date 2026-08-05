@@ -1,6 +1,7 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.Cost
+import com.oaalto.agent.acp.AccumulatedUsage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

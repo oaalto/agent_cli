@@ -1,6 +1,10 @@
 package com.oaalto.agent.acp
 
 import com.oaalto.agent.acp.plan.PlanPanel
+import com.oaalto.agent.acp.transcript.model.PlanEntry
+import com.oaalto.agent.acp.transcript.model.PlanEntryPriority
+import com.oaalto.agent.acp.transcript.model.PlanEntryStatus
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import javax.swing.JComponent
 import javax.swing.JLabel

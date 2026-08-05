@@ -1,7 +1,7 @@
 package com.oaalto.agent.acp.plan
 
-import com.oaalto.agent.acp.StructuredUpdate
-import com.oaalto.agent.acp.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 
 /**
  * Tracks plan blocks by ID for in-place updates and removal.

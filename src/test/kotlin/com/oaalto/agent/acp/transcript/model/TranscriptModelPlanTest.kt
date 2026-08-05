@@ -1,11 +1,4 @@
-package com.oaalto.agent.acp.plan
-
-import com.oaalto.agent.acp.PlanEntry
-import com.oaalto.agent.acp.PlanEntryPriority
-import com.oaalto.agent.acp.PlanEntryStatus
-import com.oaalto.agent.acp.StructuredUpdate
-import com.oaalto.agent.acp.TranscriptBlock
-import com.oaalto.agent.acp.TranscriptModel
+package com.oaalto.agent.acp.transcript.model
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

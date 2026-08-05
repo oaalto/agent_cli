@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import javax.swing.Box
 import javax.swing.BoxLayout

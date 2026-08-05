@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name

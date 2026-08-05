@@ -2,6 +2,10 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
+import com.oaalto.agent.acp.transcript.model.PlanEntry
+import com.oaalto.agent.acp.transcript.model.PlanEntryPriority
+import com.oaalto.agent.acp.transcript.model.PlanEntryStatus
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

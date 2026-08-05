@@ -5,7 +5,7 @@ import com.agentclientprotocol.client.Client
 import com.agentclientprotocol.model.AuthMethod
 import com.agentclientprotocol.model.AuthMethodId
 import com.oaalto.agent.acp.AcpSessionListener
-import com.oaalto.agent.acp.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.acp.ui.ShellPaneHost
 
 class AuthFlowCoordinator(

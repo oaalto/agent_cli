@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliSessionContext
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import java.awt.Component
 import javax.swing.JComponent
 import javax.swing.JPanel

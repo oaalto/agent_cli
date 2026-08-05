@@ -2,6 +2,9 @@ package com.oaalto.agent.acp
 
 import com.intellij.openapi.project.Project
 import com.oaalto.agent.AgentCliSessionContext
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.TranscriptModel
 import javax.swing.JComponent
 import javax.swing.SwingUtilities
 

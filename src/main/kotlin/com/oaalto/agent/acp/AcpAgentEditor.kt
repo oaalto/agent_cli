@@ -21,6 +21,9 @@ import com.oaalto.agent.acp.auth.AuthPromptResult
 import com.oaalto.agent.acp.auth.AuthPromptUi
 import com.oaalto.agent.acp.filesystem.SessionScopeResolver
 import com.oaalto.agent.acp.permission.PermissionPromptUi
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
 import com.oaalto.agent.acp.ui.AcpUiMetrics
 import com.oaalto.agent.acp.ui.AuthPromptPanel
 import com.oaalto.agent.acp.ui.PermissionPromptPanel

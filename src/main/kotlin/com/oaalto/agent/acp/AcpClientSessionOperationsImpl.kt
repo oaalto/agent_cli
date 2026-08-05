@@ -19,6 +19,7 @@ import com.oaalto.agent.acp.filesystem.SessionFilesystemOperations
 import com.oaalto.agent.acp.filesystem.SessionFilesystemResult
 import com.oaalto.agent.acp.permission.PermissionCoordinator
 import com.oaalto.agent.acp.terminal.TerminalSessionRegistry
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import kotlinx.serialization.json.JsonElement
 import org.jetbrains.plugins.terminal.ShellTerminalWidget

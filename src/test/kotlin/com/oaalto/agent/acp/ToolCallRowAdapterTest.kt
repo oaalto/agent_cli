@@ -2,6 +2,8 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import javax.swing.SwingUtilities
 import kotlin.test.Test

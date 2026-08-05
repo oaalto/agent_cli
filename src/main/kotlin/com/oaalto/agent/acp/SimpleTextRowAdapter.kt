@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension

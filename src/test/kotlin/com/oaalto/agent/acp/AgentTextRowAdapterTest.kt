@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import java.awt.Dimension

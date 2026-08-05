@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
+
 /** Options for [TranscriptContentRenderer.renderMarkdownText]. */
 internal data class ContentRenderOptions(
     val maxTextCharacters: Int = TranscriptContentRenderer.MAX_TEXT_CHARACTERS,

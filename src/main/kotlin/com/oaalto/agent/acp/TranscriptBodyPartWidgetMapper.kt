@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.colors.EditorColors
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.util.ui.JBUI
 import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import java.awt.Component
 import java.awt.Desktop

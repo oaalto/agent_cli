@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind

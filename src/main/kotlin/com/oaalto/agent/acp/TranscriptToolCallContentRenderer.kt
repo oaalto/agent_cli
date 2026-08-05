@@ -4,6 +4,7 @@ import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.EmbeddedResourceResource
 import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallStatus
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 
 /**
  * Maps [ToolCallContent] entries to body parts below tool-call badge headers.

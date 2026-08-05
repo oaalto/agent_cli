@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptModel
 import java.nio.file.Files
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

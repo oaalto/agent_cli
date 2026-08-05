@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+
 interface AcpSessionListener {
     /** Applies a normalized transcript delta to the structured view pipeline. */
     fun onStructuredUpdate(update: StructuredUpdate)

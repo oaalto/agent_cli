@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.oaalto.agent.AgentCliCorrelationToken
 import com.oaalto.agent.AgentCliSessionContext
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.settings.LaunchMode
 
 internal data class SessionTranscriptCallbacks(

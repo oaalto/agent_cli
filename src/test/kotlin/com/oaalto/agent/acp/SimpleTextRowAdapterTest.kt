@@ -2,6 +2,7 @@ package com.oaalto.agent.acp
 
 import com.agentclientprotocol.model.ToolCallStatus
 import com.intellij.ui.JBColor
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import com.oaalto.agent.acp.transcript.theme.DefaultTranscriptColorProvider
 import com.oaalto.agent.acp.transcript.theme.TranscriptColorProvider
 import javax.swing.JComponent

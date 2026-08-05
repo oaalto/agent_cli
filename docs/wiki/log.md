@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | Transcript model core package move (slice 02)
+
+- No wiki update: grill-accept already documents `transcript/model/` layout; slice 02 is moves and import fixes only.
+
 ## [2026-08-05] skip | Transcript theme package move (slice 01)
 
 - No wiki update: grill-accept already documents `transcript/theme/` layout; slice 01 is moves and import fixes only.

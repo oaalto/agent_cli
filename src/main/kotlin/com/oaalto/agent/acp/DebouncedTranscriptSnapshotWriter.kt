@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture

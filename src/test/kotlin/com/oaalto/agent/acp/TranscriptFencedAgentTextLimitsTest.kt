@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

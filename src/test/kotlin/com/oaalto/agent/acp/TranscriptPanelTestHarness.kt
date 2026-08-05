@@ -3,6 +3,9 @@ package com.oaalto.agent.acp
 import com.agentclientprotocol.model.SessionUpdate
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
+import com.oaalto.agent.acp.transcript.model.TranscriptModel
 import java.awt.Adjustable
 import javax.swing.JComponent
 import javax.swing.JPanel

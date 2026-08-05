@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.oaalto.agent.AgentCliLog
+import com.oaalto.agent.acp.transcript.model.TranscriptBlock
 import javax.swing.JPanel
 
 /** Client property marker for panels created by ToolCallRowAdapter. */

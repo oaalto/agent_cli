@@ -1,8 +1,9 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.Cost
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
+import com.oaalto.agent.acp.SlashCommand
 
 /** Normalized transcript delta produced from ACP session events. */
 sealed class StructuredUpdate {

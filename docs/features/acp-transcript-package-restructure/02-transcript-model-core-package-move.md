@@ -6,9 +6,9 @@
 
 **Blocked by:** 01 — Transcript theme package move
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Model core types and their unit tests live under `transcript/model`
-- [ ] `TranscriptFinalizePolicy` construction guard test still passes (filename allowlist unchanged)
-- [ ] Cross-slice consumers (`plan/`, session orchestration, transport) compile against new model package paths
-- [ ] `./gradlew qualityGate` passes with no logic diffs outside package/import lines
+- [x] Model core types and their unit tests live under `transcript/model`
+- [x] `TranscriptFinalizePolicy` construction guard test still passes (filename allowlist unchanged)
+- [x] Cross-slice consumers (`plan/`, session orchestration, transport) compile against new model package paths
+- [x] `./gradlew qualityGate` passes with no logic diffs outside package/import lines

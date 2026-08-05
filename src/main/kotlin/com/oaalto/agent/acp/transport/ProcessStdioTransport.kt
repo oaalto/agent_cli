@@ -7,7 +7,7 @@ import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.acp.AcpLaunchPlan
 import com.oaalto.agent.acp.AcpSessionListener
-import com.oaalto.agent.acp.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

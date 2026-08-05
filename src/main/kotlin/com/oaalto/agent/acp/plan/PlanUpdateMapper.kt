@@ -1,11 +1,11 @@
 package com.oaalto.agent.acp.plan
 
 import com.oaalto.agent.AgentCliLog
-import com.oaalto.agent.acp.PlanEntry
-import com.oaalto.agent.acp.PlanEntryPriority
-import com.oaalto.agent.acp.PlanEntryStatus
-import com.oaalto.agent.acp.PlanVariant
-import com.oaalto.agent.acp.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.PlanEntry
+import com.oaalto.agent.acp.transcript.model.PlanEntryPriority
+import com.oaalto.agent.acp.transcript.model.PlanEntryStatus
+import com.oaalto.agent.acp.transcript.model.PlanVariant
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 
 /**
  * Maps ACP plan-related SessionUpdate events to normalized [StructuredUpdate] values.

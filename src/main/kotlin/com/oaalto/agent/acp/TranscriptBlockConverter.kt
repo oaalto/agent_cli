@@ -1,5 +1,7 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
+
 /** Holds a mutable highlighted-code-block count across recursive rendering passes. */
 internal data class HighlightedCounter(
     var value: Int = 0,

@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.SessionUpdate
 
