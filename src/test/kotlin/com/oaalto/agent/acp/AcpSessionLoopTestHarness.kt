@@ -1,6 +1,7 @@
 package com.oaalto.agent.acp
 
 import com.agentclientprotocol.common.ClientSessionOperations
+import com.agentclientprotocol.model.AuthMethod
 import com.agentclientprotocol.model.PermissionOption
 import com.agentclientprotocol.model.RequestPermissionResponse
 import com.agentclientprotocol.model.SessionUpdate
@@ -33,19 +34,31 @@ import kotlin.time.Duration
  * and records listener output. Each `start()` exercises:
  *
  * 1. **connect** — in-memory stdio transport wires client and scripted agent
- * 2. **bootstrap** — `initialize` negotiates capabilities (no auth)
+ * 2. **bootstrap** — `initialize` negotiates capabilities; optional auth via [AcpSessionLoopHarnessAuthConfig]
  * 3. **bind** — lifecycle binds the connected client
  * 4. **startSession** — resume orchestrator opens the session (`session/new` for new-session plan, `session/load` for `AcpLoad`)
  *
  * `prompt(text)` after `start()` exercises executor → ingestion → listener via scripted
  * [ScriptedAcpAgent] [promptUpdates].
  */
+data class AcpSessionLoopHarnessAuthConfig(
+    val authMethods: List<AuthMethod> = emptyList(),
+    val authenticateAttemptsBeforeSuccess: Int = 0,
+    val authenticateAlwaysFails: Boolean = false,
+    val authPromptUi: AuthPromptUi = HarnessAuthPromptUi.continueImmediately(),
+)
+
+data class AcpSessionLoopHarnessScriptConfig(
+    val promptUpdates: List<SessionUpdate> = ScriptedAcpAgent.defaultPromptUpdates(),
+    val promptDelayBetweenUpdates: Duration = Duration.ZERO,
+    val sessionWorkingDirectory: String = ".",
+)
+
 class AcpSessionLoopTestHarness(
     scriptedSessionId: String = "scripted-session-1",
     loadSessionId: String = scriptedSessionId,
-    private val promptUpdates: List<SessionUpdate> = ScriptedAcpAgent.defaultPromptUpdates(),
-    private val promptDelayBetweenUpdates: Duration = Duration.ZERO,
-    private val sessionWorkingDirectory: String = ".",
+    authConfig: AcpSessionLoopHarnessAuthConfig = AcpSessionLoopHarnessAuthConfig(),
+    scriptConfig: AcpSessionLoopHarnessScriptConfig = AcpSessionLoopHarnessScriptConfig(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     val listener = RecordingAcpSessionListener()
@@ -62,8 +75,14 @@ class AcpSessionLoopTestHarness(
                     protocol,
                     newSessionId = scriptedSessionId,
                     loadSessionId = loadSessionId,
-                    promptUpdates = promptUpdates,
-                    promptDelayBetweenUpdates = promptDelayBetweenUpdates,
+                    authConfig =
+                        ScriptedAcpAgentAuthConfig(
+                            authMethods = authConfig.authMethods,
+                            authenticateAttemptsBeforeSuccess = authConfig.authenticateAttemptsBeforeSuccess,
+                            authenticateAlwaysFails = authConfig.authenticateAlwaysFails,
+                        ),
+                    promptUpdates = scriptConfig.promptUpdates,
+                    promptDelayBetweenUpdates = scriptConfig.promptDelayBetweenUpdates,
                 ).also { scriptedAgent = it }
             },
         )
@@ -79,11 +98,17 @@ class AcpSessionLoopTestHarness(
     private val launchPlan =
         AcpLaunchPlan(
             command = listOf("scripted-agent"),
-            processWorkingDirectory = sessionWorkingDirectory,
-            sessionWorkingDirectory = sessionWorkingDirectory,
+            processWorkingDirectory = scriptConfig.sessionWorkingDirectory,
+            sessionWorkingDirectory = scriptConfig.sessionWorkingDirectory,
         )
 
-    private val editorContext = minimalEditorContext(listener, disposable, sessionWorkingDirectory)
+    private val editorContext =
+        minimalEditorContext(
+            listener,
+            disposable,
+            scriptConfig.sessionWorkingDirectory,
+            authConfig.authPromptUi,
+        )
 
     val sessionPicker = HarnessSessionPicker()
 
@@ -108,6 +133,7 @@ class AcpSessionLoopTestHarness(
         listener: AcpSessionListener,
         parentDisposable: Disposable,
         workingDirectory: String,
+        authPromptUi: AuthPromptUi,
     ): AcpEditorContext {
         val project = fakeTranscriptProject()
         return AcpEditorContext(
@@ -119,25 +145,50 @@ class AcpSessionLoopTestHarness(
             shellPaneHost = ShellPaneHost(project, parentDisposable),
             permissionPromptUi = PermissionPromptUi { _, _ -> error("unexpected permission prompt in harness") },
             permissionMemoryStore = PermissionMemoryStore(AgentSettingsState()),
-            authPromptUi =
-                object : AuthPromptUi {
-                    override suspend fun promptApiKey(
-                        methodName: String,
-                        description: String?,
-                    ): AuthPromptResult = AuthPromptResult.Continue
-
-                    override suspend fun promptOAuthLink(
-                        methodName: String,
-                        description: String?,
-                        link: String,
-                    ): AuthPromptResult = AuthPromptResult.Continue
-
-                    override suspend fun waitForTerminalAuthCompletion(
-                        methodName: String,
-                        description: String?,
-                    ): AuthPromptResult = AuthPromptResult.Continue
-                },
+            authPromptUi = authPromptUi,
         )
+    }
+}
+
+class HarnessAuthPromptUi(
+    var apiKeyResult: AuthPromptResult = AuthPromptResult.Continue,
+    var oauthLinkResult: AuthPromptResult = AuthPromptResult.Continue,
+    var terminalAuthResult: AuthPromptResult = AuthPromptResult.Continue,
+) : AuthPromptUi {
+    var apiKeyPromptCount = 0
+        private set
+    var oauthLinkPromptCount = 0
+        private set
+    var terminalAuthPromptCount = 0
+        private set
+
+    override suspend fun promptApiKey(
+        methodName: String,
+        description: String?,
+    ): AuthPromptResult {
+        apiKeyPromptCount++
+        return apiKeyResult
+    }
+
+    override suspend fun promptOAuthLink(
+        methodName: String,
+        description: String?,
+        link: String,
+    ): AuthPromptResult {
+        oauthLinkPromptCount++
+        return oauthLinkResult
+    }
+
+    override suspend fun waitForTerminalAuthCompletion(
+        methodName: String,
+        description: String?,
+    ): AuthPromptResult {
+        terminalAuthPromptCount++
+        return terminalAuthResult
+    }
+
+    companion object {
+        fun continueImmediately(): HarnessAuthPromptUi = HarnessAuthPromptUi()
     }
 }
 

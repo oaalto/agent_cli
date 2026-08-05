@@ -1,5 +1,8 @@
 package com.oaalto.agent.acp
 
+import com.agentclientprotocol.model.AuthMethod
+import com.agentclientprotocol.model.AuthMethodId
+import com.oaalto.agent.acp.auth.AuthPromptResult
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import kotlinx.coroutines.TimeoutCancellationException
@@ -115,7 +118,10 @@ class AcpSessionControllerIntegrationTest {
             val harness =
                 AcpSessionLoopTestHarness(
                     scriptedSessionId = "dispose-mid-prompt",
-                    promptDelayBetweenUpdates = 200.milliseconds,
+                    scriptConfig =
+                        AcpSessionLoopHarnessScriptConfig(
+                            promptDelayBetweenUpdates = 200.milliseconds,
+                        ),
                 )
             try {
                 harness.controller.start(harness.newSessionStartRequest())
@@ -144,7 +150,10 @@ class AcpSessionControllerIntegrationTest {
             val harness =
                 AcpSessionLoopTestHarness(
                     scriptedSessionId = "cancel-mid-prompt",
-                    promptDelayBetweenUpdates = 200.milliseconds,
+                    scriptConfig =
+                        AcpSessionLoopHarnessScriptConfig(
+                            promptDelayBetweenUpdates = 200.milliseconds,
+                        ),
                 )
             try {
                 harness.controller.start(harness.newSessionStartRequest())
@@ -162,6 +171,103 @@ class AcpSessionControllerIntegrationTest {
                 assertTrue(
                     harness.listener.structuredUpdates.any { it is StructuredUpdate.FinalizeAgentStream },
                 )
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `start completes after stub api key auth when agent requires authentication`() =
+        runBlocking {
+            val scriptedSessionId = "auth-bootstrap-session"
+            val authMethod = apiKeyAuthMethod()
+            val authPromptUi = HarnessAuthPromptUi()
+            val harness =
+                AcpSessionLoopTestHarness(
+                    scriptedSessionId = scriptedSessionId,
+                    authConfig =
+                        AcpSessionLoopHarnessAuthConfig(
+                            authMethods = listOf(authMethod),
+                            authenticateAttemptsBeforeSuccess = 1,
+                            authPromptUi = authPromptUi,
+                        ),
+                )
+            try {
+                // connect → bootstrap (initialize + auth) → bind → startSession
+                val result =
+                    harness.controller.start(
+                        harness.newSessionStartRequest(),
+                    )
+
+                assertEquals(scriptedSessionId, result.sessionId)
+                assertEquals("Started a new ACP session.", result.statusMessage)
+                assertEquals(1, authPromptUi.apiKeyPromptCount)
+                assertEquals(listOf("api-key", "api-key"), harness.scriptedAgent.authenticateCallCount)
+                assertTrue(harness.listener.errors.isEmpty())
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `start fails when stub auth is cancelled`() =
+        runBlocking {
+            val authPromptUi =
+                HarnessAuthPromptUi(
+                    apiKeyResult = AuthPromptResult.Cancelled,
+                )
+            val harness =
+                AcpSessionLoopTestHarness(
+                    scriptedSessionId = "auth-cancel-session",
+                    authConfig =
+                        AcpSessionLoopHarnessAuthConfig(
+                            authMethods = listOf(apiKeyAuthMethod()),
+                            authenticateAttemptsBeforeSuccess = 1,
+                            authPromptUi = authPromptUi,
+                        ),
+                )
+            try {
+                val failure =
+                    assertFailsWith<IllegalStateException> {
+                        harness.controller.start(harness.newSessionStartRequest())
+                    }
+
+                assertEquals("Authentication was cancelled.", failure.message)
+                assertEquals(1, authPromptUi.apiKeyPromptCount)
+                assertEquals(listOf("api-key"), harness.scriptedAgent.authenticateCallCount)
+                assertTrue(harness.transport.isDisposed)
+                assertTrue(harness.listener.errors.isEmpty())
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `start fails when authenticate keeps failing after stub auth continues`() =
+        runBlocking {
+            val harness =
+                AcpSessionLoopTestHarness(
+                    scriptedSessionId = "auth-failure-session",
+                    authConfig =
+                        AcpSessionLoopHarnessAuthConfig(
+                            authMethods = listOf(apiKeyAuthMethod()),
+                            authenticateAttemptsBeforeSuccess = 1,
+                            authenticateAlwaysFails = true,
+                        ),
+                )
+            try {
+                assertFailsWith<Exception> {
+                    harness.controller.start(harness.newSessionStartRequest())
+                }
+
+                assertEquals(2, harness.scriptedAgent.authenticateCallCount.size)
+                assertEquals(
+                    listOf("authentication required", "authentication required"),
+                    harness.listener.structuredUpdates
+                        .filterIsInstance<StructuredUpdate.AppendAuthFailure>()
+                        .map { it.message },
+                )
+                assertTrue(harness.transport.isDisposed)
             } finally {
                 harness.dispose()
             }
@@ -196,4 +302,11 @@ class AcpSessionControllerIntegrationTest {
             }
         }
     }
+
+    private fun apiKeyAuthMethod(): AuthMethod.AgentAuth =
+        AuthMethod.AgentAuth(
+            id = AuthMethodId("api-key"),
+            name = "API key",
+            description = "Enter your API key to authenticate.",
+        )
 }

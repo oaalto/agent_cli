@@ -22,7 +22,6 @@ Last updated: 2026-08-05
 
 | Feature | Status | Tickets | Rationale | PRD |
 | --- | --- | --- | --- | --- |
-| [acp-session-loop-integration-tests](acp-session-loop-integration-tests/) | ready-for-agent | [01](acp-session-loop-integration-tests/01-harness-new-session-start.md) → [04](acp-session-loop-integration-tests/04-dispose-cancel-lifecycle.md); [05](acp-session-loop-integration-tests/05-auth-bootstrap-stretch.md) (stretch) | Headless harness for full `AcpSessionController` connect→bootstrap→resume→prompt chain; enables safer editor thinning | [prd](acp-session-loop-integration-tests/prd.md) |
 | [acp-agent-editor-thinning](acp-agent-editor-thinning/) | ready-for-agent | [01](acp-agent-editor-thinning/01-executor-only-finalize-on-prompt.md) · [02](acp-agent-editor-thinning/02-thin-session-start-delegate.md) · [03](acp-agent-editor-thinning/03-editor-thinning-verification-and-ship.md) | Completes editor→controller separation; orchestrator wiring shipped | [prd](acp-agent-editor-thinning/prd.md) |
 | [launch-argument-unification](launch-argument-unification/) | ready-for-agent | [01](launch-argument-unification/01-kernel-launch-argument-resolver.md) · [02](launch-argument-unification/02-acp-launch-adapter-argument-resolver.md) · [03](launch-argument-unification/03-pty-launch-adapter-wsl-env-parity.md) · [04](launch-argument-unification/04-worktree-resume-probe-kernel-alignment.md) | Cross-slice leverage; shared executable validation and WSL env parity after `AgentLaunchResolver` | [prd](launch-argument-unification/prd.md) |
 | [session-transcript-coordinator-deepening](session-transcript-coordinator-deepening/) | ready-for-agent | [01](session-transcript-coordinator-deepening/01-coordinator-test-seam-injection.md) → [07](session-transcript-coordinator-deepening/07-edt-snapshot-delegation-optional.md) | Coordinator round-trip integration tests; explicit lossy restore contract; optional EDT delegation | [prd](session-transcript-coordinator-deepening/prd.md) |
@@ -72,7 +71,6 @@ Last updated: 2026-08-05
 
 | Features | Note |
 | --- | --- |
-| `acp-session-loop-integration-tests` ↔ `acp-agent-editor-thinning` | Session-loop harness should land before editor thinning refactors for CI guardrails |
 | `acp-agent-editor-thinning` ↔ `session-transcript-coordinator-deepening` | Editor keeps `SessionTranscriptCoordinator` bind/restore wiring; coordinator deepening is optional follow-up per PRD out-of-scope |
 
 ---
@@ -81,6 +79,7 @@ Last updated: 2026-08-05
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [acp-session-loop-integration-tests](acp-session-loop-integration-tests/) | [01](acp-session-loop-integration-tests/01-harness-new-session-start.md)–[05](acp-session-loop-integration-tests/05-auth-bootstrap-stretch.md) | All `done` (2026-08-05); headless harness + integration tests for connect→bootstrap→auth→resume→prompt→dispose via `InMemoryAcpTransport` |
 | [plan-panel-renderer-removal](plan-panel-renderer-removal/) | [01](plan-panel-renderer-removal/01-delete-legacy-plan-panel-renderer.md) | All `done` (2026-08-05); deleted orphaned `PlanPanelRenderer` HTML path; `PlanRowAdapter` + `PlanPanel` sole live implementation |
 | [worktree-orchestrator-production-wiring](worktree-orchestrator-production-wiring/) | — | Shipped (2026-08-05, `ae78169`); `worktreeRecordId` through lifecycle → orchestrator; editor persist removed |
 | [acp-transcript-package-restructure](acp-transcript-package-restructure/) | 01–07 | All `done` (2026-08-05); `transcript/{model,render,view,theme}/` repackage + `TranscriptPackageDependencyTest` CI guard |

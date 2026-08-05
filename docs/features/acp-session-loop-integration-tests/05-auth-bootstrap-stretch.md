@@ -6,9 +6,9 @@
 
 **Blocked by:** 01 — Harness and new-session start integration
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Agent script or capabilities response signals auth required; harness supplies stub auth coordinator inputs through minimal `AcpEditorContext` fakes
-- [ ] Integration test: `start()` completes after stub auth succeeds and returns expected session result
-- [ ] Integration test: auth failure or cancellation surfaces as start failure per current bootstrap contract
-- [ ] `./gradlew qualityGate` passes
+- [x] Agent script or capabilities response signals auth required; harness supplies stub auth coordinator inputs through minimal `AcpEditorContext` fakes
+- [x] Integration test: `start()` completes after stub auth succeeds and returns expected session result
+- [x] Integration test: auth failure or cancellation surfaces as start failure per current bootstrap contract
+- [x] `./gradlew qualityGate` passes

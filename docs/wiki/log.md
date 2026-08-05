@@ -1,5 +1,9 @@
 # Engineering Wiki Log
 
+## [2026-08-05] skip | ACP session loop auth bootstrap (slice 05)
+
+- No wiki update: test-only auth scripting, harness stub `AuthPromptUi`, and integration assertions; no durable subsystem behaviour change.
+
 ## [2026-08-05] skip | ACP session loop prompt ingestion (slice 03)
 
 - No wiki update: test-only scripted prompt handler and integration assertions; no durable subsystem behaviour change.

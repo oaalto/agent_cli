@@ -3,6 +3,9 @@ package com.oaalto.agent.acp
 import com.agentclientprotocol.annotations.UnstableApi
 import com.agentclientprotocol.model.AcpMethod
 import com.agentclientprotocol.model.AgentCapabilities
+import com.agentclientprotocol.model.AuthMethod
+import com.agentclientprotocol.model.AuthenticateRequest
+import com.agentclientprotocol.model.AuthenticateResponse
 import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.Implementation
 import com.agentclientprotocol.model.InitializeRequest
@@ -22,6 +25,7 @@ import com.agentclientprotocol.model.ToolCallId
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
 import com.agentclientprotocol.protocol.Protocol
+import com.agentclientprotocol.protocol.acpFail
 import com.agentclientprotocol.protocol.sendNotification
 import com.agentclientprotocol.protocol.setRequestHandler
 import kotlinx.coroutines.delay
@@ -30,19 +34,28 @@ import kotlin.time.Duration
 /**
  * Declarative in-memory agent for session-loop integration tests.
  *
- * Responds to `initialize` with empty auth, to `session/new` with [newSessionId],
+ * Responds to `initialize` with [authConfig], to `authenticate` per auth retry policy,
+ * to `session/new` with [newSessionId],
  * to `session/load` with a deterministic success for [loadSessionId], and to
  * `session/prompt` with [promptUpdates] followed by a turn completion response.
  */
+data class ScriptedAcpAgentAuthConfig(
+    val authMethods: List<AuthMethod> = emptyList(),
+    val authenticateAttemptsBeforeSuccess: Int = 0,
+    val authenticateAlwaysFails: Boolean = false,
+)
+
 class ScriptedAcpAgent(
     private val protocol: Protocol,
     private val newSessionId: String = "scripted-session-1",
     private val loadSessionId: String = newSessionId,
+    private val authConfig: ScriptedAcpAgentAuthConfig = ScriptedAcpAgentAuthConfig(),
     private val promptUpdates: List<SessionUpdate> = defaultPromptUpdates(),
     private val promptDelayBetweenUpdates: Duration = Duration.ZERO,
 ) {
     val loadSessionIds = mutableListOf<String>()
     val receivedPrompts = mutableListOf<String>()
+    val authenticateCallCount = mutableListOf<String>()
 
     init {
         installHandlers()
@@ -54,10 +67,21 @@ class ScriptedAcpAgent(
             InitializeResponse(
                 protocolVersion = minOf(params.protocolVersion, LATEST_PROTOCOL_VERSION),
                 agentCapabilities = AgentCapabilities(),
-                authMethods = emptyList(),
+                authMethods = authConfig.authMethods,
                 agentInfo = Implementation(name = "scripted-test-agent", version = "test"),
                 _meta = params._meta,
             )
+        }
+
+        protocol.setRequestHandler(AcpMethod.AgentMethods.Authenticate) { params: AuthenticateRequest ->
+            authenticateCallCount.add(params.methodId.value)
+            if (
+                authConfig.authenticateAlwaysFails ||
+                authenticateCallCount.size <= authConfig.authenticateAttemptsBeforeSuccess
+            ) {
+                acpFail("authentication required")
+            }
+            AuthenticateResponse(_meta = params._meta)
         }
 
         protocol.setRequestHandler(AcpMethod.AgentMethods.SessionNew) { _: NewSessionRequest ->
