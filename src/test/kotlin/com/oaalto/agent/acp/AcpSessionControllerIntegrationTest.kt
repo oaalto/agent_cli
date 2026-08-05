@@ -1,5 +1,6 @@
 package com.oaalto.agent.acp
 
+import com.oaalto.agent.acp.transcript.model.StructuredUpdate
 import com.oaalto.agent.worktree.resume.LaunchResumePlan
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -53,6 +54,33 @@ class AcpSessionControllerIntegrationTest {
                 assertEquals(listOf(loadSessionId), harness.scriptedAgent.loadSessionIds)
                 assertTrue(harness.listener.errors.isEmpty())
                 assertTrue(!harness.sessionPicker.pickCalled)
+            } finally {
+                harness.dispose()
+            }
+        }
+
+    @Test
+    fun `prompt delivers scripted session updates to recording listener in order`() =
+        runBlocking {
+            val harness = AcpSessionLoopTestHarness(scriptedSessionId = "prompt-session-1")
+            try {
+                harness.controller.start(harness.newSessionStartRequest())
+                harness.controller.prompt("hello agent")
+
+                assertEquals(listOf("hello agent"), harness.scriptedAgent.receivedPrompts)
+                assertTrue(harness.listener.errors.isEmpty())
+
+                val updates = harness.listener.structuredUpdates
+                val textChunks =
+                    updates.filterIsInstance<StructuredUpdate.AppendAgentText>().map { it.text }
+                assertEquals(listOf("scripted ", "reply"), textChunks)
+
+                val toolIndex =
+                    updates.indexOfFirst { it is StructuredUpdate.StartOrUpdateToolCall }
+                assertTrue(toolIndex >= 1)
+                assertTrue(updates[toolIndex - 1] is StructuredUpdate.FinalizeAgentStream)
+
+                assertTrue(updates.last() is StructuredUpdate.FinalizeAgentStream)
             } finally {
                 harness.dispose()
             }

@@ -18,6 +18,8 @@
 
 ### Added
 
+- **ACP session loop prompt ingestion integration** (`acp/ScriptedAcpAgent.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Scripted agent handles `session/prompt` with deterministic chunk + tool updates; integration test asserts executor → ingestion → listener ordering and `FinalizeAgentStream` before non-chunk ingestion. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP session loop resume load integration** (`acp/ScriptedAcpAgent.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Scripted agent handles `session/load`; integration test asserts `AcpLoad` plan exercises load path and returns `restoreTranscript = true`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP session loop integration harness** (`acp/transport/InMemoryAcpTransport.kt`, `acp/AcpSessionLoopTestHarness.kt`, `acp/ScriptedAcpAgent.kt`, `acp/AcpSessionControllerIntegrationTest.kt`): Headless harness drives `AcpSessionControllerImpl.start()` through in-memory transport with scripted `initialize` + `session/new` responses; first scenario asserts new-session plan returns scripted session id and status message. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

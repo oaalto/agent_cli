@@ -6,9 +6,9 @@
 
 **Blocked by:** 01 — Harness and new-session start integration
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Agent script handles `session/prompt` by emitting a deterministic sequence of `SessionUpdate` events (chunks plus completion)
-- [ ] Integration test: `prompt(text)` delivers scripted updates to the recording listener in the expected order
-- [ ] Test asserts `FinalizeAgentStream` (or equivalent finalize prelude) precedes non-chunk ingestion output when the script includes a tool or non-chunk event after streaming chunks
-- [ ] `./gradlew qualityGate` passes
+- [x] Agent script handles `session/prompt` by emitting a deterministic sequence of `SessionUpdate` events (chunks plus completion)
+- [x] Integration test: `prompt(text)` delivers scripted updates to the recording listener in the expected order
+- [x] Test asserts `FinalizeAgentStream` (or equivalent finalize prelude) precedes non-chunk ingestion output when the script includes a tool or non-chunk event after streaming chunks
+- [x] `./gradlew qualityGate` passes

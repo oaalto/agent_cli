@@ -35,10 +35,14 @@ import java.nio.file.Path
  * 2. **bootstrap** — `initialize` negotiates capabilities (no auth)
  * 3. **bind** — lifecycle binds the connected client
  * 4. **startSession** — resume orchestrator opens the session (`session/new` for new-session plan, `session/load` for `AcpLoad`)
+ *
+ * `prompt(text)` after `start()` exercises executor → ingestion → listener via scripted
+ * [ScriptedAcpAgent] [promptUpdates].
  */
 class AcpSessionLoopTestHarness(
     scriptedSessionId: String = "scripted-session-1",
     loadSessionId: String = scriptedSessionId,
+    private val promptUpdates: List<SessionUpdate> = ScriptedAcpAgent.defaultPromptUpdates(),
     private val sessionWorkingDirectory: String = ".",
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
@@ -56,6 +60,7 @@ class AcpSessionLoopTestHarness(
                     protocol,
                     newSessionId = scriptedSessionId,
                     loadSessionId = loadSessionId,
+                    promptUpdates = promptUpdates,
                 ).also { scriptedAgent = it }
             },
         )
