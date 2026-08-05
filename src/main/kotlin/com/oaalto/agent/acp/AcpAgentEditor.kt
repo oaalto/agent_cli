@@ -100,7 +100,7 @@ class AcpAgentEditor(
         )
     private val promptInputBar =
         PromptInputBar { text ->
-            transcriptViewController.finalizeAgentStream()
+            applyPolicy(TranscriptFinalizePolicy.onPromptStarting())
             transcriptViewController.appendPlainLine("")
             transcriptViewController.appendPlainLine("> $text", isUserPrompt = true)
             transcriptViewController.appendPlainLine("")
@@ -108,7 +108,7 @@ class AcpAgentEditor(
                 runCatching { sessionController.prompt(text) }.onFailure { throwable ->
                     rethrowIfCancellation(throwable)
                     log.warn("Failed to send ACP prompt", throwable, logContext())
-                    transcriptViewController.finalizeAgentStream()
+                    applyPolicy(TranscriptFinalizePolicy.onPromptFailed())
                     transcriptViewController.appendError(
                         throwable.message ?: throwable.javaClass.simpleName,
                     )
@@ -381,6 +381,10 @@ class AcpAgentEditor(
         }
 
     fun buildDiagnosticsClipboardText(): String = sessionTranscript.clipboardText()
+
+    private fun applyPolicy(updates: List<StructuredUpdate>) {
+        updates.forEach(transcriptViewController::apply)
+    }
 
     private fun logContext(sessionId: String? = activeSessionId): AgentCliSessionContext =
         AgentCliSessionContext(

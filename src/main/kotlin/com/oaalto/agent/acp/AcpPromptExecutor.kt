@@ -28,18 +28,17 @@ class AcpPromptExecutor(
         if (trimmed.isEmpty()) return
 
         promptJob?.cancel()
-        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
+        emitPolicy(TranscriptFinalizePolicy.onPromptStarting())
         promptJob =
             scope.launch {
                 runCatching {
                     activeSession.prompt(listOf(ContentBlock.Text(trimmed))).collect { event ->
                         dispatchPromptEvent(event)
                     }
-                    // Finalize even when the transport omits PromptResponseEvent.
-                    listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
+                    emitPolicy(TranscriptFinalizePolicy.onPromptFlowCompleted())
                 }.onFailure { throwable ->
                     log.warn("ACP prompt failed", throwable, sessionLogContext())
-                    listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
+                    emitPolicy(TranscriptFinalizePolicy.onPromptFailed())
                     listener.onError(throwable.message ?: throwable.javaClass.simpleName)
                 }
             }
@@ -47,13 +46,13 @@ class AcpPromptExecutor(
     }
 
     suspend fun cancelPrompt(activeSession: ClientSession?) {
-        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
+        emitPolicy(TranscriptFinalizePolicy.onPromptInterrupted())
         promptJob?.cancel()
         activeSession?.cancel()
     }
 
     fun disposePromptWork() {
-        listener.onStructuredUpdate(StructuredUpdate.FinalizeAgentStream)
+        emitPolicy(TranscriptFinalizePolicy.onPromptInterrupted())
         promptJob?.cancel()
         promptJob = null
     }
@@ -63,8 +62,12 @@ class AcpPromptExecutor(
             is Event.SessionUpdateEvent ->
                 TranscriptEventIngestion.ingest(event.update).forEach(listener::onStructuredUpdate)
             is Event.PromptResponseEvent ->
-                TranscriptEventIngestion.ingestPromptCompleted().forEach(listener::onStructuredUpdate)
+                emitPolicy(TranscriptFinalizePolicy.onPromptResponse())
         }
+    }
+
+    private fun emitPolicy(updates: List<StructuredUpdate>) {
+        updates.forEach(listener::onStructuredUpdate)
     }
 
     companion object {

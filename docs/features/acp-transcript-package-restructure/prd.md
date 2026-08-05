@@ -16,7 +16,7 @@ Repackage transcript modules into three subpackages under `acp/transcript/`:
 
 | Package | Contents |
 | --- | --- |
-| `transcript/model/` | `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, `TranscriptEventIngestion` |
+| `transcript/model/` | `StructuredUpdate`, `TranscriptBlock`, `TranscriptModel`, `TranscriptBodyPart`, `TranscriptEventIngestion`, `TranscriptFinalizePolicy` |
 | `transcript/render/` | Content renderer, markdown renderer, HTML/table builders, tool call renderers, fence normalizer, fence language resolver |
 | `transcript/view/` | `TranscriptViewController`, `TranscriptPanel`, block view factory (+ row adapters under `transcript/view/rows/`), label binder, code block view factory, column sizing, collapsible tool panel, `TranscriptBodyPartWidgetMapper` |
 

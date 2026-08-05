@@ -48,14 +48,6 @@ class TranscriptEventIngestionTest {
     }
 
     @Test
-    fun `ingest prompt completed returns single finalize`() {
-        val updates = TranscriptEventIngestion.ingestPromptCompleted()
-
-        assertEquals(1, updates.size)
-        assertIs<StructuredUpdate.FinalizeAgentStream>(updates.single())
-    }
-
-    @Test
     fun `maps tool lifecycle to single start or update`() {
         val updates =
             TranscriptEventIngestion.mapUpdate(
@@ -117,7 +109,7 @@ class TranscriptEventIngestionTest {
         updates.forEach { update ->
             TranscriptEventIngestion.ingest(update).forEach(model::apply)
         }
-        TranscriptEventIngestion.ingestPromptCompleted().forEach(model::apply)
+        TranscriptFinalizePolicy.onPromptResponse().forEach(model::apply)
 
         val blocks = model.blocks()
         assertEquals(3, blocks.size)

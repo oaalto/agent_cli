@@ -12,9 +12,9 @@ Last updated: 2026-08-05
 
 | Metric | Count |
 | --- | --- |
-| Ready-for-agent features | 3 |
+| Ready-for-agent features | 2 |
 | Ready-for-agent tickets | 0 |
-| Completed features | 13 |
+| Completed features | 14 |
 
 ---
 
@@ -22,7 +22,6 @@ Last updated: 2026-08-05
 
 | Feature | Status | Rationale | PRD |
 | --- | --- | --- | --- |
-| [acp-transcript-finalize-policy](acp-transcript-finalize-policy/) | `ready-for-agent` | Centralize `FinalizeAgentStream` emission policy scattered across ingestion and prompt executor | [prd.md](acp-transcript-finalize-policy/prd.md) |
 | [acp-transcript-fence-normalization](acp-transcript-fence-normalization/) | `ready-for-agent` | Single fence normalizer for streaming binder vs final markdown render paths | [prd.md](acp-transcript-fence-normalization/prd.md) |
 | [acp-transcript-package-restructure](acp-transcript-package-restructure/) | `ready-for-agent` | `transcript/model\|render\|view/` repackage after functional refactors stabilize | [prd.md](acp-transcript-package-restructure/prd.md) |
 
@@ -40,6 +39,7 @@ Last updated: 2026-08-05
 
 | Feature | Tickets | Notes |
 | --- | --- | --- |
+| [acp-transcript-finalize-policy](acp-transcript-finalize-policy/) | 01–02 | All `done` (2026-08-05); `TranscriptFinalizePolicy` + CI construction guard |
 | [acp-transcript-panel-integration-tests](acp-transcript-panel-integration-tests/) | 01 | Harness + review follow-ups `done` (2026-08-05); mounted-panel golden scenarios on ViewController apply path |
 | [acp-transcript-block-view-decomposition](acp-transcript-block-view-decomposition/) | 01–08 | All `done` (2026-08-05); adapter registry + 4 row adapters, mapper, test gaps closed in ticket 08 |
 | [acp-transcript-content-renderer](acp-transcript-content-renderer/) | 01–03 | All `done` (2026-08-04); unified dual markdown→body-part pipelines |

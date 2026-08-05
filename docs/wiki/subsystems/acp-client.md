@@ -6,6 +6,7 @@ updated: 2026-08-05
 sources:
   - docs/adr/0005-transcript-row-adapter-registry.md
   - docs/adr/0006-transcript-simple-vs-agent-row-shells.md
+  - docs/adr/0007-transcript-finalize-policy-orchestration-layer.md
   - src/main/kotlin/com/oaalto/agent/acp/AcpAgentEditor.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsFactory.kt
   - src/main/kotlin/com/oaalto/agent/acp/AcpClientSessionOperationsImpl.kt
@@ -20,6 +21,7 @@ sources:
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptBlockLabelBinder.kt
   - src/main/kotlin/com/oaalto/agent/acp/StructuredUpdate.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptEventIngestion.kt
+  - src/main/kotlin/com/oaalto/agent/acp/TranscriptFinalizePolicy.kt
   - src/main/kotlin/com/oaalto/agent/acp/TranscriptColorProvider.kt
   - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelTestHarness.kt
   - src/test/kotlin/com/oaalto/agent/acp/TranscriptPanelHarnessTest.kt
@@ -78,11 +80,53 @@ The transcript renders via a vertical `BoxLayout` column of block rows inside a 
 8. **`TranscriptBlockLabelBinder`** — applies styling and the `CURSOR_CHAR` streaming indicator to `StreamingAgentText` blocks (streaming path; final markdown uses content renderer). Owned by simple-text and agent-text adapters.
 9. **`TranscriptRenderer`** — text extraction and plain-text formatters (not Swing view rendering); consumed by ingestion and rendering helpers.
 
-### Prompt event routing (`TranscriptEventIngestion`)
+### Prompt event routing
 
-- `ingest(update)` returns `List<StructuredUpdate>`: non-chunk updates finalize the active agent stream first (`FinalizeAgentStream`), then map the update.
-- `ingestPromptCompleted()` returns a single `FinalizeAgentStream`.
-- Agent message chunks stream in place without finalization.
+Events flow through ingestion (mapping) and policy (finalize prelude) before reaching the view:
+
+```mermaid
+sequenceDiagram
+    participant Transport as ACP transport
+    participant Ingest as TranscriptEventIngestion
+    participant Policy as TranscriptFinalizePolicy
+    participant VC as TranscriptViewController
+    participant Model as TranscriptModel
+
+    Transport->>Ingest: SessionUpdate
+    Ingest->>Policy: finalizePrelude(update)
+    Policy-->>Ingest: 0 or 1 FinalizeAgentStream
+    Ingest->>Ingest: mapUpdate(update)
+    Ingest-->>VC: List StructuredUpdate
+    VC->>Model: apply each update
+
+    Note over Transport,Model: Prompt lifecycle (executor + editor)
+    Transport->>Policy: onPromptStarting / onPromptResponse / onPromptFlowCompleted
+    Transport->>Policy: onPromptFailed / onPromptInterrupted
+    Policy-->>VC: FinalizeAgentStream (via listener)
+```
+
+- **`TranscriptEventIngestion.ingest(update)`** — prepends `TranscriptFinalizePolicy.finalizePrelude(update)`, then maps the update. Agent message chunks stream in place without finalization.
+- **`notify()`** (`AcpClientSessionOperationsImpl`) routes `SessionUpdate` through `ingest()`.
+- Prompt-edge finalize (`onPromptStarting`, `onPromptResponse`, `onPromptFlowCompleted`, `onPromptFailed`, `onPromptInterrupted`) is owned by **`TranscriptFinalizePolicy`**; callers are `AcpPromptExecutor` and `AcpAgentEditor`.
+
+### Finalize policy (`TranscriptFinalizePolicy`)
+
+Stateless orchestration module (ADR 0007). Decides *when* to emit `FinalizeAgentStream`; `TranscriptModel` decides *how* finalize mutates blocks.
+
+| Hook | Caller | Rule |
+| --- | --- | --- |
+| `finalizePrelude(update)` | `TranscriptEventIngestion` | Finalize for every `SessionUpdate` except `AgentMessageChunk` — including variants that map to an empty list |
+| `onPromptStarting()` | `AcpAgentEditor`, `AcpPromptExecutor` | Finalize before user echo / new prompt job |
+| `onPromptResponse()` | `AcpPromptExecutor` | Finalize on `PromptResponseEvent` |
+| `onPromptFlowCompleted()` | `AcpPromptExecutor` | Always finalize after `collect` — covers omitted `PromptResponseEvent` |
+| `onPromptFailed()` | `AcpAgentEditor`, `AcpPromptExecutor` | Finalize before error surfacing |
+| `onPromptInterrupted()` | `AcpPromptExecutor` | Finalize on `cancelPrompt` and `disposePromptWork` |
+
+**Invariants:** (1) non-chunk session update finalizes before mapped update; (2) new prompt finalizes prior stream; (3) prompt flow end finalizes at least once; (4) failure/cancel/interrupt finalizes before idle; (5) redundant finalize is safe — model no-ops when no streaming block exists.
+
+**Allowed direct `FinalizeAgentStream` construction:** `TranscriptFinalizePolicy`, `StructuredUpdate` definition, `TranscriptModel.apply` when-branch, `TranscriptViewController.finalizeAgentStream` (thin `apply` passthrough, not a policy owner), model/harness/adapter tests. Production ingestion, executor, and editor paths delegate to policy. Enforced in CI by `FinalizeAgentStreamConstructionTest`.
+
+**Test seam:** `TranscriptFinalizePolicyTest` — table-driven lifecycle sequences. `TranscriptEventIngestionTest` retains mapping coverage.
 
 ### Session operations (deep module: `SessionFilesystemOperations`)
 
@@ -117,7 +161,7 @@ The deep module interface is the primary test seam — `SessionFilesystemOperati
 
 ### Event ingestion (`TranscriptEventIngestion`)
 
-Consolidates finalize policy and `SessionUpdate` → `StructuredUpdate` mapping:
+Maps `SessionUpdate` → `StructuredUpdate`; delegates finalize prelude to `TranscriptFinalizePolicy` (see above). Does **not** own prompt-edge finalize rules.
 
 - **Agent/user/thought chunks** → `AppendAgentText`, `AppendUserEcho`, `AppendThought`.
 - **Tool calls** → tool call start/delta/end variants.
@@ -150,7 +194,7 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 - `ContentRenderOptions` carries truncation ceiling, highlighted-code budget, fence-normalization flag (`applyFenceNormalization`), and optional markdown heuristic skip for plain tool dumps.
 - Replaces the retired `segmentFencedCodeBlocks` / `TextSegment` approach.
 - Fenced code blocks use embedded read-only Editors (`EditorFactoryTranscriptCodeBlockViewFactory`); `measureTranscriptEditorCodeBlockSize` sizes them at creation (font-metrics fallback when `lineHeight` is 0 before first paint) and `applyTranscriptCodeBlockWidth` reflows on transcript column resize; `AgentTextRow` remeasures on EDT after markdown rebuild.
-- Agent stream finalizes when the prompt flow completes (`AcpPromptExecutor`), not only on `PromptResponseEvent`.
+- Agent stream finalizes via `TranscriptFinalizePolicy` when the prompt flow completes (`AcpPromptExecutor`), not only on `PromptResponseEvent`.
 - `normalizeAgentFences` splits inline closing fences (`code```Example`), merged opening fences (` ```kotlinfun main()`), prose-before-fence on the same line (`Main.kt:```kotlinfun`), and auto-closes trailing unclosed fences before parsing so code blocks and trailing prose render correctly.
 - `joinCodeFenceParts` preserves line breaks when the markdown parser emits separate text nodes inside a fence.
 - Read-only code block Editors are focusable for text selection.
@@ -185,14 +229,10 @@ The transcript uses a sealed hierarchy of `StructuredUpdate` variants:
 
 ## Agent Synthesis
 
-- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (or `notify()` via `AcpClientSessionOperationsImpl`), map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
+- When changing transcript behavior, start at `AcpAgentEditor.kt` and trace the flow: ACP events enter via `TranscriptEventIngestion` (finalize prelude from `TranscriptFinalizePolicy`) or `notify()` via `AcpClientSessionOperationsImpl`, map to `StructuredUpdate`, then flow through `TranscriptViewController` → `TranscriptModel` → `TranscriptPanel`.
 - Live agent streaming uses `TranscriptBlock.StreamingAgentText` with the `CURSOR_CHAR` indicator applied by `TranscriptBlockLabelBinder`; finalized agent text becomes `FinalAgentText`.
 - Layout split is hard-coded: 72% transcript / 28% bottom, 20% prompt / 80% shell.
 - The ACP client is in-process (not JetBrains AI Chat); the agent subprocess is a separate process communicating via stdio JSON-RPC.
-
-## Open Questions
-
-- (Consolidation closed this: `TranscriptEventIngestion` absorbs both routing paths into one seam.)
 
 ## Related
 

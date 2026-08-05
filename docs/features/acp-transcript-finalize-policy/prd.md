@@ -1,8 +1,8 @@
 ## Status
 
-ready-for-agent
+implemented
 
-**Triage:** `ready-for-agent`
+**Triage:** `implemented`
 
 ## Problem Statement
 
@@ -17,20 +17,20 @@ When streaming rendering breaks (zero-height code blocks, missing finalize on pr
 
 ## Solution
 
-Centralize finalize **policy** in one module — `TranscriptFinalizePolicy` (name TBD) — that decides *when* to emit `FinalizeAgentStream` given lifecycle events. Call sites invoke policy methods instead of constructing `StructuredUpdate.FinalizeAgentStream` directly.
+Centralize finalize **policy** in one module — `TranscriptFinalizePolicy` — that decides *when* to emit `FinalizeAgentStream` given lifecycle events. Call sites invoke policy methods instead of constructing `StructuredUpdate.FinalizeAgentStream` directly.
 
 ```kotlin
 internal object TranscriptFinalizePolicy {
-    fun onSessionUpdate(update: SessionUpdate): List<StructuredUpdate>  // wraps ingest pre-pass
+    fun finalizePrelude(update: SessionUpdate): List<StructuredUpdate>
     fun onPromptStarting(): List<StructuredUpdate>
+    fun onPromptResponse(): List<StructuredUpdate>
     fun onPromptFlowCompleted(transportSentResponse: Boolean): List<StructuredUpdate>
     fun onPromptFailed(): List<StructuredUpdate>
-    fun onPromptCancelled(): List<StructuredUpdate>
-    fun onEditorClosing(): List<StructuredUpdate>
+    fun onPromptInterrupted(): List<StructuredUpdate>
 }
 ```
 
-`TranscriptEventIngestion` retains mapping logic but delegates finalize-before-non-chunk to policy. `AcpPromptExecutor` delegates all prompt-edge finalize decisions. `TranscriptViewController` delegates editor-close finalize if applicable.
+`TranscriptEventIngestion` retains mapping logic but prepends `finalizePrelude(update)` before `mapUpdate(update)`. `AcpPromptExecutor` and `AcpAgentEditor` delegate all prompt-edge finalize decisions. `TranscriptViewController.finalizeAgentStream()` remains a thin `apply` wrapper — not a policy owner.
 
 The policy module owns documented invariants (see below) as KDoc + tests — the **deep interface** for finalize semantics.
 
@@ -79,9 +79,10 @@ The policy module owns documented invariants (see below) as KDoc + tests — the
 
 | Caller | Before | After |
 | --- | --- | --- |
-| `TranscriptEventIngestion.ingest` | inline finalize before non-chunk | `TranscriptFinalizePolicy.onSessionUpdate` prelude + mapping |
+| `TranscriptEventIngestion.ingest` | inline finalize before non-chunk | `finalizePrelude(update)` + `mapUpdate(update)` |
 | `AcpPromptExecutor` | five direct finalize emissions | policy methods per lifecycle hook |
-| `TranscriptViewController` | direct finalize on specific paths | `onEditorClosing` if still needed |
+| `AcpAgentEditor` | direct finalize before user echo / on error | `onPromptStarting()` / `onPromptFailed()` |
+| `TranscriptViewController` | thin `apply` wrapper only | unchanged — not a policy owner |
 | Tests for ingestion/executor | assert finalize in sequences | assert via policy or migrated table tests |
 
 ### Seam for testing
@@ -97,6 +98,7 @@ Ingestion tests focus on mapping; policy tests focus on finalize presence/absenc
 ### ADR alignment
 
 - **ADR 0002**: Policy operates on SDK `SessionUpdate` types; no protocol change. Aligned.
+- **ADR 0007**: Finalize policy at orchestration layer, separate from ingestion mapping and model mutation.
 
 ### Relationship to fence normalization
 

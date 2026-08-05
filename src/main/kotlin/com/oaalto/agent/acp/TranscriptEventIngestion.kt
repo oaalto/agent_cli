@@ -11,17 +11,15 @@ import com.oaalto.agent.acp.plan.PlanUpdateMapper
 /**
  * Consolidated ACP transcript event ingestion.
  *
- * Single seam: ACP [SessionUpdate] events and imperative editor calls enter,
- * ordered [StructuredUpdate] deltas exit. Owns:
+ * Single ingestion seam: ACP [SessionUpdate] events enter via [ingest],
+ * ordered [StructuredUpdate] deltas exit. Prompt-edge finalize hooks live on
+ * [TranscriptFinalizePolicy].
  *
- * - finalize-before-non-chunk policy (non-streaming events close any active
- *   agent stream before mapping the event itself),
+ * - finalize-before-non-chunk policy via [TranscriptFinalizePolicy.finalizePrelude]
+ *   (non-streaming events close any active agent stream before mapping),
  * - every `SessionUpdate` → `StructuredUpdate` variant mapping,
  * - text extraction and tool-call body rendering (absorbed from the former
  *   renderer/dispatcher split).
- *
- * Callers route prompt events through [ingest] and [ingestPromptCompleted]
- * instead of the former dispatcher/mapper pair.
  */
 @Suppress("TooManyFunctions")
 internal object TranscriptEventIngestion {
@@ -35,14 +33,8 @@ internal object TranscriptEventIngestion {
         if (update is SessionUpdate.AgentMessageChunk) {
             return listOfNotNull(mapAgentChunk(update))
         }
-        val result = mutableListOf<StructuredUpdate>()
-        result += StructuredUpdate.FinalizeAgentStream
-        result += mapUpdate(update)
-        return result
+        return TranscriptFinalizePolicy.finalizePrelude(update) + mapUpdate(update)
     }
-
-    /** Returns a single finalize marker for prompt-completed routing. */
-    fun ingestPromptCompleted(): List<StructuredUpdate> = listOf(StructuredUpdate.FinalizeAgentStream)
 
     // -- Mapping ------------------------------------------------------------
 

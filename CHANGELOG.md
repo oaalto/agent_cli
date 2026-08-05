@@ -2,11 +2,19 @@
 
 ## 2026-08-05
 
+### Added
+
+- **FinalizeAgentStream construction guard** (`acp/FinalizeAgentStreamConstructionTest.kt`, `acp/TranscriptFinalizePolicy.kt`, wiki): CI test fails when production code references `StructuredUpdate.FinalizeAgentStream` outside documented allowlist (policy, model apply, view-controller passthrough). made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 ### Changed
+
+- **Transcript finalize policy extraction** (`acp/TranscriptFinalizePolicy.kt`, `acp/TranscriptEventIngestion.kt`, `acp/AcpPromptExecutor.kt`, `acp/AcpAgentEditor.kt`, tests): Centralized `FinalizeAgentStream` emission in `TranscriptFinalizePolicy`; ingestion, prompt executor, and editor delegate to policy hooks; removed `ingestPromptCompleted()`; added table-driven policy tests. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript panel harness review follow-ups** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`): Golden scenarios drive chunked streaming, stick-to-bottom, mixed tool+agent, and resize through ViewController `apply`; EDT-safe scroll/height helpers; hierarchy vertical-scroll ownership and horizontal-scrollbar tree checks; ingestion finalize-before-tool scenario; migrated scroll tests off `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 ### Documentation
+
+- **ACP transcript finalize policy (grill accept)** (`docs/adr/0007-transcript-finalize-policy-orchestration-layer.md`, `docs/features/acp-transcript-finalize-policy/`, `docs/wiki/subsystems/acp-client.md`, `docs/wiki/concepts/context.md`, `CONTEXT.md`): ADR 0007 and implementation slices for centralized `TranscriptFinalizePolicy`; wiki policy gate, hook table, and sequence diagram; glossary term in CONTEXT.md. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript panel harness review follow-up ticket** (`docs/features/acp-transcript-panel-integration-tests/01-harness-review-follow-ups.md`, `docs/features/FEATURES.md`): Tracer bullet for post-implementation review gaps — EDT-safe assertions, apply-path golden scenarios, hierarchy scroll checks, fixture defaults, and harness scope alignment. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 

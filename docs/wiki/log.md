@@ -1,5 +1,17 @@
 # Engineering Wiki Log
 
+## [2026-08-05] update | FinalizeAgentStream construction grep enforcement (slice 02)
+
+- Updated: [ACP client subsystem](subsystems/acp-client.md), [Domain context & ACP transcript model](concepts/context.md)
+- Sources: `02-grep-enforcement.md`, `FinalizeAgentStreamConstructionTest.kt`, `TranscriptFinalizePolicy.kt`
+- Notes: CI allowlist documented; `FinalizeAgentStreamConstructionTest` scans `src/main/kotlin`; open-question entries removed.
+
+## [2026-08-05] skip | Transcript finalize policy implementation (slice 01)
+
+- No wiki update: code landed matching prior grill-accept wiki/ADR; grep enforcement deferred to slice 02.
+
+## [2026-08-05] update | Transcript finalize policy (grill accept)
+
 ## [2026-08-05] update | Harness review follow-ups
 
 - Updated: [ACP client subsystem](subsystems/acp-client.md)
