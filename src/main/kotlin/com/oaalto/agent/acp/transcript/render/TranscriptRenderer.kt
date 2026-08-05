@@ -8,8 +8,8 @@ import com.agentclientprotocol.model.ToolKind
  *
  * Narrow scope: error/auth formatting, text normalization, terminal &
  * permission formatting, and tool-status labels. Event mapping and text
- * extraction live in [TranscriptEventIngestion]. Content-fragment rendering
- * is delegated to [TranscriptToolCallContentRenderer].
+ * extraction live in [com.oaalto.agent.acp.transcript.model.TranscriptEventIngestion].
+ * Content-fragment rendering is delegated to [TranscriptToolCallContentRenderer].
  */
 object TranscriptRenderer {
     private val BR_TAG_PATTERN = Regex("(?i)<br\\s*/?>")

@@ -6,9 +6,9 @@
 
 **Blocked by:** 03 — Transcript render package move
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `TranscriptEventIngestion` lives in `transcript/model` with tests mirrored
-- [ ] Ingestion imports render only for tool body mapping and display-title helpers — no view/Swing imports in model
-- [ ] Existing ingestion and finalize-policy tests pass unchanged aside from import paths
-- [ ] `./gradlew qualityGate` passes
+- [x] `TranscriptEventIngestion` lives in `transcript/model` with tests mirrored
+- [x] Ingestion imports render only for tool body mapping and display-title helpers — no view/Swing imports in model
+- [x] Existing ingestion and finalize-policy tests pass unchanged aside from import paths
+- [x] `./gradlew qualityGate` passes

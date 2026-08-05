@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.AvailableCommand
 import com.agentclientprotocol.model.AvailableCommandInput
@@ -9,11 +9,6 @@ import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallId
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
-import com.oaalto.agent.acp.transcript.model.StructuredUpdate
-import com.oaalto.agent.acp.transcript.model.TranscriptBlock
-import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
-import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
-import com.oaalto.agent.acp.transcript.model.TranscriptModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

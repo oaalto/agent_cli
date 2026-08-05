@@ -20,6 +20,7 @@ import com.oaalto.agent.acp.filesystem.SessionFilesystemResult
 import com.oaalto.agent.acp.permission.PermissionCoordinator
 import com.oaalto.agent.acp.terminal.TerminalSessionRegistry
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptEventIngestion
 import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
 import com.oaalto.agent.acp.ui.ShellPaneHost
 import kotlinx.serialization.json.JsonElement

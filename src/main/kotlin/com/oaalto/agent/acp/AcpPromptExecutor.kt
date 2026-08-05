@@ -6,6 +6,7 @@ import com.agentclientprotocol.model.ContentBlock
 import com.oaalto.agent.AgentCliLog
 import com.oaalto.agent.AgentCliSessionContext
 import com.oaalto.agent.acp.transcript.model.StructuredUpdate
+import com.oaalto.agent.acp.transcript.model.TranscriptEventIngestion
 import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

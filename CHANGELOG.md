@@ -16,6 +16,8 @@
 
 - **ACP transcript panel harness review follow-ups** (`acp/TranscriptPanelTestHarness.kt`, `acp/TranscriptPanelHarnessTest.kt`, `acp/TranscriptEdtTestSupport.kt`): Golden scenarios drive chunked streaming, stick-to-bottom, mixed tool+agent, and resize through ViewController `apply`; EDT-safe scroll/height helpers; hierarchy vertical-scroll ownership and horizontal-scrollbar tree checks; ingestion finalize-before-tool scenario; migrated scroll tests off `TranscriptPanelScrollTest`. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
+- **ACP transcript event ingestion model move (slice 04)** (`acp/transcript/model/TranscriptEventIngestion.kt`, importers, tests): Relocated `TranscriptEventIngestion` to `com.oaalto.agent.acp.transcript.model` with mirrored tests; ingestion retains render imports for tool `bodyParts` mapping and display-title helpers only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
+
 - **ACP transcript render package move (slice 03)** (`acp/transcript/render/`, importers): Relocated content renderer, markdown renderer, block converter, HTML/table builders, tool-call renderers, fence normalizer, fence language resolver, text truncation, and plain-text renderer helpers to `com.oaalto.agent.acp.transcript.render` with mirrored tests; import updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast
 
 - **ACP transcript theme package move (slice 01)** (`acp/transcript/theme/`, `plugin.xml`, importers): Relocated `TranscriptColorProvider`, `TranscriptPalette`, and `TranscriptBadgeStyle` to `com.oaalto.agent.acp.transcript.theme` with mirrored tests; import and service registration updates only. made by: Olli Aalto. made with: Cursor. model: composer-2.5-fast

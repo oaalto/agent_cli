@@ -1,4 +1,4 @@
-package com.oaalto.agent.acp
+package com.oaalto.agent.acp.transcript.model
 
 import com.agentclientprotocol.model.AvailableCommand
 import com.agentclientprotocol.model.AvailableCommandInput
@@ -6,10 +6,8 @@ import com.agentclientprotocol.model.ContentBlock
 import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.model.ToolCallContent
 import com.agentclientprotocol.model.ToolCallStatus
+import com.oaalto.agent.acp.SlashCommand
 import com.oaalto.agent.acp.plan.PlanUpdateMapper
-import com.oaalto.agent.acp.transcript.model.StructuredUpdate
-import com.oaalto.agent.acp.transcript.model.TranscriptBodyPart
-import com.oaalto.agent.acp.transcript.model.TranscriptFinalizePolicy
 import com.oaalto.agent.acp.transcript.render.TranscriptRenderer
 import com.oaalto.agent.acp.transcript.render.TranscriptToolCallContentRenderer
 

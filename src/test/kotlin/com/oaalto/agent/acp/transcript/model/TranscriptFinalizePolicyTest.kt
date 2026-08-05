@@ -5,7 +5,6 @@ import com.agentclientprotocol.model.SessionUpdate
 import com.agentclientprotocol.model.ToolCallId
 import com.agentclientprotocol.model.ToolCallStatus
 import com.agentclientprotocol.model.ToolKind
-import com.oaalto.agent.acp.TranscriptEventIngestion
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
